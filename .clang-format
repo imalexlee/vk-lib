@@ -1,0 +1,12 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+ColumnLimit: 150
+NamespaceIndentation: All
+PointerAlignment: Left
+AlignArrayOfStructures: Left
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossEmptyLines: false
+AlignConsecutiveAssignments: true
+AllowAllParametersOfDeclarationOnNextLine: true
