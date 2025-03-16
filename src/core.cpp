@@ -147,7 +147,7 @@ void instance_builder_set_validation_flags(InstanceBuilder* builder, std::span<V
     builder->instance_extensions.emplace_back(VK_EXT_VALIDATION_FLAGS_EXTENSION_NAME);
 }
 
-std::vector<PhysicalDevice> enumerate_physical_devices(VkInstance instance) {
+std::vector<PhysicalDevice> physical_device_enumerate_devices(VkInstance instance) {
     std::vector<VkPhysicalDevice> vk_physical_devices;
     uint32_t physical_device_count;
 
@@ -170,7 +170,22 @@ std::vector<PhysicalDevice> enumerate_physical_devices(VkInstance instance) {
     return physical_devices;
 }
 
-std::vector<VkQueueFamilyProperties> enumerate_queue_families(VkPhysicalDevice physical_device) {
+VkPhysicalDeviceFeatures physical_device_get_features(VkPhysicalDevice physical_device) {
+    VkPhysicalDeviceFeatures physical_device_features{};
+    vkGetPhysicalDeviceFeatures(physical_device, &physical_device_features);
+    return physical_device_features;
+}
+
+VkPhysicalDeviceFeatures2 physical_device_get_features2(VkPhysicalDevice physical_device, void* extended_feature_chain) {
+    // must pass in the pNext chain of features to query for
+    VkPhysicalDeviceFeatures2 physical_device_features{};
+    physical_device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    physical_device_features.pNext = extended_feature_chain;
+    vkGetPhysicalDeviceFeatures2(physical_device, &physical_device_features);
+    return physical_device_features;
+}
+
+std::vector<VkQueueFamilyProperties> physical_device_enumerate_queue_families(VkPhysicalDevice physical_device) {
     std::vector<VkQueueFamilyProperties> queue_family_properties;
     uint32_t family_property_count;
 
@@ -193,7 +208,26 @@ void logical_device_builder_set_device_extensions(LogicalDeviceBuilder* builder,
     }
 }
 
-VkDevice logical_device_builder_create_device(LogicalDeviceBuilder* builder, VkPhysicalDevice physical_device) {
+void logical_device_builder_set_device_features(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures features, void* extended_feature_chain) {
+    builder->physical_device_features2.reset();
+    builder->physical_device_features = features;
+    builder->extended_feature_chain   = extended_feature_chain;
+}
+
+void logical_device_builder_set_device_features2(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures2 features2) {
+    // if using VkPhysicalDeviceFeatures2, pEnabledFeatures in vkDeviceCreateInfo must be null
+    // NOTE: if using VkPhysicalDeviceFeatures2, put all feature extensions (including vulkan 1.1, 1.2, etc.) in the
+    // pNext chain of VkPhysicalDeviceFeatures2
+    builder->physical_device_features.reset();
+    builder->physical_device_features2 = features2;
+    builder->extended_feature_chain    = nullptr;
+}
+
+VkDevice logical_device_builder_create_device
+(LogicalDeviceBuilder* builder
+ ,
+ VkPhysicalDevice physical_device
+    ) {
     std::vector<const char*> device_extensions;
     device_extensions.reserve(builder->device_extensions.size());
     for (const std::string& extension : builder->device_extensions) {
@@ -218,9 +252,21 @@ VkDevice logical_device_builder_create_device(LogicalDeviceBuilder* builder, VkP
     device_create_info.queueCreateInfoCount    = queue_create_infos.size();
     device_create_info.ppEnabledExtensionNames = device_extensions.data();
     device_create_info.enabledExtensionCount   = device_extensions.size();
+    if (builder->physical_device_features.has_value()) {
+        device_create_info.pEnabledFeatures = &builder->physical_device_features.value();
+        device_create_info.pNext            = builder->extended_feature_chain;
+    } else if (builder->physical_device_features2.has_value()) {
+        device_create_info.pNext = &builder->physical_device_features2.value();
+    }
 
     VkDevice device;
     VK_CHECK(vkCreateDevice(physical_device, &device_create_info, nullptr, &device));
 
     return device;
+}
+
+VkQueue logical_device_get_queue(VkDevice device, uint32_t queue_family_index, uint32_t queue_index) {
+    VkQueue queue;
+    vkGetDeviceQueue(device, queue_family_index, queue_index, &queue);
+    return queue;
 }

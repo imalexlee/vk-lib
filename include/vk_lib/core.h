@@ -9,6 +9,7 @@
 #include <vector>
 #include <span>
 #include <iostream>
+#include <optional>
 
 #define VK_CHECK(x)                                                                                                                                  \
     do {                                                                                                                                             \
@@ -19,7 +20,7 @@
         }                                                                                                                                            \
     } while (0)
 
-// BEGIN INSTANCE MANAGEMENT
+// BEGIN INSTANCE BUILDER
 
 struct InstanceBuilder {
     std::string app_name{};
@@ -69,20 +70,27 @@ void instance_builder_set_validation_features(InstanceBuilder* builder, std::spa
 
 void instance_builder_set_validation_flags(InstanceBuilder* builder, std::span<VkValidationCheckEXT> disabled_validation_checks);
 
-// END INSTANCE MANAGEMENT
+// END INSTANCE BUILDER
 
-// BEGIN DEVICE MANAGEMENT
+// BEGIN PHYSICAL DEVICE MANAGEMENT
 
 struct PhysicalDevice {
     VkPhysicalDevice physical_device{};
     VkPhysicalDeviceProperties physical_device_properties{};
 };
 
-[[nodiscard]] std::vector<PhysicalDevice> enumerate_physical_devices(VkInstance instance);
+[[nodiscard]] std::vector<PhysicalDevice> physical_device_enumerate_devices(VkInstance instance);
+
+[[nodiscard]] VkPhysicalDeviceFeatures physical_device_get_features(VkPhysicalDevice physical_device);
+
+[[nodiscard]] VkPhysicalDeviceFeatures2 physical_device_get_features2(VkPhysicalDevice physical_device, void* extended_feature_chain);
 
 // index in vector represents the queue family index
-[[nodiscard]] std::vector<VkQueueFamilyProperties> enumerate_queue_families(VkPhysicalDevice physical_device);
+[[nodiscard]] std::vector<VkQueueFamilyProperties> physical_device_enumerate_queue_families(VkPhysicalDevice physical_device);
 
+// END PHYSICAL DEVICE MANAGEMENT
+
+// BEGIN LOGICAL DEVICE BUILDER
 
 struct LogicalDeviceBuilder {
     // (family index, # queues to create from family)
@@ -90,15 +98,25 @@ struct LogicalDeviceBuilder {
     // (family index, priorities). lines up with the map above. Just here to preserve values
     std::map<uint32_t, std::vector<float>> queue_priorities_map;
     std::vector<std::string> device_extensions;
+    std::optional<VkPhysicalDeviceFeatures> physical_device_features;
+    std::optional<VkPhysicalDeviceFeatures2> physical_device_features2;
+    void* extended_feature_chain = nullptr;
 };
 
 [[nodiscard]] VkDevice logical_device_builder_create_device(LogicalDeviceBuilder* builder, VkPhysicalDevice physical_device);
+
+void logical_device_builder_set_device_features(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures features, void* extended_feature_chain);
+
+void logical_device_builder_set_device_features2(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures2 features2);
 
 void logical_device_builder_create_queue(LogicalDeviceBuilder* builder, uint32_t queue_family_index, float priority);
 
 void logical_device_builder_set_device_extensions(LogicalDeviceBuilder* builder, std::span<const char*> device_extensions);
 
-// TODO: add utils to add enable features and get queues
+// END LOGICAL DEVICE BUILDER
 
+// BEGIN LOGICAL DEVICE MANAGEMENT
 
-// END DEVICE MANAGEMENT
+[[nodiscard]] VkQueue logical_device_get_queue(VkDevice device, uint32_t queue_family_index, uint32_t queue_index);
+
+// END LOGICAL DEVICE MANAGEMENT
