@@ -46,12 +46,10 @@ struct InstanceBuilder {
     VkValidationFlagsEXT validation_flags{};
 };
 
-[[nodiscard]] VkInstance instance_builder_create_instance(InstanceBuilder* builder);
+VkResult instance_builder_create_instance(InstanceBuilder* builder, VkInstance* instance);
 
-// required
 void instance_builder_set_names(InstanceBuilder* builder, std::string_view app_name, std::string_view engine_name);
 
-// required
 void instance_builder_set_versions(InstanceBuilder* builder, uint32_t api, uint32_t app, uint32_t engine);
 
 void instance_builder_set_instance_flags(InstanceBuilder* builder, VkInstanceCreateFlags instance_create_flags);
@@ -70,6 +68,10 @@ void instance_builder_set_validation_features(InstanceBuilder* builder, std::spa
 
 void instance_builder_set_validation_flags(InstanceBuilder* builder, std::span<VkValidationCheckEXT> disabled_validation_checks);
 
+VkResult instance_enumerate_layer_properties(std::vector<VkLayerProperties>* layer_properties);
+
+void instance_destroy(VkInstance instance);
+
 // END INSTANCE BUILDER
 
 // BEGIN PHYSICAL DEVICE MANAGEMENT
@@ -79,7 +81,7 @@ struct PhysicalDevice {
     VkPhysicalDeviceProperties physical_device_properties{};
 };
 
-[[nodiscard]] std::vector<PhysicalDevice> physical_device_enumerate_devices(VkInstance instance);
+VkResult physical_device_enumerate_devices(VkInstance instance, std::vector<PhysicalDevice>* physical_devices);
 
 [[nodiscard]] VkPhysicalDeviceFeatures physical_device_get_features(VkPhysicalDevice physical_device);
 
@@ -103,7 +105,7 @@ struct LogicalDeviceBuilder {
     void* extended_feature_chain = nullptr;
 };
 
-[[nodiscard]] VkDevice logical_device_builder_create_device(LogicalDeviceBuilder* builder, VkPhysicalDevice physical_device);
+VkResult logical_device_builder_create_device(LogicalDeviceBuilder* builder, VkPhysicalDevice physical_device, VkDevice* device);
 
 void logical_device_builder_set_device_features(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures features, void* extended_feature_chain);
 
