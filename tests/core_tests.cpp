@@ -14,7 +14,7 @@ public:
         InstanceBuilder instance_builder;
         instance_builder_set_names(&instance_builder, "app name", "engine name");
         instance_builder_set_versions(&instance_builder, api_version, VK_MAKE_VERSION(1, 0, 0), VK_MAKE_VERSION(1, 0, 0));
-        instance_builder_create_instance(&instance_builder, &basic_instance);
+        instance_builder_instance_create(&instance_builder, &basic_instance);
     }
 
     ~CoreTestsFixture() override {
@@ -56,7 +56,7 @@ TEST_F(CoreTestsFixture, createDebugInstance) {
     instance_builder_set_validation_layers(&builder, layers);
 
     VkInstance debug_instance = nullptr;
-    VkResult result           = instance_builder_create_instance(&builder, &debug_instance);
+    VkResult result           = instance_builder_instance_create(&builder, &debug_instance);
 
     EXPECT_EQ(result, VK_SUCCESS);
     EXPECT_NE(debug_instance, nullptr);
@@ -75,7 +75,7 @@ TEST_F(CoreTestsFixture, createWrongDebugInstance) {
     instance_builder_set_validation_layers(&builder, layers);
 
     VkInstance debug_instance = nullptr;
-    VkResult result           = instance_builder_create_instance(&builder, &debug_instance);
+    VkResult result           = instance_builder_instance_create(&builder, &debug_instance);
 
     EXPECT_EQ(result, VK_ERROR_LAYER_NOT_PRESENT);
     EXPECT_EQ(debug_instance, nullptr);

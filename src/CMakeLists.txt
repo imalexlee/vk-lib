@@ -1,5 +1,6 @@
-add_library(vk-lib STATIC core.cpp
-        ../include/vk_lib/core.h)
+add_library(vk-lib STATIC core.cpp synchronization.cpp resources.cpp)
+
+include_directories(../include)
 
 find_package(Vulkan REQUIRED)
 

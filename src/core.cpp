@@ -1,6 +1,6 @@
 #include <vk_lib/core.h>
 
-VkResult instance_builder_create_instance(InstanceBuilder* builder, VkInstance* instance) {
+VkResult instance_builder_instance_create(InstanceBuilder* builder, VkInstance* instance) {
     VkApplicationInfo app_info{};
     app_info.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     app_info.pNext              = nullptr;
@@ -216,7 +216,7 @@ std::vector<VkQueueFamilyProperties> physical_device_enumerate_queue_families(Vk
     return queue_family_properties;
 }
 
-void logical_device_builder_create_queue(LogicalDeviceBuilder* builder, uint32_t queue_family_index, float priority) {
+void logical_device_builder_queue_create(LogicalDeviceBuilder* builder, uint32_t queue_family_index, float priority) {
     builder->queue_family_creation_map[queue_family_index]++;
     builder->queue_priorities_map[queue_family_index].push_back(priority);
 }
@@ -243,7 +243,7 @@ void logical_device_builder_set_device_features2(LogicalDeviceBuilder* builder, 
     builder->extended_feature_chain    = nullptr;
 }
 
-VkResult logical_device_builder_create_device(LogicalDeviceBuilder* builder, VkPhysicalDevice physical_device, VkDevice* device) {
+VkResult logical_device_builder_device_create(LogicalDeviceBuilder* builder, VkPhysicalDevice physical_device, VkDevice* device) {
     std::vector<const char*> device_extensions;
     device_extensions.reserve(builder->device_extensions.size());
     for (const std::string& extension : builder->device_extensions) {

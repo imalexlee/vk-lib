@@ -1,0 +1,162 @@
+/*
+* Utilities regarding synchronization primitives and functions
+*/
+
+#pragma once
+#include <vk_lib/common.h>
+
+// BEGIN SEMAPHORE
+
+VkResult binary_semaphore_create(VkDevice device, VkSemaphore* semaphore);
+
+VkResult timeline_semaphore_create(VkDevice device, uint64_t initial_timeline_value,
+                                   VkSemaphore* semaphore);
+
+[[nodiscard]] VkSemaphoreSubmitInfo binary_semaphore_submit_info_create(VkSemaphore semaphore,
+    VkPipelineStageFlags2 stage_flags,
+    uint32_t device_index = 0);
+
+[[nodiscard]] VkSemaphoreSubmitInfo timeline_semaphore_submit_info_create(VkSemaphore semaphore,
+    uint32_t timeline_value,
+    VkPipelineStageFlags2 stage_flags,
+    uint32_t device_index = 0);
+
+// END SEMAPHORE
+
+// BEGIN FENCE
+
+VkResult fence_create(VkDevice device, VkFenceCreateFlags flags, VkFence* fence);
+
+// END FENCE
+
+// TODO: image memory barriers for vulkan 1.0 - 1.3
+
+// BEGIN IMAGE BARRIER BUILDER
+
+struct ImageBarrierBuilder
+{
+    VkImageMemoryBarrier image_memory_barrier{};
+    VkPipelineStageFlags2 src_stage_flags{};
+    VkPipelineStageFlags2 dst_stage_flags{};
+    VkAccessFlags2 src_access_flags2{};
+    VkAccessFlags2 dst_access_flags2{};
+};
+
+void image_barrier_builder_set_stage_masks2(ImageBarrierBuilder* builder,
+                                            VkPipelineStageFlags2 src_stages,
+                                            VkPipelineStageFlags2 dst_stages);
+
+void image_barrier_builder_set_access_masks2(ImageBarrierBuilder* builder,
+                                             VkAccessFlags2 src_access,
+                                             VkAccessFlags2 dst_access);
+
+void image_barrier_builder_set_access_masks(ImageBarrierBuilder* builder,
+                                            VkAccessFlags src_access,
+                                            VkAccessFlags dst_access);
+
+void image_barrier_builder_set_layouts(ImageBarrierBuilder* builder, VkImageLayout old_layout,
+                                       VkImageLayout new_layout);
+
+void image_barrier_builder_set_image(ImageBarrierBuilder* builder, VkImage image,
+                                     VkImageSubresourceRange subresource_range);
+
+void image_barrier_builder_set_queue_family_indices(ImageBarrierBuilder* builder,
+                                                    uint32_t src_queue_family_index,
+                                                    uint32_t dst_queue_family_index);
+
+[[nodiscard]] VkImageMemoryBarrier image_barrier_builder_barrier_create(
+    ImageBarrierBuilder* builder);
+
+[[nodiscard]] VkImageMemoryBarrier2 image_barrier_builder_barrier_create2(
+    const ImageBarrierBuilder* builder);
+
+// END IMAGE BARRIER BUILDER
+
+// BEGIN BUFFER BARRIER BUILDER
+
+struct BufferBarrierBuilder
+{
+    VkBufferMemoryBarrier buffer_memory_barrier{};
+    VkPipelineStageFlags2 src_stage_flags{};
+    VkPipelineStageFlags2 dst_stage_flags{};
+    VkAccessFlags2 src_access_flags2{};
+    VkAccessFlags2 dst_access_flags2{};
+};
+
+void buffer_barrier_builder_set_stage_masks2(BufferBarrierBuilder* builder,
+                                             VkPipelineStageFlags2 src_stages,
+                                             VkPipelineStageFlags2 dst_stages);
+
+void buffer_barrier_builder_set_access_masks2(BufferBarrierBuilder* builder,
+                                              VkAccessFlags2 src_access, VkAccessFlags2 dst_access);
+
+void buffer_barrier_builder_set_access_masks(BufferBarrierBuilder* builder,
+                                             VkAccessFlags src_access, VkAccessFlags dst_access);
+
+void buffer_barrier_builder_set_queue_family_indices(BufferBarrierBuilder* builder,
+                                                     uint32_t src_queue_family_index,
+                                                     uint32_t dst_queue_family_index);
+
+void buffer_barrier_builder_set_buffer(BufferBarrierBuilder* builder, VkBuffer buffer,
+                                       VkDeviceSize offset, VkDeviceSize size);
+
+[[nodiscard]] VkBufferMemoryBarrier buffer_barrier_builder_barrier_create(
+    BufferBarrierBuilder* builder);
+
+[[nodiscard]] VkBufferMemoryBarrier2 buffer_barrier_builder_barrier_create2(
+    BufferBarrierBuilder* builder);
+
+
+// END BUFFER BARRIER BUILDER
+
+[[nodiscard]] VkMemoryBarrier global_memory_barrier_create();
+
+[[nodiscard]] VkMemoryBarrier2 global_memory_barrier_create2();
+
+// FOR USE WITH VULKAN SYNCHRONIZATION 1
+
+void memory_barrier_insert(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_flags,
+                           VkPipelineStageFlags dst_stage_flags,
+                           std::span<VkImageMemoryBarrier> image_barriers,
+                           std::span<VkBufferMemoryBarrier> buffer_barriers,
+                           std::span<VkMemoryBarrier> memory_barriers,
+                           VkDependencyFlags dependency_flags = 0);
+
+void image_memory_barrier_insert(VkCommandBuffer command_buffer,
+                                 VkPipelineStageFlags src_stage_flags,
+                                 VkPipelineStageFlags dst_stage_flags,
+                                 std::span<VkImageMemoryBarrier> image_barriers,
+                                 VkDependencyFlags dependency_flags = 0);
+
+void buffer_memory_barrier_insert(VkCommandBuffer command_buffer,
+                                  VkPipelineStageFlags src_stage_flags,
+                                  VkPipelineStageFlags dst_stage_flags,
+                                  std::span<VkBufferMemoryBarrier> buffer_barriers,
+                                  VkDependencyFlags dependency_flags = 0);
+
+
+void global_memory_barrier_insert(VkCommandBuffer command_buffer,
+                                  VkPipelineStageFlags src_stage_flags,
+                                  VkPipelineStageFlags dst_stage_flags,
+                                  std::span<VkMemoryBarrier> memory_barriers,
+                                  VkDependencyFlags dependency_flags = 0);
+
+// FOR USE WITH VULKAN SYNCHRONIZATION 2
+
+void memory_barrier_insert2(VkCommandBuffer command_buffer,
+                            std::span<VkImageMemoryBarrier2> image_barriers,
+                            std::span<VkBufferMemoryBarrier2> buffer_barriers,
+                            std::span<VkMemoryBarrier2> memory_barriers,
+                            VkDependencyFlags dependency_flags = 0);
+
+void image_memory_barrier_insert2(VkCommandBuffer command_buffer,
+                                  std::span<VkImageMemoryBarrier2> image_barriers,
+                                  VkDependencyFlags dependency_flags = 0);
+
+void buffer_barrier_insert2(VkCommandBuffer command_buffer,
+                            std::span<VkBufferMemoryBarrier2> buffer_barriers,
+                            VkDependencyFlags dependency_flags = 0);
+
+void global_memory_barrier_insert2(VkCommandBuffer command_buffer,
+                                   std::span<VkMemoryBarrier2> memory_barriers,
+                                   VkDependencyFlags dependency_flags = 0);
