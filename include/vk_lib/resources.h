@@ -134,4 +134,9 @@ VkResult buffer_builder_allocated_buffer_create(const BufferBuilder* builder,
 VkResult buffer_builder_unallocated_buffer_create(const BufferBuilder* builder, VkDevice device,
                                                   VkBuffer* buffer);
 
-// TODO: add device address extension and buffer view creation
+VkResult buffer_view_create(VkDevice device, VkBuffer buffer, VkFormat format,
+                            VkBufferView* buffer_view, VkDeviceSize offset = 0,
+                            VkDeviceSize range = VK_WHOLE_SIZE,
+                            void* pNext_chain = nullptr);
+
+[[nodiscard]] VkDeviceAddress buffer_device_address_get(VkDevice device, VkBuffer buffer);

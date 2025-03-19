@@ -212,3 +212,24 @@ VkResult buffer_builder_unallocated_buffer_create(const BufferBuilder* builder, 
                                                   VkBuffer* buffer) {
     return vkCreateBuffer(device, &builder->buffer_create_info, nullptr, buffer);
 }
+
+VkResult buffer_view_create(VkDevice device, VkBuffer buffer, VkFormat format, VkBufferView* buffer_view, VkDeviceSize offset, VkDeviceSize range, void* pNext_chain) {
+    VkBufferViewCreateInfo buffer_view_create_info{};
+    buffer_view_create_info.sType  = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
+    buffer_view_create_info.buffer = buffer;
+    buffer_view_create_info.format = format;
+    buffer_view_create_info.offset = offset;
+    buffer_view_create_info.range  = range;
+    buffer_view_create_info.pNext  = pNext_chain;
+    buffer_view_create_info.flags  = 0; // vulkan specs states this parameter is unused currently
+
+    return vkCreateBufferView(device, &buffer_view_create_info, nullptr, buffer_view);
+}
+
+VkDeviceAddress buffer_device_address_get(VkDevice device, VkBuffer buffer) {
+    VkBufferDeviceAddressInfo buffer_device_address_info{};
+    buffer_device_address_info.sType  = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    buffer_device_address_info.buffer = buffer;
+
+    return vkGetBufferDeviceAddress(device, &buffer_device_address_info);
+}
