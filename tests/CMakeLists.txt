@@ -1,4 +1,3 @@
-include(FetchContent)
 # current link is for Google Test 1.16.0
 FetchContent_Declare(
         googletest
@@ -11,10 +10,9 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-link_libraries(GTest::gtest_main)
-link_libraries(vk-lib)
+link_libraries(vk-lib GTest::gtest_main)
 
 add_executable(core_tests core_tests.cpp)
 
-include(GoogleTest Vulkan::Vulkan)
+include(GoogleTest)
 gtest_discover_tests(core_tests)

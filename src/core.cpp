@@ -1,57 +1,5 @@
 #include <vk_lib/core.h>
 
-VkResult instance_builder_instance_create(InstanceBuilder* builder, VkInstance* instance) {
-    VkApplicationInfo app_info{};
-    app_info.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app_info.pNext              = nullptr;
-    app_info.pApplicationName   = builder->app_name.c_str();
-    app_info.pEngineName        = builder->engine_name.c_str();
-    app_info.engineVersion      = builder->engine_version;
-    app_info.applicationVersion = builder->app_version;
-    app_info.apiVersion         = builder->api_version;
-
-    VkInstanceCreateInfo instance_create_info{};
-    instance_create_info.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instance_create_info.pApplicationInfo = &app_info;
-    instance_create_info.flags            = builder->instance_create_flags;
-
-    std::vector<const char*> instance_extensions;
-    instance_extensions.reserve(builder->instance_extensions.size());
-    for (const std::string& extension : builder->instance_extensions) {
-        instance_extensions.push_back(extension.c_str());
-    }
-    instance_create_info.ppEnabledExtensionNames = instance_extensions.data();
-    instance_create_info.enabledExtensionCount   = instance_extensions.size();
-
-    std::vector<const char*> validation_layers;
-    validation_layers.reserve(builder->validation_layers.size());
-    for (const std::string& layer : builder->validation_layers) {
-        validation_layers.push_back(layer.c_str());
-    }
-    instance_create_info.ppEnabledLayerNames = validation_layers.data();
-    instance_create_info.enabledLayerCount   = validation_layers.size();
-
-    for (const std::string& extension : builder->instance_extensions) {
-        if (extension == VK_EXT_DEBUG_UTILS_EXTENSION_NAME) {
-            builder->messenger_create_info.pNext = instance_create_info.pNext;
-            instance_create_info.pNext           = &builder->messenger_create_info;
-        }
-        if (extension == VK_EXT_LAYER_SETTINGS_EXTENSION_NAME) {
-            builder->layer_settings_create_info.pNext = instance_create_info.pNext;
-            instance_create_info.pNext                = &builder->layer_settings_create_info;
-        }
-        if (extension == VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME) {
-            builder->validation_features.pNext = instance_create_info.pNext;
-            instance_create_info.pNext         = &builder->validation_features;
-        }
-        if (extension == VK_EXT_VALIDATION_FLAGS_EXTENSION_NAME) {
-            builder->validation_flags.pNext = instance_create_info.pNext;
-            instance_create_info.pNext      = &builder->validation_flags;
-        }
-    }
-
-    return vkCreateInstance(&instance_create_info, nullptr, instance);
-}
 
 void instance_builder_set_names(InstanceBuilder* builder, std::string_view app_name, std::string_view engine_name) {
     builder->app_name    = app_name;
@@ -144,6 +92,76 @@ void instance_builder_set_validation_flags(InstanceBuilder* builder, std::span<V
     builder->instance_extensions.emplace_back(VK_EXT_VALIDATION_FLAGS_EXTENSION_NAME);
 }
 
+VkResult instance_builder_instance_create(InstanceBuilder* builder, VkInstance* instance) {
+
+    VkResult result = volkInitialize();
+    if (result != VK_SUCCESS) {
+        return result;
+    }
+
+    VkApplicationInfo app_info{};
+    app_info.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    app_info.pNext              = nullptr;
+    app_info.pApplicationName   = builder->app_name.c_str();
+    app_info.pEngineName        = builder->engine_name.c_str();
+    app_info.engineVersion      = builder->engine_version;
+    app_info.applicationVersion = builder->app_version;
+    app_info.apiVersion         = builder->api_version;
+
+    VkInstanceCreateInfo instance_create_info{};
+    instance_create_info.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instance_create_info.pApplicationInfo = &app_info;
+    instance_create_info.flags            = builder->instance_create_flags;
+
+    std::vector<const char*> instance_extensions;
+    instance_extensions.reserve(builder->instance_extensions.size());
+    for (const std::string& extension : builder->instance_extensions) {
+        instance_extensions.push_back(extension.c_str());
+    }
+    instance_create_info.ppEnabledExtensionNames = instance_extensions.data();
+    instance_create_info.enabledExtensionCount   = instance_extensions.size();
+
+    std::vector<const char*> validation_layers;
+    validation_layers.reserve(builder->validation_layers.size());
+    for (const std::string& layer : builder->validation_layers) {
+        validation_layers.push_back(layer.c_str());
+    }
+    instance_create_info.ppEnabledLayerNames = validation_layers.data();
+    instance_create_info.enabledLayerCount   = validation_layers.size();
+
+    for (const std::string& extension : builder->instance_extensions) {
+        if (extension == VK_EXT_DEBUG_UTILS_EXTENSION_NAME) {
+            builder->messenger_create_info.pNext = instance_create_info.pNext;
+            instance_create_info.pNext           = &builder->messenger_create_info;
+        }
+        if (extension == VK_EXT_LAYER_SETTINGS_EXTENSION_NAME) {
+            builder->layer_settings_create_info.pNext = instance_create_info.pNext;
+            instance_create_info.pNext                = &builder->layer_settings_create_info;
+        }
+        if (extension == VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME) {
+            builder->validation_features.pNext = instance_create_info.pNext;
+            instance_create_info.pNext         = &builder->validation_features;
+        }
+        if (extension == VK_EXT_VALIDATION_FLAGS_EXTENSION_NAME) {
+            builder->validation_flags.pNext = instance_create_info.pNext;
+            instance_create_info.pNext      = &builder->validation_flags;
+        }
+    }
+
+    result = vkCreateInstance(&instance_create_info, nullptr, instance);
+    if (result != VK_SUCCESS) {
+        return result;
+    }
+
+    volkLoadInstanceOnly(*instance);
+
+    return VK_SUCCESS;
+}
+
+void instance_destroy(VkInstance instance) {
+    vkDestroyInstance(instance, nullptr);
+}
+
 VkResult instance_enumerate_layer_properties(std::vector<VkLayerProperties>* layer_properties) {
     uint32_t layer_count;
     VkResult result = vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
@@ -155,9 +173,6 @@ VkResult instance_enumerate_layer_properties(std::vector<VkLayerProperties>* lay
     return vkEnumerateInstanceLayerProperties(&layer_count, layer_properties->data());
 }
 
-void instance_destroy(VkInstance instance) {
-    vkDestroyInstance(instance, nullptr);
-}
 
 VkResult physical_device_enumerate_devices(VkInstance instance, std::vector<PhysicalDevice>* physical_devices) {
     std::vector<VkPhysicalDevice> vk_physical_devices;
@@ -216,18 +231,6 @@ std::vector<VkQueueFamilyProperties> physical_device_enumerate_queue_families(Vk
     return queue_family_properties;
 }
 
-void logical_device_builder_queue_create(LogicalDeviceBuilder* builder, uint32_t queue_family_index, float priority) {
-    builder->queue_family_creation_map[queue_family_index]++;
-    builder->queue_priorities_map[queue_family_index].push_back(priority);
-}
-
-void logical_device_builder_set_device_extensions(LogicalDeviceBuilder* builder, std::span<const char*> device_extensions) {
-    builder->device_extensions.reserve(device_extensions.size());
-    for (const char* extension : device_extensions) {
-        builder->device_extensions.emplace_back(extension);
-    }
-}
-
 void logical_device_builder_set_device_features(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures features, void* extended_feature_chain) {
     builder->physical_device_features2.reset();
     builder->physical_device_features = features;
@@ -241,6 +244,18 @@ void logical_device_builder_set_device_features2(LogicalDeviceBuilder* builder, 
     builder->physical_device_features.reset();
     builder->physical_device_features2 = features2;
     builder->extended_feature_chain    = nullptr;
+}
+
+void logical_device_builder_queue_create(LogicalDeviceBuilder* builder, uint32_t queue_family_index, float priority) {
+    builder->queue_family_creation_map[queue_family_index]++;
+    builder->queue_priorities_map[queue_family_index].push_back(priority);
+}
+
+void logical_device_builder_set_device_extensions(LogicalDeviceBuilder* builder, std::span<const char*> device_extensions) {
+    builder->device_extensions.reserve(device_extensions.size());
+    for (const char* extension : device_extensions) {
+        builder->device_extensions.emplace_back(extension);
+    }
 }
 
 VkResult logical_device_builder_device_create(LogicalDeviceBuilder* builder, VkPhysicalDevice physical_device, VkDevice* device) {
@@ -275,11 +290,21 @@ VkResult logical_device_builder_device_create(LogicalDeviceBuilder* builder, VkP
         device_create_info.pNext = &builder->physical_device_features2.value();
     }
 
-    return vkCreateDevice(physical_device, &device_create_info, nullptr, device);
+    const VkResult result = vkCreateDevice(physical_device, &device_create_info, nullptr, device);
+    if (result != VK_SUCCESS) {
+        return result;
+    }
 
+    volkLoadDevice(*device);
+
+    return VK_SUCCESS;
 }
 
-VkQueue logical_device_get_queue(VkDevice device, uint32_t queue_family_index, uint32_t queue_index) {
+void logical_device_destroy(VkDevice device) {
+    vkDestroyDevice(device, nullptr);
+}
+
+VkQueue queue_get(VkDevice device, uint32_t queue_family_index, uint32_t queue_index) {
     VkQueue queue;
     vkGetDeviceQueue(device, queue_family_index, queue_index, &queue);
     return queue;

@@ -1,6 +1,4 @@
-include(FetchContent)
-
-add_library(vk-lib STATIC core.cpp synchronization.cpp resources.cpp vma_usage.cpp)
+add_library(vk-lib STATIC core.cpp synchronization.cpp resources.cpp shaders.cpp vma_usage.cpp)
 
 include_directories(../include)
 
@@ -11,7 +9,13 @@ FetchContent_Declare(
         vma
         URL https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v3.2.1.zip
 )
-
 FetchContent_MakeAvailable(vma)
 
-target_link_libraries(vk-lib PRIVATE Vulkan::Vulkan GPUOpen::VulkanMemoryAllocator)
+# current link is for volk 1.4.304
+FetchContent_Declare(
+        volk
+        URL https://github.com/zeux/volk/archive/refs/tags/1.4.304.zip
+)
+FetchContent_MakeAvailable(volk)
+
+target_link_libraries(vk-lib PUBLIC GPUOpen::VulkanMemoryAllocator volk)

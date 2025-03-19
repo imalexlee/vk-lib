@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.25)
 project(VK_LIB)
 set(CMAKE_CXX_STANDARD 20)
 
+# Used for my own subdirectories to pull dependencies
+include(FetchContent)
+
 find_package(Vulkan REQUIRED)
 
 set(VK_LIB_BUILD_EXAMPLES TRUE)

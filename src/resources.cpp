@@ -87,6 +87,19 @@ VkResult image_view_create(VkDevice device, VkImage image,
     return vkCreateImageView(device, &image_view_create_info, nullptr, image_view);
 }
 
+
+void allocated_buffer_destroy(VkImage image, VmaAllocator allocator, VmaAllocation allocation) {
+    vmaDestroyImage(allocator, image, allocation);
+}
+
+void unallocated_image_destroy(VkDevice device, VkImage image) {
+    vkDestroyImage(device, image, nullptr);
+}
+
+void image_view_destroy(VkDevice device, VkImageView image_view) {
+    vkDestroyImageView(device, image_view, nullptr);
+}
+
 VkImageSubresourceRange image_subresource_range_create(
     VkImageAspectFlags aspect_flags,
     uint32_t base_array_layer,
@@ -136,6 +149,10 @@ void sampler_builder_set_anisotropy(SamplerBuilder* builder, bool anisotropy_ena
 
 VkResult sampler_builder_sampler_create(const SamplerBuilder* builder, VkDevice device, VkSampler* sampler) {
     return vkCreateSampler(device, &builder->sampler_create_info, nullptr, sampler);
+}
+
+void sampler_destroy(VkDevice device, VkSampler sampler) {
+    vkDestroySampler(device, sampler, nullptr);
 }
 
 void image_multi_blit(VkCommandBuffer command_buffer, VkImage src_image, VkImage dst_image, std::span<VkImageBlit> blit_regions, VkFilter filter, VkImageLayout src_layout, VkImageLayout dst_layout) {
@@ -208,10 +225,12 @@ VkResult buffer_builder_allocated_buffer_create(const BufferBuilder* builder,
     return vmaCreateBuffer(allocator, &builder->buffer_create_info, &allocation_create_info, buffer, allocation, allocation_info);
 }
 
+
 VkResult buffer_builder_unallocated_buffer_create(const BufferBuilder* builder, VkDevice device,
                                                   VkBuffer* buffer) {
     return vkCreateBuffer(device, &builder->buffer_create_info, nullptr, buffer);
 }
+
 
 VkResult buffer_view_create(VkDevice device, VkBuffer buffer, VkFormat format, VkBufferView* buffer_view, VkDeviceSize offset, VkDeviceSize range, void* pNext_chain) {
     VkBufferViewCreateInfo buffer_view_create_info{};
@@ -226,10 +245,23 @@ VkResult buffer_view_create(VkDevice device, VkBuffer buffer, VkFormat format, V
     return vkCreateBufferView(device, &buffer_view_create_info, nullptr, buffer_view);
 }
 
+
 VkDeviceAddress buffer_device_address_get(VkDevice device, VkBuffer buffer) {
     VkBufferDeviceAddressInfo buffer_device_address_info{};
     buffer_device_address_info.sType  = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
     buffer_device_address_info.buffer = buffer;
 
     return vkGetBufferDeviceAddress(device, &buffer_device_address_info);
+}
+
+void allocated_buffer_destroy(VkBuffer buffer, VmaAllocator allocator, VmaAllocation allocation) {
+    vmaDestroyBuffer(allocator, buffer, allocation);
+}
+
+void unallocated_buffer_destroy(VkDevice device, VkBuffer buffer) {
+    vkDestroyBuffer(device, buffer, nullptr);
+}
+
+void buffer_view_destroy(VkDevice device, VkBufferView buffer_view) {
+    vkDestroyBufferView(device, buffer_view, nullptr);
 }

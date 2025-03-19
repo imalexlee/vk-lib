@@ -23,6 +23,10 @@ VkResult timeline_semaphore_create(VkDevice device, uint64_t initial_timeline_va
     return vkCreateSemaphore(device, &semaphore_create_info, nullptr, semaphore);
 }
 
+void semaphore_destroy(VkDevice device, VkSemaphore semaphore) {
+    vkDestroySemaphore(device, semaphore, nullptr);
+}
+
 VkSemaphoreSubmitInfo binary_semaphore_submit_info_create(VkSemaphore semaphore, VkPipelineStageFlags2 stage_flags, uint32_t device_index) {
     VkSemaphoreSubmitInfo semaphore_submit_info{};
     semaphore_submit_info.sType       = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
@@ -54,6 +58,10 @@ VkResult fence_create(VkDevice device, VkFenceCreateFlags flags, VkFence* fence)
     fence_create_info.pNext = nullptr;
 
     return vkCreateFence(device, &fence_create_info, nullptr, fence);
+}
+
+void fence_destroy(VkDevice device, VkFence fence) {
+    vkDestroyFence(device, fence, nullptr);
 }
 
 

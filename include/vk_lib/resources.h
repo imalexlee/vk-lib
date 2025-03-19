@@ -49,6 +49,13 @@ VkResult image_view_create(VkDevice device, VkImage image,
                            uint32_t mip_levels = 1,
                            uint32_t array_layers = 1);
 
+void allocated_buffer_destroy(VkImage image, VmaAllocator allocator, VmaAllocation allocation);
+
+void unallocated_image_destroy(VkDevice device, VkImage image);
+
+void image_view_destroy(VkDevice device, VkImageView image_view);
+
+
 [[nodiscard]] VkImageSubresourceRange image_subresource_range_create(
     VkImageAspectFlags aspect_flags,
     uint32_t base_array_layer,
@@ -83,6 +90,8 @@ void sampler_builder_set_anisotropy(SamplerBuilder* builder, bool anisotropy_ena
 
 VkResult sampler_builder_sampler_create(const SamplerBuilder* builder, VkDevice device,
                                         VkSampler* sampler);
+
+void sampler_destroy(VkDevice device, VkSampler sampler);
 
 void image_multi_blit(VkCommandBuffer command_buffer, VkImage src_image, VkImage dst_image,
                       std::span<VkImageBlit> blit_regions, VkFilter filter = VK_FILTER_NEAREST,
@@ -140,3 +149,9 @@ VkResult buffer_view_create(VkDevice device, VkBuffer buffer, VkFormat format,
                             void* pNext_chain = nullptr);
 
 [[nodiscard]] VkDeviceAddress buffer_device_address_get(VkDevice device, VkBuffer buffer);
+
+void allocated_buffer_destroy(VkBuffer buffer, VmaAllocator allocator, VmaAllocation allocation);
+
+void unallocated_buffer_destroy(VkDevice device, VkBuffer buffer);
+
+void buffer_view_destroy(VkDevice device, VkBufferView buffer_view);

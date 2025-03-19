@@ -5,15 +5,6 @@
 #pragma once
 #include <vk_lib/common.h>
 
-#define VK_CHECK(x)                                                                                                                                  \
-    do {                                                                                                                                             \
-        VkResult err = x;                                                                                                                            \
-        if (err) {                                                                                                                                   \
-            printf("Detected Vulkan error: %s", string_VkResult(err));                                                                               \
-            abort();                                                                                                                                 \
-        }                                                                                                                                            \
-    } while (0)
-
 // BEGIN INSTANCE
 
 struct InstanceBuilder
@@ -77,10 +68,10 @@ void instance_builder_set_validation_flags(InstanceBuilder* builder,
 
 VkResult instance_builder_instance_create(InstanceBuilder* builder, VkInstance* instance);
 
+void instance_destroy(VkInstance instance);
 
 VkResult instance_enumerate_layer_properties(std::vector<VkLayerProperties>* layer_properties);
 
-void instance_destroy(VkInstance instance);
 
 // END INSTANCE
 
@@ -121,8 +112,6 @@ struct LogicalDeviceBuilder
     void* extended_feature_chain = nullptr;
 };
 
-VkResult logical_device_builder_device_create(LogicalDeviceBuilder* builder,
-                                              VkPhysicalDevice physical_device, VkDevice* device);
 
 void logical_device_builder_set_device_features(LogicalDeviceBuilder* builder,
                                                 VkPhysicalDeviceFeatures features,
@@ -137,11 +126,17 @@ void logical_device_builder_queue_create(LogicalDeviceBuilder* builder, uint32_t
 void logical_device_builder_set_device_extensions(LogicalDeviceBuilder* builder,
                                                   std::span<const char*> device_extensions);
 
+VkResult logical_device_builder_device_create(LogicalDeviceBuilder* builder,
+                                              VkPhysicalDevice physical_device, VkDevice* device);
+
+void logical_device_destroy(VkDevice device);
+
 // END LOGICAL DEVICE BUILDER
 
 // BEGIN LOGICAL DEVICE MANAGEMENT
 
-[[nodiscard]] VkQueue logical_device_get_queue(VkDevice device, uint32_t queue_family_index,
-                                               uint32_t queue_index);
+[[nodiscard]] VkQueue queue_get(VkDevice device, uint32_t queue_family_index,
+                                uint32_t queue_index);
+
 
 // END LOGICAL DEVICE MANAGEMENT

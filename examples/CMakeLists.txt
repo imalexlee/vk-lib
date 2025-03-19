@@ -1,3 +1,3 @@
-link_libraries(vk-lib Vulkan::Vulkan)
+link_libraries(vk-lib)
 
 add_executable(triangle triangle.cpp)
