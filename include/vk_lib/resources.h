@@ -28,7 +28,9 @@ void image_builder_set_usage(ImageBuilder* builder,
 void image_builder_set_sharing_mode(ImageBuilder* builder, VkSharingMode sharing_mode,
                                     std::span<uint32_t> queue_family_indices = {});
 
-void image_builder_set_pNext_chain(ImageBuilder* builder, const void* chain);
+void image_builder_set_pNext(ImageBuilder* builder, const void* pNext);
+
+void image_builder_clear(ImageBuilder* builder);
 
 VkResult image_builder_allocated_image_create(const ImageBuilder* builder, VkDevice device,
                                               VkImage* image,
@@ -38,8 +40,12 @@ VkResult image_builder_allocated_image_create(const ImageBuilder* builder, VkDev
                                               VmaMemoryUsage memory_usage = VMA_MEMORY_USAGE_AUTO,
                                               VmaAllocationCreateFlags allocation_flags = 0);
 
+void allocated_image_destroy(VkImage image, VmaAllocator allocator, VmaAllocation allocation);
+
 VkResult image_builder_unallocated_image_create(const ImageBuilder* builder, VkDevice device,
                                                 VkImage* image);
+
+void unallocated_image_destroy(VkDevice device, VkImage image);
 
 VkResult image_view_create(VkDevice device, VkImage image,
                            VkImageViewType view_type,
@@ -47,14 +53,10 @@ VkResult image_view_create(VkDevice device, VkImage image,
                            VkImageAspectFlags aspect_flags,
                            VkImageView* image_view,
                            uint32_t mip_levels = 1,
-                           uint32_t array_layers = 1);
-
-void allocated_buffer_destroy(VkImage image, VmaAllocator allocator, VmaAllocation allocation);
-
-void unallocated_image_destroy(VkDevice device, VkImage image);
+                           uint32_t array_layers = 1,
+                           const void* pNext = nullptr);
 
 void image_view_destroy(VkDevice device, VkImageView image_view);
-
 
 [[nodiscard]] VkImageSubresourceRange image_subresource_range_create(
     VkImageAspectFlags aspect_flags,
@@ -87,6 +89,10 @@ void sampler_builder_set_comparison(SamplerBuilder* builder, bool compare_enable
 
 void sampler_builder_set_anisotropy(SamplerBuilder* builder, bool anisotropy_enabled,
                                     float max_anisotropy);
+
+void sampler_builder_set_pNext(SamplerBuilder* builder, const void* pNext);
+
+void sampler_builder_clear(SamplerBuilder* builder);
 
 VkResult sampler_builder_sampler_create(const SamplerBuilder* builder, VkDevice device,
                                         VkSampler* sampler);
@@ -130,7 +136,9 @@ void buffer_builder_set_size_and_usage(BufferBuilder* builder,
 void buffer_builder_set_sharing_mode(BufferBuilder* builder, VkSharingMode sharing_mode,
                                      std::span<uint32_t> queue_family_indices = {});
 
-void buffer_builder_set_pNext_chain(BufferBuilder* builder, const void* chain);
+void buffer_builder_set_pNext(BufferBuilder* builder, const void* pNext);
+
+void buffer_builder_clear(BufferBuilder* builder);
 
 VkResult buffer_builder_allocated_buffer_create(const BufferBuilder* builder,
                                                 VkBuffer* buffer,
@@ -140,18 +148,18 @@ VkResult buffer_builder_allocated_buffer_create(const BufferBuilder* builder,
                                                 VmaMemoryUsage memory_usage = VMA_MEMORY_USAGE_AUTO,
                                                 VmaAllocationCreateFlags allocation_flags = 0);
 
+void allocated_buffer_destroy(VkBuffer buffer, VmaAllocator allocator, VmaAllocation allocation);
+
 VkResult buffer_builder_unallocated_buffer_create(const BufferBuilder* builder, VkDevice device,
                                                   VkBuffer* buffer);
+
+void unallocated_buffer_destroy(VkDevice device, VkBuffer buffer);
 
 VkResult buffer_view_create(VkDevice device, VkBuffer buffer, VkFormat format,
                             VkBufferView* buffer_view, VkDeviceSize offset = 0,
                             VkDeviceSize range = VK_WHOLE_SIZE,
-                            void* pNext_chain = nullptr);
+                            const void* pNext = nullptr);
 
 [[nodiscard]] VkDeviceAddress buffer_device_address_get(VkDevice device, VkBuffer buffer);
-
-void allocated_buffer_destroy(VkBuffer buffer, VmaAllocator allocator, VmaAllocation allocation);
-
-void unallocated_buffer_destroy(VkDevice device, VkBuffer buffer);
 
 void buffer_view_destroy(VkDevice device, VkBufferView buffer_view);

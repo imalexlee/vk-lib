@@ -40,8 +40,12 @@ void image_builder_set_sharing_mode(ImageBuilder* builder, VkSharingMode sharing
     builder->image_create_info.queueFamilyIndexCount = builder->queue_family_indices.size();
 }
 
-void image_builder_set_pNext_chain(ImageBuilder* builder, const void* chain) {
-    builder->image_create_info.pNext = chain;
+void image_builder_set_pNext(ImageBuilder* builder, const void* pNext) {
+    builder->image_create_info.pNext = pNext;
+}
+
+void image_builder_clear(ImageBuilder* builder) {
+    *builder = ImageBuilder{};
 }
 
 VkResult image_builder_allocated_image_create(const ImageBuilder* builder, VkDevice device,
@@ -51,7 +55,6 @@ VkResult image_builder_allocated_image_create(const ImageBuilder* builder, VkDev
                                               VmaAllocationInfo* allocation_info,
                                               VmaMemoryUsage memory_usage,
                                               VmaAllocationCreateFlags allocation_flags) {
-
     VmaAllocationCreateInfo allocation_create_info{};
     allocation_create_info.usage = memory_usage;
     allocation_create_info.flags = allocation_flags;
@@ -59,10 +62,17 @@ VkResult image_builder_allocated_image_create(const ImageBuilder* builder, VkDev
     return vmaCreateImage(allocator, &builder->image_create_info, &allocation_create_info, image, allocation, allocation_info);
 }
 
+void allocated_image_destroy(VkImage image, VmaAllocator allocator, VmaAllocation allocation) {
+    vmaDestroyImage(allocator, image, allocation);
+}
+
 VkResult image_builder_unallocated_image_create(const ImageBuilder* builder, VkDevice device,
                                                 VkImage* image) {
-
     return vkCreateImage(device, &builder->image_create_info, nullptr, image);
+}
+
+void unallocated_image_destroy(VkDevice device, VkImage image) {
+    vkDestroyImage(device, image, nullptr);
 }
 
 VkResult image_view_create(VkDevice device, VkImage image,
@@ -71,29 +81,20 @@ VkResult image_view_create(VkDevice device, VkImage image,
                            VkImageAspectFlags aspect_flags,
                            VkImageView* image_view,
                            uint32_t mip_levels,
-                           uint32_t array_layers
+                           uint32_t array_layers,
+                           const void* pNext
     ) {
-
     const VkImageSubresourceRange subresource_range = image_subresource_range_create(aspect_flags, 0, array_layers, 1, mip_levels);
 
     VkImageViewCreateInfo image_view_create_info{};
     image_view_create_info.sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    image_view_create_info.pNext            = nullptr;
+    image_view_create_info.pNext            = pNext;
     image_view_create_info.format           = format;
     image_view_create_info.image            = image;
     image_view_create_info.viewType         = view_type;
     image_view_create_info.subresourceRange = subresource_range;
 
     return vkCreateImageView(device, &image_view_create_info, nullptr, image_view);
-}
-
-
-void allocated_buffer_destroy(VkImage image, VmaAllocator allocator, VmaAllocation allocation) {
-    vmaDestroyImage(allocator, image, allocation);
-}
-
-void unallocated_image_destroy(VkDevice device, VkImage image) {
-    vkDestroyImage(device, image, nullptr);
 }
 
 void image_view_destroy(VkDevice device, VkImageView image_view) {
@@ -145,6 +146,14 @@ void sampler_builder_set_comparison(SamplerBuilder* builder, bool compare_enable
 void sampler_builder_set_anisotropy(SamplerBuilder* builder, bool anisotropy_enabled, float max_anisotropy) {
     builder->sampler_create_info.anisotropyEnable = anisotropy_enabled;
     builder->sampler_create_info.maxAnisotropy    = max_anisotropy;
+}
+
+void sampler_builder_set_pNext(SamplerBuilder* builder, const void* pNext) {
+    builder->sampler_create_info.pNext = pNext;
+}
+
+void sampler_builder_clear(SamplerBuilder* builder) {
+    *builder = SamplerBuilder{};
 }
 
 VkResult sampler_builder_sampler_create(const SamplerBuilder* builder, VkDevice device, VkSampler* sampler) {
@@ -206,8 +215,12 @@ void buffer_builder_set_sharing_mode(BufferBuilder* builder, VkSharingMode shari
     builder->buffer_create_info.queueFamilyIndexCount = builder->queue_family_indices.size();
 }
 
-void buffer_builder_set_pNext_chain(BufferBuilder* builder, const void* chain) {
-    builder->buffer_create_info.pNext = chain;
+void buffer_builder_set_pNext(BufferBuilder* builder, const void* pNext) {
+    builder->buffer_create_info.pNext = pNext;
+}
+
+void buffer_builder_clear(BufferBuilder* builder) {
+    *builder = BufferBuilder{};
 }
 
 VkResult buffer_builder_allocated_buffer_create(const BufferBuilder* builder,
@@ -225,26 +238,35 @@ VkResult buffer_builder_allocated_buffer_create(const BufferBuilder* builder,
     return vmaCreateBuffer(allocator, &builder->buffer_create_info, &allocation_create_info, buffer, allocation, allocation_info);
 }
 
+void allocated_buffer_destroy(VkBuffer buffer, VmaAllocator allocator, VmaAllocation allocation) {
+    vmaDestroyBuffer(allocator, buffer, allocation);
+}
 
 VkResult buffer_builder_unallocated_buffer_create(const BufferBuilder* builder, VkDevice device,
                                                   VkBuffer* buffer) {
     return vkCreateBuffer(device, &builder->buffer_create_info, nullptr, buffer);
 }
 
+void unallocated_buffer_destroy(VkDevice device, VkBuffer buffer) {
+    vkDestroyBuffer(device, buffer, nullptr);
+}
 
-VkResult buffer_view_create(VkDevice device, VkBuffer buffer, VkFormat format, VkBufferView* buffer_view, VkDeviceSize offset, VkDeviceSize range, void* pNext_chain) {
+VkResult buffer_view_create(VkDevice device, VkBuffer buffer, VkFormat format, VkBufferView* buffer_view, VkDeviceSize offset, VkDeviceSize range, const void* pNext) {
     VkBufferViewCreateInfo buffer_view_create_info{};
     buffer_view_create_info.sType  = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
     buffer_view_create_info.buffer = buffer;
     buffer_view_create_info.format = format;
     buffer_view_create_info.offset = offset;
     buffer_view_create_info.range  = range;
-    buffer_view_create_info.pNext  = pNext_chain;
+    buffer_view_create_info.pNext  = pNext;
     buffer_view_create_info.flags  = 0; // vulkan specs states this parameter is unused currently
 
     return vkCreateBufferView(device, &buffer_view_create_info, nullptr, buffer_view);
 }
 
+void buffer_view_destroy(VkDevice device, VkBufferView buffer_view) {
+    vkDestroyBufferView(device, buffer_view, nullptr);
+}
 
 VkDeviceAddress buffer_device_address_get(VkDevice device, VkBuffer buffer) {
     VkBufferDeviceAddressInfo buffer_device_address_info{};
@@ -254,14 +276,5 @@ VkDeviceAddress buffer_device_address_get(VkDevice device, VkBuffer buffer) {
     return vkGetBufferDeviceAddress(device, &buffer_device_address_info);
 }
 
-void allocated_buffer_destroy(VkBuffer buffer, VmaAllocator allocator, VmaAllocation allocation) {
-    vmaDestroyBuffer(allocator, buffer, allocation);
-}
 
-void unallocated_buffer_destroy(VkDevice device, VkBuffer buffer) {
-    vkDestroyBuffer(device, buffer, nullptr);
-}
 
-void buffer_view_destroy(VkDevice device, VkBufferView buffer_view) {
-    vkDestroyBufferView(device, buffer_view, nullptr);
-}

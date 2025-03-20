@@ -6,7 +6,7 @@
 #include <vk_lib/common.h>
 
 VkResult shader_module_create(VkDevice device, const uint32_t* code, size_t code_size,
-                              VkShaderModule* shader_module);
+                              VkShaderModule* shader_module, const void* pNext);
 
 void shader_module_destroy(VkDevice device, VkShaderModule shader_module);
 
@@ -40,5 +40,12 @@ void shader_object_builder_set_push_constant_ranges(ShaderObjectBuilder* builder
 void shader_object_builder_set_specialization_info(ShaderObjectBuilder* builder,
                                                    const VkSpecializationInfo* specialization_info);
 
+void shader_object_builder_set_pNext(ShaderObjectBuilder* builder, const void* pNext);
+
+void shader_object_builder_clear(ShaderObjectBuilder* builder);
+
 VkResult shader_object_builder_shader_create(const ShaderObjectBuilder* builder, VkDevice device,
                                              VkShaderEXT* shader_object);
+
+void shader_object_destroy(VkDevice device, VkShaderEXT shader);
+

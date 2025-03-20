@@ -23,76 +23,23 @@ void instance_builder_set_instance_extensions(InstanceBuilder* builder, std::spa
     }
 }
 
-void instance_builder_set_validation_layers(InstanceBuilder* builder, std::span<const char*> validation_layers) {
-    builder->validation_layers.reserve(validation_layers.size());
-    for (const char* layer : validation_layers) {
-        builder->validation_layers.emplace_back(layer);
+void instance_builder_set_layers(InstanceBuilder* builder, std::span<const char*> layers) {
+    builder->layers.reserve(layers.size());
+    for (const char* layer : layers) {
+        builder->layers.emplace_back(layer);
     }
 }
 
-void instance_builder_set_debug_messenger(
-    InstanceBuilder* builder,
-    VkDebugUtilsMessageSeverityFlagsEXT severity,
-    VkDebugUtilsMessageTypeFlagsEXT type,
-    PFN_vkDebugUtilsMessengerCallbackEXT callback,
-    void* user_data
-    ) {
-    // TODO: set a default callback if caller did not provide one
-    VkDebugUtilsMessengerCreateInfoEXT messenger_create_info{};
-    messenger_create_info.sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    messenger_create_info.messageSeverity = severity;
-    messenger_create_info.messageType     = type;
-    messenger_create_info.pfnUserCallback = callback;
-    messenger_create_info.pUserData       = user_data;
+void instance_builder_set_instance_pNext(InstanceBuilder* builder, const void* pNext) {
+    builder->instance_pNext = pNext;
 
-    builder->messenger_create_info = messenger_create_info;
-    builder->instance_extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 }
 
-void instance_builder_set_layer_settings(InstanceBuilder* builder, std::span<VkLayerSettingEXT> layer_settings) {
-    builder->layer_settings.reserve(layer_settings.size());
-    for (const VkLayerSettingEXT& setting : layer_settings) {
-        builder->layer_settings.push_back(setting);
-    }
-
-    VkLayerSettingsCreateInfoEXT layer_settings_create_info{};
-    layer_settings_create_info.sType        = VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT;
-    layer_settings_create_info.pSettings    = builder->layer_settings.data();
-    layer_settings_create_info.settingCount = builder->layer_settings.size();
-
-    builder->layer_settings_create_info = layer_settings_create_info;
-    builder->instance_extensions.emplace_back(VK_EXT_LAYER_SETTINGS_EXTENSION_NAME);
+void instance_builder_clear(InstanceBuilder* builder) {
+    *builder = InstanceBuilder{};
 }
 
-void instance_builder_set_validation_features(InstanceBuilder* builder, std::span<VkValidationFeatureEnableEXT> enabled_features,
-                                              std::span<VkValidationFeatureDisableEXT> disabled_features) {
-    VkValidationFeaturesEXT validation_features{};
-    validation_features.sType                          = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-    validation_features.pEnabledValidationFeatures     = enabled_features.data();
-    validation_features.enabledValidationFeatureCount  = enabled_features.size();
-    validation_features.pDisabledValidationFeatures    = disabled_features.data();
-    validation_features.disabledValidationFeatureCount = disabled_features.size();
-
-    builder->validation_features = validation_features;
-    builder->instance_extensions.emplace_back(VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME);
-}
-
-void instance_builder_set_validation_flags(InstanceBuilder* builder, std::span<VkValidationCheckEXT> disabled_validation_checks) {
-    builder->disabled_validation_checks.reserve(disabled_validation_checks.size());
-    for (const VkValidationCheckEXT& check : disabled_validation_checks) {
-        builder->disabled_validation_checks.push_back(check);
-    }
-
-    VkValidationFlagsEXT validation_flags;
-    validation_flags.sType                        = VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT;
-    validation_flags.pDisabledValidationChecks    = builder->disabled_validation_checks.data();
-    validation_flags.disabledValidationCheckCount = builder->disabled_validation_checks.size();
-
-    builder->validation_flags = validation_flags;
-    builder->instance_extensions.emplace_back(VK_EXT_VALIDATION_FLAGS_EXTENSION_NAME);
-}
-
-VkResult instance_builder_instance_create(InstanceBuilder* builder, VkInstance* instance) {
+VkResult instance_builder_instance_create(const InstanceBuilder* builder, VkInstance* instance) {
 
     VkResult result = volkInitialize();
     if (result != VK_SUCCESS) {
@@ -112,6 +59,7 @@ VkResult instance_builder_instance_create(InstanceBuilder* builder, VkInstance* 
     instance_create_info.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instance_create_info.pApplicationInfo = &app_info;
     instance_create_info.flags            = builder->instance_create_flags;
+    instance_create_info.pNext            = builder->instance_pNext;
 
     std::vector<const char*> instance_extensions;
     instance_extensions.reserve(builder->instance_extensions.size());
@@ -122,31 +70,12 @@ VkResult instance_builder_instance_create(InstanceBuilder* builder, VkInstance* 
     instance_create_info.enabledExtensionCount   = instance_extensions.size();
 
     std::vector<const char*> validation_layers;
-    validation_layers.reserve(builder->validation_layers.size());
-    for (const std::string& layer : builder->validation_layers) {
+    validation_layers.reserve(builder->layers.size());
+    for (const std::string& layer : builder->layers) {
         validation_layers.push_back(layer.c_str());
     }
     instance_create_info.ppEnabledLayerNames = validation_layers.data();
     instance_create_info.enabledLayerCount   = validation_layers.size();
-
-    for (const std::string& extension : builder->instance_extensions) {
-        if (extension == VK_EXT_DEBUG_UTILS_EXTENSION_NAME) {
-            builder->messenger_create_info.pNext = instance_create_info.pNext;
-            instance_create_info.pNext           = &builder->messenger_create_info;
-        }
-        if (extension == VK_EXT_LAYER_SETTINGS_EXTENSION_NAME) {
-            builder->layer_settings_create_info.pNext = instance_create_info.pNext;
-            instance_create_info.pNext                = &builder->layer_settings_create_info;
-        }
-        if (extension == VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME) {
-            builder->validation_features.pNext = instance_create_info.pNext;
-            instance_create_info.pNext         = &builder->validation_features;
-        }
-        if (extension == VK_EXT_VALIDATION_FLAGS_EXTENSION_NAME) {
-            builder->validation_flags.pNext = instance_create_info.pNext;
-            instance_create_info.pNext      = &builder->validation_flags;
-        }
-    }
 
     result = vkCreateInstance(&instance_create_info, nullptr, instance);
     if (result != VK_SUCCESS) {
@@ -174,36 +103,24 @@ VkResult instance_enumerate_layer_properties(std::vector<VkLayerProperties>* lay
 }
 
 
-VkResult physical_device_enumerate_devices(VkInstance instance, std::vector<PhysicalDevice>* physical_devices) {
-    std::vector<VkPhysicalDevice> vk_physical_devices;
-    uint32_t physical_device_count;
-
-    VkResult result = vkEnumeratePhysicalDevices(instance, &physical_device_count, nullptr);
-    if (result != VK_SUCCESS) {
-        return result;
-    }
-
-    vk_physical_devices.resize(physical_device_count);
-
-    result = vkEnumeratePhysicalDevices(instance, &physical_device_count, vk_physical_devices.data());
+VkResult physical_device_enumerate_devices(VkInstance instance, std::vector<VkPhysicalDevice>* physical_devices) {
+    uint32_t physical_device_count = 0;
+    const VkResult result          = vkEnumeratePhysicalDevices(instance, &physical_device_count, nullptr);
     if (result != VK_SUCCESS) {
         return result;
     }
 
     physical_devices->clear();
-    physical_devices->reserve(vk_physical_devices.size());
-    for (VkPhysicalDevice vk_physical_device : vk_physical_devices) {
-        VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(vk_physical_device, &properties);
-
-        PhysicalDevice new_physical_device{};
-        new_physical_device.physical_device            = vk_physical_device;
-        new_physical_device.physical_device_properties = properties;
-        physical_devices->push_back(new_physical_device);
-    }
-
-    return result;
+    physical_devices->resize(physical_device_count);
+    return vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices.data());
 }
+
+VkPhysicalDeviceProperties physical_device_get_properties(VkPhysicalDevice physical_device) {
+    VkPhysicalDeviceProperties properties{};
+    vkGetPhysicalDeviceProperties(physical_device, &properties);
+    return properties;
+}
+
 
 VkPhysicalDeviceFeatures physical_device_get_features(VkPhysicalDevice physical_device) {
     VkPhysicalDeviceFeatures physical_device_features{};
@@ -231,18 +148,18 @@ std::vector<VkQueueFamilyProperties> physical_device_enumerate_queue_families(Vk
     return queue_family_properties;
 }
 
-void logical_device_builder_set_device_features(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures features, void* extended_feature_chain) {
+void logical_device_builder_set_device_features_1(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures features, void* extended_feature_chain) {
     builder->physical_device_features2.reset();
     builder->physical_device_features = features;
     builder->extended_feature_chain   = extended_feature_chain;
 }
 
-void logical_device_builder_set_device_features2(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures2 features2) {
+void logical_device_builder_set_device_features_2(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures2 features_2) {
     // if using VkPhysicalDeviceFeatures2, pEnabledFeatures in vkDeviceCreateInfo must be null
     // NOTE: if using VkPhysicalDeviceFeatures2, put all feature extensions (including vulkan 1.1, 1.2, etc.) in the
     // pNext chain of VkPhysicalDeviceFeatures2
     builder->physical_device_features.reset();
-    builder->physical_device_features2 = features2;
+    builder->physical_device_features2 = features_2;
     builder->extended_feature_chain    = nullptr;
 }
 

@@ -53,7 +53,7 @@ TEST_F(CoreTestsFixture, createDebugInstance) {
     instance_builder_set_versions(&builder, api_version, VK_MAKE_VERSION(1, 0, 0), VK_MAKE_VERSION(1, 0, 0));
 
     const char* layers[] = {validation_layer_name};
-    instance_builder_set_validation_layers(&builder, layers);
+    instance_builder_set_layers(&builder, layers);
 
     VkInstance debug_instance = nullptr;
     VkResult result           = instance_builder_instance_create(&builder, &debug_instance);
@@ -72,7 +72,7 @@ TEST_F(CoreTestsFixture, createWrongDebugInstance) {
     instance_builder_set_versions(&builder, api_version, VK_MAKE_VERSION(1, 0, 0), VK_MAKE_VERSION(1, 0, 0));
 
     const char* layers[] = {validation_layer_name};
-    instance_builder_set_validation_layers(&builder, layers);
+    instance_builder_set_layers(&builder, layers);
 
     VkInstance debug_instance = nullptr;
     VkResult result           = instance_builder_instance_create(&builder, &debug_instance);

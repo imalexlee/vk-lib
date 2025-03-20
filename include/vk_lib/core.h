@@ -9,27 +9,15 @@
 
 struct InstanceBuilder
 {
-    std::string app_name{};
-    std::string engine_name{};
     uint32_t api_version{};
     uint32_t app_version{};
     uint32_t engine_version{};
-    VkInstanceCreateFlags instance_create_flags{};
+    std::string app_name{};
+    std::string engine_name{};
     std::vector<std::string> instance_extensions{};
-    // DEBUGGING
-    std::vector<std::string> validation_layers{};
-    // debug messenger ext
-    VkDebugUtilsMessengerCreateInfoEXT messenger_create_info{};
-    // layer settings ext
-    VkLayerSettingsCreateInfoEXT layer_settings_create_info{};
-    std::vector<VkLayerSettingEXT> layer_settings{};
-    // validation features ext
-    VkValidationFeaturesEXT validation_features{};
-    std::vector<VkValidationFeatureEnableEXT> enabled_validation_features{};
-    std::vector<VkValidationFeatureDisableEXT> disabled_validation_features{};
-    // validation flags ext
-    std::vector<VkValidationCheckEXT> disabled_validation_checks{};
-    VkValidationFlagsEXT validation_flags{};
+    std::vector<std::string> layers{};
+    const void* instance_pNext;
+    VkInstanceCreateFlags instance_create_flags;
 };
 
 void instance_builder_set_names(InstanceBuilder* builder, std::string_view app_name,
@@ -44,29 +32,14 @@ void instance_builder_set_instance_flags(InstanceBuilder* builder,
 void instance_builder_set_instance_extensions(InstanceBuilder* builder,
                                               std::span<const char*> instance_extensions);
 
-void instance_builder_set_validation_layers(InstanceBuilder* builder,
-                                            std::span<const char*> validation_layers);
+void instance_builder_set_layers(InstanceBuilder* builder,
+                                 std::span<const char*> layers);
 
-void instance_builder_set_debug_messenger(InstanceBuilder* builder,
-                                          VkDebugUtilsMessageSeverityFlagsEXT severity,
-                                          VkDebugUtilsMessageTypeFlagsEXT type,
-                                          PFN_vkDebugUtilsMessengerCallbackEXT callback,
-                                          void* user_data);
+void instance_builder_set_instance_pNext(InstanceBuilder* builder, const void* pNext);
 
-void instance_builder_set_layer_settings(InstanceBuilder* builder,
-                                         std::span<VkLayerSettingEXT> layer_settings);
+void instance_builder_clear(InstanceBuilder* builder);
 
-void instance_builder_set_validation_features(InstanceBuilder* builder,
-                                              std::span<VkValidationFeatureEnableEXT>
-                                              enabled_features,
-                                              std::span<VkValidationFeatureDisableEXT>
-                                              disabled_features);
-
-void instance_builder_set_validation_flags(InstanceBuilder* builder,
-                                           std::span<VkValidationCheckEXT>
-                                           disabled_validation_checks);
-
-VkResult instance_builder_instance_create(InstanceBuilder* builder, VkInstance* instance);
+VkResult instance_builder_instance_create(const InstanceBuilder* builder, VkInstance* instance);
 
 void instance_destroy(VkInstance instance);
 
@@ -77,14 +50,12 @@ VkResult instance_enumerate_layer_properties(std::vector<VkLayerProperties>* lay
 
 // BEGIN PHYSICAL DEVICE MANAGEMENT
 
-struct PhysicalDevice
-{
-    VkPhysicalDevice physical_device{};
-    VkPhysicalDeviceProperties physical_device_properties{};
-};
 
 VkResult physical_device_enumerate_devices(VkInstance instance,
-                                           std::vector<PhysicalDevice>* physical_devices);
+                                           std::vector<VkPhysicalDevice>* physical_devices);
+
+
+VkPhysicalDeviceProperties physical_device_get_properties(VkPhysicalDevice physical_device);
 
 [[nodiscard]] VkPhysicalDeviceFeatures physical_device_get_features(
     VkPhysicalDevice physical_device);
@@ -113,12 +84,12 @@ struct LogicalDeviceBuilder
 };
 
 
-void logical_device_builder_set_device_features(LogicalDeviceBuilder* builder,
+void logical_device_builder_set_device_features_1(LogicalDeviceBuilder* builder,
                                                 VkPhysicalDeviceFeatures features,
                                                 void* extended_feature_chain);
 
-void logical_device_builder_set_device_features2(LogicalDeviceBuilder* builder,
-                                                 VkPhysicalDeviceFeatures2 features2);
+void logical_device_builder_set_device_features_2(LogicalDeviceBuilder* builder,
+                                                 VkPhysicalDeviceFeatures2 features_2);
 
 void logical_device_builder_queue_create(LogicalDeviceBuilder* builder, uint32_t queue_family_index,
                                          float priority);

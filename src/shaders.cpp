@@ -1,11 +1,12 @@
 
 #include <vk_lib/shaders.h>
 
-VkResult shader_module_create(VkDevice device, const uint32_t* code, size_t code_size, VkShaderModule* shader_module) {
+VkResult shader_module_create(VkDevice device, const uint32_t* code, size_t code_size, VkShaderModule* shader_module, const void* pNext) {
     VkShaderModuleCreateInfo shader_module_create_info{};
     shader_module_create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     shader_module_create_info.codeSize = code_size;
     shader_module_create_info.pCode    = code;
+    shader_module_create_info.pNext    = pNext;
 
     return vkCreateShaderModule(device, &shader_module_create_info, nullptr, shader_module);
 }
@@ -48,6 +49,18 @@ void shader_object_builder_set_specialization_info(ShaderObjectBuilder* builder,
     builder->specialization_info = *specialization_info;
 }
 
+void shader_object_builder_set_pNext(ShaderObjectBuilder* builder, const void* pNext) {
+    builder->shader_create_info.pNext = pNext;
+}
+
+void shader_object_builder_clear(ShaderObjectBuilder* builder) {
+    *builder = ShaderObjectBuilder{};
+}
+
 VkResult shader_object_builder_shader_create(const ShaderObjectBuilder* builder, VkDevice device, VkShaderEXT* shader_object) {
     return vkCreateShadersEXT(device, 1, &builder->shader_create_info, nullptr, shader_object);
+}
+
+void shader_object_destroy(VkDevice device, VkShaderEXT shader) {
+    vkDestroyShaderEXT(device, shader, nullptr);
 }
