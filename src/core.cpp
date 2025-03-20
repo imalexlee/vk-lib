@@ -112,7 +112,7 @@ VkResult physical_device_enumerate_devices(VkInstance instance, std::vector<VkPh
 
     physical_devices->clear();
     physical_devices->resize(physical_device_count);
-    return vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices.data());
+    return vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices->data());
 }
 
 VkPhysicalDeviceProperties physical_device_get_properties(VkPhysicalDevice physical_device) {

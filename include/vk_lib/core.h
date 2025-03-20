@@ -85,11 +85,11 @@ struct LogicalDeviceBuilder
 
 
 void logical_device_builder_set_device_features_1(LogicalDeviceBuilder* builder,
-                                                VkPhysicalDeviceFeatures features,
-                                                void* extended_feature_chain);
+                                                  VkPhysicalDeviceFeatures features,
+                                                  void* extended_feature_chain);
 
 void logical_device_builder_set_device_features_2(LogicalDeviceBuilder* builder,
-                                                 VkPhysicalDeviceFeatures2 features_2);
+                                                  VkPhysicalDeviceFeatures2 features_2);
 
 void logical_device_builder_queue_create(LogicalDeviceBuilder* builder, uint32_t queue_family_index,
                                          float priority);
