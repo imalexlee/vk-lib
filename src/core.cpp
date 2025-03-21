@@ -128,12 +128,12 @@ VkPhysicalDeviceFeatures physical_device_get_features(VkPhysicalDevice physical_
     return physical_device_features;
 }
 
-VkPhysicalDeviceFeatures2 physical_device_get_features2(VkPhysicalDevice physical_device, void* extended_feature_chain) {
+VkPhysicalDeviceFeatures2KHR physical_device_get_features_2(VkPhysicalDevice physical_device, void* extended_feature_chain) {
     // must pass in the pNext chain of features to query for
-    VkPhysicalDeviceFeatures2 physical_device_features{};
-    physical_device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    VkPhysicalDeviceFeatures2KHR physical_device_features{};
+    physical_device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
     physical_device_features.pNext = extended_feature_chain;
-    vkGetPhysicalDeviceFeatures2(physical_device, &physical_device_features);
+    vkGetPhysicalDeviceFeatures2KHR(physical_device, &physical_device_features);
     return physical_device_features;
 }
 
@@ -149,18 +149,18 @@ std::vector<VkQueueFamilyProperties> physical_device_enumerate_queue_families(Vk
 }
 
 void logical_device_builder_set_device_features_1(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures features, void* extended_feature_chain) {
-    builder->physical_device_features2.reset();
-    builder->physical_device_features = features;
-    builder->extended_feature_chain   = extended_feature_chain;
+    builder->physical_device_features_2.reset();
+    builder->physical_device_features_1 = features;
+    builder->extended_feature_chain     = extended_feature_chain;
 }
 
-void logical_device_builder_set_device_features_2(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures2 features_2) {
+void logical_device_builder_set_device_features_2(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures2KHR features_2) {
     // if using VkPhysicalDeviceFeatures2, pEnabledFeatures in vkDeviceCreateInfo must be null
     // NOTE: if using VkPhysicalDeviceFeatures2, put all feature extensions (including vulkan 1.1, 1.2, etc.) in the
     // pNext chain of VkPhysicalDeviceFeatures2
-    builder->physical_device_features.reset();
-    builder->physical_device_features2 = features_2;
-    builder->extended_feature_chain    = nullptr;
+    builder->physical_device_features_1.reset();
+    builder->physical_device_features_2 = features_2;
+    builder->extended_feature_chain     = nullptr;
 }
 
 void logical_device_builder_queue_create(LogicalDeviceBuilder* builder, uint32_t queue_family_index, float priority) {
@@ -200,11 +200,11 @@ VkResult logical_device_builder_device_create(LogicalDeviceBuilder* builder, VkP
     device_create_info.queueCreateInfoCount    = queue_create_infos.size();
     device_create_info.ppEnabledExtensionNames = device_extensions.data();
     device_create_info.enabledExtensionCount   = device_extensions.size();
-    if (builder->physical_device_features.has_value()) {
-        device_create_info.pEnabledFeatures = &builder->physical_device_features.value();
+    if (builder->physical_device_features_1.has_value()) {
+        device_create_info.pEnabledFeatures = &builder->physical_device_features_1.value();
         device_create_info.pNext            = builder->extended_feature_chain;
-    } else if (builder->physical_device_features2.has_value()) {
-        device_create_info.pNext = &builder->physical_device_features2.value();
+    } else if (builder->physical_device_features_2.has_value()) {
+        device_create_info.pNext = &builder->physical_device_features_2.value();
     }
 
     const VkResult result = vkCreateDevice(physical_device, &device_create_info, nullptr, device);

@@ -13,7 +13,7 @@ void shader_module_destroy(VkDevice device, VkShaderModule shader_module);
 // Only works for unlinked shaders currently
 struct ShaderObjectBuilder
 {
-    VkShaderCreateInfoEXT shader_create_info{};
+    VkShaderCreateInfoEXT shader_create_info{VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT};
     std::string entry_point_name{"main"};
     std::vector<VkDescriptorSetLayout> descriptor_set_layouts;
     std::vector<VkPushConstantRange> push_constant_ranges;

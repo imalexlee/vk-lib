@@ -270,7 +270,7 @@ void buffer_view_destroy(VkDevice device, VkBufferView buffer_view) {
 
 VkDeviceAddress buffer_device_address_get(VkDevice device, VkBuffer buffer) {
     VkBufferDeviceAddressInfo buffer_device_address_info{};
-    buffer_device_address_info.sType  = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    buffer_device_address_info.sType  = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_KHR;
     buffer_device_address_info.buffer = buffer;
 
     return vkGetBufferDeviceAddress(device, &buffer_device_address_info);

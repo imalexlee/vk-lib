@@ -4,7 +4,6 @@
 
 #pragma once
 #include <vk_lib/common.h>
-#include <vk_mem_alloc.h>
 
 struct ImageBuilder
 {

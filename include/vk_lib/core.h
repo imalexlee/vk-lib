@@ -60,7 +60,7 @@ VkPhysicalDeviceProperties physical_device_get_properties(VkPhysicalDevice physi
 [[nodiscard]] VkPhysicalDeviceFeatures physical_device_get_features(
     VkPhysicalDevice physical_device);
 
-[[nodiscard]] VkPhysicalDeviceFeatures2 physical_device_get_features2(
+[[nodiscard]] VkPhysicalDeviceFeatures2KHR physical_device_get_features_2(
     VkPhysicalDevice physical_device, void* extended_feature_chain);
 
 // index in vector represents the queue family index
@@ -78,8 +78,8 @@ struct LogicalDeviceBuilder
     // (family index, priorities). lines up with the map above. Just here to preserve values
     std::map<uint32_t, std::vector<float>> queue_priorities_map;
     std::vector<std::string> device_extensions;
-    std::optional<VkPhysicalDeviceFeatures> physical_device_features;
-    std::optional<VkPhysicalDeviceFeatures2> physical_device_features2;
+    std::optional<VkPhysicalDeviceFeatures> physical_device_features_1;
+    std::optional<VkPhysicalDeviceFeatures2KHR> physical_device_features_2;
     void* extended_feature_chain = nullptr;
 };
 
@@ -89,7 +89,7 @@ void logical_device_builder_set_device_features_1(LogicalDeviceBuilder* builder,
                                                   void* extended_feature_chain);
 
 void logical_device_builder_set_device_features_2(LogicalDeviceBuilder* builder,
-                                                  VkPhysicalDeviceFeatures2 features_2);
+                                                  VkPhysicalDeviceFeatures2KHR features_2);
 
 void logical_device_builder_queue_create(LogicalDeviceBuilder* builder, uint32_t queue_family_index,
                                          float priority);

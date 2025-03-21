@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <vk_lib/commands.h>
 #include <vk_lib/core.h>
 
 class CoreTestsFixture : public testing::Test {
