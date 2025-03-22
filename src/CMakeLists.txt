@@ -1,4 +1,4 @@
-add_library(vk-lib STATIC core.cpp synchronization.cpp resources.cpp shaders.cpp presentation.cpp commands.cpp vma_usage.cpp)
+add_library(vk-lib STATIC core.cpp synchronization.cpp resources.cpp shaders.cpp presentation.cpp commands.cpp shader_data.cpp vma_usage.cpp)
 
 include_directories(../include)
 
