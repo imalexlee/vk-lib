@@ -50,10 +50,17 @@ VkResult fence_create(VkDevice device, VkFenceCreateFlags flags, VkFence* fence,
     return vkCreateFence(device, &fence_create_info, nullptr, fence);
 }
 
+VkResult fence_batch_reset(VkDevice device, std::span<VkFence> fences) {
+    return vkResetFences(device, fences.size(), fences.data());
+}
+
+VkResult fence_reset(VkDevice device, VkFence fence){
+    return vkResetFences(device, 1, &fence);
+}
+
 void fence_destroy(VkDevice device, VkFence fence) {
     vkDestroyFence(device, fence, nullptr);
 }
-
 
 void image_barrier_builder_set_stage_masks_2(ImageBarrierBuilder* builder, VkPipelineStageFlags2KHR src_stages, VkPipelineStageFlags2KHR dst_stages) {
     builder->src_stage_flags_2 = src_stages;

@@ -8,6 +8,8 @@
 VkResult command_pool_create(VkDevice device, uint32_t queue_family_index,
                              VkCommandPoolCreateFlags flags, VkCommandPool* command_pool);
 
+VkResult command_pool_reset(VkDevice device, VkCommandPool command_pool, VkCommandPoolResetFlags flags = 0);
+
 void command_pool_destroy(VkDevice device, VkCommandPool command_pool);
 
 VkResult command_buffer_allocate(VkDevice device, VkCommandPool command_pool,
@@ -18,6 +20,8 @@ VkResult command_buffer_begin(VkCommandBuffer command_buffer,
                               VkCommandBufferUsageFlags flags,
                               const VkCommandBufferInheritanceInfo* inheritance_info = nullptr,
                               const void* pNext = nullptr);
+
+VkResult command_buffer_reset(VkCommandBuffer command_buffer, VkCommandBufferResetFlags flags = 0);
 
 VkCommandBufferSubmitInfoKHR command_buffer_submit_info_create(
     VkCommandBuffer command_buffer, uint32_t device_mask = 0, const void* pNext = nullptr);

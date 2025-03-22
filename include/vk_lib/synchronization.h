@@ -26,6 +26,10 @@ void semaphore_destroy(VkDevice device, VkSemaphore semaphore);
 VkResult fence_create(VkDevice device, VkFenceCreateFlags flags, VkFence* fence,
                       const void* pNext = nullptr);
 
+VkResult fence_batch_reset(VkDevice device, std::span<VkFence> fences);
+
+VkResult fence_reset(VkDevice device, VkFence fence);
+
 void fence_destroy(VkDevice device, VkFence fence);
 
 // END FENCE
