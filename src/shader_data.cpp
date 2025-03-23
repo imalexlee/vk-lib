@@ -29,20 +29,19 @@ VkSpecializationInfo specialization_info_create(const void* data, uint32_t data_
     return specialization_info;
 }
 
-void descriptor_layout_builder_add_binding(DescriptorLayoutBuilder* builder, uint32_t binding, VkDescriptorType type, VkShaderStageFlags stage, uint32_t descriptor_count, const VkSampler* immutable_sampler ){
+void descriptor_layout_builder_add_binding(DescriptorLayoutBuilder* builder, uint32_t binding, VkDescriptorType type, VkShaderStageFlags stage,
+                                           uint32_t descriptor_count, const VkSampler* immutable_sampler) {
     VkDescriptorSetLayoutBinding layout_binding{};
-    layout_binding.binding         = binding;
-    layout_binding.descriptorType  = type;
-    layout_binding.descriptorCount = descriptor_count;
-    layout_binding.stageFlags      = stage;
+    layout_binding.binding            = binding;
+    layout_binding.descriptorType     = type;
+    layout_binding.descriptorCount    = descriptor_count;
+    layout_binding.stageFlags         = stage;
     layout_binding.pImmutableSamplers = immutable_sampler;
 
     builder->bindings.push_back(layout_binding);
 }
 
-void descriptor_layout_builder_clear(DescriptorLayoutBuilder* builder) {
-    *builder = DescriptorLayoutBuilder{};
-}
+void descriptor_layout_builder_clear(DescriptorLayoutBuilder* builder) { *builder = DescriptorLayoutBuilder{}; }
 
 void descriptor_set_layout_destroy(VkDevice device, VkDescriptorSetLayout descriptor_set_layout) {
     vkDestroyDescriptorSetLayout(device, descriptor_set_layout, nullptr);
@@ -52,7 +51,9 @@ VkResult command_pool_reset(VkDevice device, VkCommandPool command_pool, VkComma
     return vkResetCommandPool(device, command_pool, flags);
 }
 
-VkResult descriptor_layout_builder_layout_create(const DescriptorLayoutBuilder* layout_builder, VkDevice device, VkDescriptorSetLayout* descriptor_set_layout, VkDescriptorSetLayoutCreateFlags flags, const void* pNext) {
+VkResult descriptor_layout_builder_layout_create(const DescriptorLayoutBuilder* layout_builder, VkDevice device,
+                                                 VkDescriptorSetLayout* descriptor_set_layout, VkDescriptorSetLayoutCreateFlags flags,
+                                                 const void* pNext) {
     VkDescriptorSetLayoutCreateInfo set_layout_create_info{};
     set_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     set_layout_create_info.bindingCount = layout_builder->bindings.size();
@@ -64,14 +65,15 @@ VkResult descriptor_layout_builder_layout_create(const DescriptorLayoutBuilder* 
 }
 
 VkDescriptorPoolSize descriptor_pool_size_create(VkDescriptorType type, uint32_t descriptor_count) {
-    VkDescriptorPoolSize  descriptor_pool_size{};
-    descriptor_pool_size.type = type;
+    VkDescriptorPoolSize descriptor_pool_size{};
+    descriptor_pool_size.type            = type;
     descriptor_pool_size.descriptorCount = descriptor_count;
 
     return descriptor_pool_size;
 }
 
-VkResult descriptor_pool_create(VkDevice device, uint32_t max_descriptor_sets, std::span<VkDescriptorPoolSize> descriptor_pool_sizes, VkDescriptorPool *descriptor_pool, VkDescriptorPoolCreateFlags flags, const void* pNext) {
+VkResult descriptor_pool_create(VkDevice device, uint32_t max_descriptor_sets, std::span<VkDescriptorPoolSize> descriptor_pool_sizes,
+                                VkDescriptorPool* descriptor_pool, VkDescriptorPoolCreateFlags flags, const void* pNext) {
     VkDescriptorPoolCreateInfo pool_ci{};
     pool_ci.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     pool_ci.maxSets       = max_descriptor_sets;
@@ -80,24 +82,21 @@ VkResult descriptor_pool_create(VkDevice device, uint32_t max_descriptor_sets, s
     pool_ci.flags         = flags;
     pool_ci.pNext         = pNext;
 
-    return vkCreateDescriptorPool(device,&pool_ci, nullptr, descriptor_pool);
+    return vkCreateDescriptorPool(device, &pool_ci, nullptr, descriptor_pool);
 }
 
-VkResult descriptor_pool_reset(VkDevice device, VkDescriptorPool descriptor_pool){
-    return vkResetDescriptorPool(device, descriptor_pool, 0);
-}
+VkResult descriptor_pool_reset(VkDevice device, VkDescriptorPool descriptor_pool) { return vkResetDescriptorPool(device, descriptor_pool, 0); }
 
-void descriptor_pool_destroy(VkDevice device, VkDescriptorPool descriptor_pool) {
-    vkDestroyDescriptorPool(device, descriptor_pool, nullptr);
-}
+void descriptor_pool_destroy(VkDevice device, VkDescriptorPool descriptor_pool) { vkDestroyDescriptorPool(device, descriptor_pool, nullptr); }
 
-VkResult descriptor_set_allocate(VkDevice device, VkDescriptorPool descriptor_pool, VkDescriptorSetLayout descriptor_set_layout, VkDescriptorSet* descriptor_set, const void* pNext) {
+VkResult descriptor_set_allocate(VkDevice device, VkDescriptorPool descriptor_pool, VkDescriptorSetLayout descriptor_set_layout,
+                                 VkDescriptorSet* descriptor_set, const void* pNext) {
     VkDescriptorSetAllocateInfo descriptor_set_allocate_info{};
     descriptor_set_allocate_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     descriptor_set_allocate_info.pSetLayouts        = &descriptor_set_layout;
     descriptor_set_allocate_info.descriptorSetCount = 1;
     descriptor_set_allocate_info.descriptorPool     = descriptor_pool;
-    descriptor_set_allocate_info.pNext = pNext;
+    descriptor_set_allocate_info.pNext              = pNext;
 
-    return vkAllocateDescriptorSets(device,&descriptor_set_allocate_info, descriptor_set);
+    return vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, descriptor_set);
 }

@@ -1,6 +1,5 @@
 #include <vk_lib/core.h>
 
-
 void instance_builder_set_names(InstanceBuilder* builder, std::string_view app_name, std::string_view engine_name) {
     builder->app_name    = app_name;
     builder->engine_name = engine_name;
@@ -30,14 +29,9 @@ void instance_builder_set_layers(InstanceBuilder* builder, std::span<const char*
     }
 }
 
-void instance_builder_set_instance_pNext(InstanceBuilder* builder, const void* pNext) {
-    builder->instance_pNext = pNext;
+void instance_builder_set_instance_pNext(InstanceBuilder* builder, const void* pNext) { builder->instance_pNext = pNext; }
 
-}
-
-void instance_builder_clear(InstanceBuilder* builder) {
-    *builder = InstanceBuilder{};
-}
+void instance_builder_clear(InstanceBuilder* builder) { *builder = InstanceBuilder{}; }
 
 VkResult instance_builder_instance_create(const InstanceBuilder* builder, VkInstance* instance) {
 
@@ -87,9 +81,7 @@ VkResult instance_builder_instance_create(const InstanceBuilder* builder, VkInst
     return VK_SUCCESS;
 }
 
-void instance_destroy(VkInstance instance) {
-    vkDestroyInstance(instance, nullptr);
-}
+void instance_destroy(VkInstance instance) { vkDestroyInstance(instance, nullptr); }
 
 VkResult instance_enumerate_layer_properties(std::vector<VkLayerProperties>* layer_properties) {
     uint32_t layer_count;
@@ -102,10 +94,9 @@ VkResult instance_enumerate_layer_properties(std::vector<VkLayerProperties>* lay
     return vkEnumerateInstanceLayerProperties(&layer_count, layer_properties->data());
 }
 
-
 VkResult physical_device_enumerate_devices(VkInstance instance, std::vector<VkPhysicalDevice>* physical_devices) {
-    uint32_t physical_device_count = 0;
-    const VkResult result          = vkEnumeratePhysicalDevices(instance, &physical_device_count, nullptr);
+    uint32_t       physical_device_count = 0;
+    const VkResult result                = vkEnumeratePhysicalDevices(instance, &physical_device_count, nullptr);
     if (result != VK_SUCCESS) {
         return result;
     }
@@ -120,7 +111,6 @@ VkPhysicalDeviceProperties physical_device_get_properties(VkPhysicalDevice physi
     vkGetPhysicalDeviceProperties(physical_device, &properties);
     return properties;
 }
-
 
 VkPhysicalDeviceFeatures physical_device_get_features(VkPhysicalDevice physical_device) {
     VkPhysicalDeviceFeatures physical_device_features{};
@@ -139,7 +129,7 @@ VkPhysicalDeviceFeatures2KHR physical_device_get_features_2(VkPhysicalDevice phy
 
 std::vector<VkQueueFamilyProperties> physical_device_enumerate_queue_families(VkPhysicalDevice physical_device) {
     std::vector<VkQueueFamilyProperties> queue_family_properties;
-    uint32_t family_property_count;
+    uint32_t                             family_property_count;
 
     vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_property_count, nullptr);
     queue_family_properties.resize(family_property_count);
@@ -217,9 +207,7 @@ VkResult logical_device_builder_device_create(LogicalDeviceBuilder* builder, VkP
     return VK_SUCCESS;
 }
 
-void logical_device_destroy(VkDevice device) {
-    vkDestroyDevice(device, nullptr);
-}
+void logical_device_destroy(VkDevice device) { vkDestroyDevice(device, nullptr); }
 
 VkQueue queue_get(VkDevice device, uint32_t queue_family_index, uint32_t queue_index) {
     VkQueue queue;

@@ -1,7 +1,7 @@
 BasedOnStyle: LLVM
 IndentWidth: 4
 TabWidth: 4
-ColumnLimit: 200
+ColumnLimit: 150
 NamespaceIndentation: All
 PointerAlignment: Left
 AlignArrayOfStructures: Left

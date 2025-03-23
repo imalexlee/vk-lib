@@ -7,7 +7,6 @@ VkResult binary_semaphore_create(VkDevice device, VkSemaphore* semaphore, const 
     semaphore_create_info.pNext = pNext;
 
     return vkCreateSemaphore(device, &semaphore_create_info, nullptr, semaphore);
-
 }
 
 VkResult timeline_semaphore_create(VkDevice device, uint64_t initial_timeline_value, VkSemaphore* semaphore, const void* pNext) {
@@ -25,11 +24,10 @@ VkResult timeline_semaphore_create(VkDevice device, uint64_t initial_timeline_va
     return vkCreateSemaphore(device, &semaphore_create_info, nullptr, semaphore);
 }
 
-void semaphore_destroy(VkDevice device, VkSemaphore semaphore) {
-    vkDestroySemaphore(device, semaphore, nullptr);
-}
+void semaphore_destroy(VkDevice device, VkSemaphore semaphore) { vkDestroySemaphore(device, semaphore, nullptr); }
 
-VkSemaphoreSubmitInfoKHR semaphore_submit_info_create(VkSemaphore semaphore, VkPipelineStageFlags2KHR stage_flags, uint64_t timeline_value, uint32_t device_index) {
+VkSemaphoreSubmitInfoKHR semaphore_submit_info_create(VkSemaphore semaphore, VkPipelineStageFlags2KHR stage_flags, uint64_t timeline_value,
+                                                      uint32_t device_index) {
     VkSemaphoreSubmitInfoKHR semaphore_submit_info{};
     semaphore_submit_info.sType       = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
     semaphore_submit_info.semaphore   = semaphore;
@@ -50,17 +48,11 @@ VkResult fence_create(VkDevice device, VkFenceCreateFlags flags, VkFence* fence,
     return vkCreateFence(device, &fence_create_info, nullptr, fence);
 }
 
-VkResult fence_batch_reset(VkDevice device, std::span<VkFence> fences) {
-    return vkResetFences(device, fences.size(), fences.data());
-}
+VkResult fence_batch_reset(VkDevice device, std::span<VkFence> fences) { return vkResetFences(device, fences.size(), fences.data()); }
 
-VkResult fence_reset(VkDevice device, VkFence fence){
-    return vkResetFences(device, 1, &fence);
-}
+VkResult fence_reset(VkDevice device, VkFence fence) { return vkResetFences(device, 1, &fence); }
 
-void fence_destroy(VkDevice device, VkFence fence) {
-    vkDestroyFence(device, fence, nullptr);
-}
+void fence_destroy(VkDevice device, VkFence fence) { vkDestroyFence(device, fence, nullptr); }
 
 void image_barrier_builder_set_stage_masks_2(ImageBarrierBuilder* builder, VkPipelineStageFlags2KHR src_stages, VkPipelineStageFlags2KHR dst_stages) {
     builder->src_stage_flags_2 = src_stages;
@@ -92,21 +84,13 @@ void image_barrier_builder_set_queue_family_indices(ImageBarrierBuilder* builder
     builder->image_memory_barrier.dstQueueFamilyIndex = dst_queue_family_index;
 }
 
-void image_barrier_builder_set_pNext_1(ImageBarrierBuilder* builder, const void* pNext) {
-    builder->image_memory_barrier.pNext = pNext;
-}
+void image_barrier_builder_set_pNext_1(ImageBarrierBuilder* builder, const void* pNext) { builder->image_memory_barrier.pNext = pNext; }
 
-void image_barrier_builder_set_pNext_2(ImageBarrierBuilder* builder, const void* pNext) {
-    builder->pNext_2 = pNext;
-}
+void image_barrier_builder_set_pNext_2(ImageBarrierBuilder* builder, const void* pNext) { builder->pNext_2 = pNext; }
 
-void image_barrier_builder_clear(ImageBarrierBuilder* builder) {
-    *builder = ImageBarrierBuilder{};
-}
+void image_barrier_builder_clear(ImageBarrierBuilder* builder) { *builder = ImageBarrierBuilder{}; }
 
-VkImageMemoryBarrier image_barrier_builder_barrier_create(const ImageBarrierBuilder* builder) {
-    return builder->image_memory_barrier;
-}
+VkImageMemoryBarrier image_barrier_builder_barrier_create(const ImageBarrierBuilder* builder) { return builder->image_memory_barrier; }
 
 VkImageMemoryBarrier2KHR image_barrier_builder_barrier_create_2(const ImageBarrierBuilder* builder) {
     const VkImageMemoryBarrier* image_mem_barrier = &builder->image_memory_barrier;
@@ -127,14 +111,13 @@ VkImageMemoryBarrier2KHR image_barrier_builder_barrier_create_2(const ImageBarri
     return image_mem_barrier2;
 }
 
-void buffer_barrier_builder_set_stage_masks_2(BufferBarrierBuilder* builder, VkPipelineStageFlags2KHR src_stages, VkPipelineStageFlags2KHR dst_stages) {
+void buffer_barrier_builder_set_stage_masks_2(BufferBarrierBuilder* builder, VkPipelineStageFlags2KHR src_stages,
+                                              VkPipelineStageFlags2KHR dst_stages) {
     builder->src_stage_flags_2 = src_stages;
     builder->dst_stage_flags_2 = dst_stages;
 }
 
-
-void buffer_barrier_builder_set_access_masks_2(BufferBarrierBuilder* builder,
-                                               VkAccessFlags2KHR src_access, VkAccessFlags2KHR dst_access) {
+void buffer_barrier_builder_set_access_masks_2(BufferBarrierBuilder* builder, VkAccessFlags2KHR src_access, VkAccessFlags2KHR dst_access) {
     builder->src_access_flags_2 = src_access;
     builder->dst_access_flags_2 = dst_access;
 }
@@ -144,7 +127,8 @@ void buffer_barrier_builder_set_access_masks_1(BufferBarrierBuilder* builder, Vk
     builder->buffer_memory_barrier.dstAccessMask = dst_access;
 }
 
-void buffer_barrier_builder_set_queue_family_indices(BufferBarrierBuilder* builder, uint32_t src_queue_family_index, uint32_t dst_queue_family_index) {
+void buffer_barrier_builder_set_queue_family_indices(BufferBarrierBuilder* builder, uint32_t src_queue_family_index,
+                                                     uint32_t dst_queue_family_index) {
     builder->buffer_memory_barrier.srcQueueFamilyIndex = src_queue_family_index;
     builder->buffer_memory_barrier.dstQueueFamilyIndex = dst_queue_family_index;
 }
@@ -155,21 +139,13 @@ void buffer_barrier_builder_set_buffer(BufferBarrierBuilder* builder, VkBuffer b
     builder->buffer_memory_barrier.size   = size;
 }
 
-void buffer_barrier_builder_set_pNext_chain(BufferBarrierBuilder* builder, const void* chain) {
-    builder->buffer_memory_barrier.pNext = chain;
-}
+void buffer_barrier_builder_set_pNext_chain(BufferBarrierBuilder* builder, const void* chain) { builder->buffer_memory_barrier.pNext = chain; }
 
-void buffer_barrier_builder_set_pNext_2(BufferBarrierBuilder* builder, const void* pNext) {
-    builder->pNext_2 = pNext;
-}
+void buffer_barrier_builder_set_pNext_2(BufferBarrierBuilder* builder, const void* pNext) { builder->pNext_2 = pNext; }
 
-void buffer_barrier_builder_clear(BufferBarrierBuilder* builder) {
-    *builder = BufferBarrierBuilder{};
-}
+void buffer_barrier_builder_clear(BufferBarrierBuilder* builder) { *builder = BufferBarrierBuilder{}; }
 
-VkBufferMemoryBarrier buffer_barrier_builder_barrier_create(const BufferBarrierBuilder* builder) {
-    return builder->buffer_memory_barrier;
-}
+VkBufferMemoryBarrier buffer_barrier_builder_barrier_create(const BufferBarrierBuilder* builder) { return builder->buffer_memory_barrier; }
 
 VkBufferMemoryBarrier2KHR buffer_barrier_builder_barrier_create_2(const BufferBarrierBuilder* builder) {
     const VkBufferMemoryBarrier* buffer_mem_barrier = &builder->buffer_memory_barrier;
@@ -199,7 +175,8 @@ VkMemoryBarrier global_memory_barrier_create(VkAccessFlags src_access, VkAccessF
     return memory_barrier;
 }
 
-VkMemoryBarrier2KHR global_memory_barrier_create_2(VkPipelineStageFlags2KHR src_stages, VkAccessFlags2KHR src_access, VkPipelineStageFlags2KHR dst_stages, VkAccessFlags2KHR dst_access) {
+VkMemoryBarrier2KHR global_memory_barrier_create_2(VkPipelineStageFlags2KHR src_stages, VkAccessFlags2KHR src_access,
+                                                   VkPipelineStageFlags2KHR dst_stages, VkAccessFlags2KHR dst_access) {
     VkMemoryBarrier2KHR memory_barrier{};
     memory_barrier.sType         = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2_KHR;
     memory_barrier.srcStageMask  = src_stages;
@@ -211,64 +188,59 @@ VkMemoryBarrier2KHR global_memory_barrier_create_2(VkPipelineStageFlags2KHR src_
 }
 
 void memory_barrier_batch_insert(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_flags, VkPipelineStageFlags dst_stage_flags,
-                                 std::span<VkImageMemoryBarrier> image_barriers,
-                                 std::span<VkBufferMemoryBarrier> buffer_barriers,
+                                 std::span<VkImageMemoryBarrier> image_barriers, std::span<VkBufferMemoryBarrier> buffer_barriers,
                                  std::span<VkMemoryBarrier> memory_barriers, VkDependencyFlags dependency_flags) {
-    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, memory_barriers.size(), memory_barriers.data(), buffer_barriers.size(), buffer_barriers.data(),
-                         image_barriers.size(), image_barriers.data());
+    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, memory_barriers.size(), memory_barriers.data(),
+                         buffer_barriers.size(), buffer_barriers.data(), image_barriers.size(), image_barriers.data());
 }
 
 void image_memory_barrier_batch_insert(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_flags, VkPipelineStageFlags dst_stage_flags,
                                        std::span<VkImageMemoryBarrier> image_barriers, VkDependencyFlags dependency_flags) {
-    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, 0, nullptr, 0, nullptr,
-                         image_barriers.size(), image_barriers.data());
+    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, 0, nullptr, 0, nullptr, image_barriers.size(),
+                         image_barriers.data());
 }
 
 void buffer_memory_barrier_batch_insert(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_flags, VkPipelineStageFlags dst_stage_flags,
                                         std::span<VkBufferMemoryBarrier> buffer_barriers, VkDependencyFlags dependency_flags) {
-    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, 0, nullptr, buffer_barriers.size(), buffer_barriers.data(),
-                         0, nullptr);
+    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, 0, nullptr, buffer_barriers.size(),
+                         buffer_barriers.data(), 0, nullptr);
 }
 
 void global_memory_barrier_batch_insert(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_flags, VkPipelineStageFlags dst_stage_flags,
                                         std::span<VkMemoryBarrier> memory_barriers, VkDependencyFlags dependency_flags) {
-    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, memory_barriers.size(), memory_barriers.data(), 0, nullptr,
-                         0, nullptr);
+    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, memory_barriers.size(), memory_barriers.data(), 0,
+                         nullptr, 0, nullptr);
 }
 
 void memory_barrier_insert(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_flags, VkPipelineStageFlags dst_stage_flags,
-                           const VkImageMemoryBarrier* image_barrier,
-                           const VkBufferMemoryBarrier* buffer_barrier,
+                           const VkImageMemoryBarrier* image_barrier, const VkBufferMemoryBarrier* buffer_barrier,
                            const VkMemoryBarrier* memory_barrier, VkDependencyFlags dependency_flags) {
     const uint32_t image_barrier_count  = image_barrier == nullptr ? 0 : 1;
     const uint32_t buffer_barrier_count = buffer_barrier == nullptr ? 0 : 1;
     const uint32_t memory_barrier_count = memory_barrier == nullptr ? 0 : 1;
 
-    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, memory_barrier_count, memory_barrier, buffer_barrier_count, buffer_barrier,
-                         image_barrier_count, image_barrier);
+    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, memory_barrier_count, memory_barrier,
+                         buffer_barrier_count, buffer_barrier, image_barrier_count, image_barrier);
 }
 
 void image_barrier_insert(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_flags, VkPipelineStageFlags dst_stage_flags,
                           const VkImageMemoryBarrier* image_barrier, VkDependencyFlags dependency_flags) {
-    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, 0, nullptr, 0, nullptr,
-                         1, image_barrier);
+    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, 0, nullptr, 0, nullptr, 1, image_barrier);
 }
 
 void buffer_barrier_insert(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_flags, VkPipelineStageFlags dst_stage_flags,
-                           const VkBufferMemoryBarrier* buffer_barrier,
-                           VkDependencyFlags dependency_flags) {
-    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, 0, nullptr, 1, buffer_barrier,
-                         0, nullptr);
+                           const VkBufferMemoryBarrier* buffer_barrier, VkDependencyFlags dependency_flags) {
+    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, 0, nullptr, 1, buffer_barrier, 0, nullptr);
 }
 
 void global_memory_barrier_insert(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_flags, VkPipelineStageFlags dst_stage_flags,
                                   const VkMemoryBarrier* memory_barrier, VkDependencyFlags dependency_flags) {
-    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, 1, memory_barrier, 0, nullptr,
-                         0, nullptr);
+    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, 1, memory_barrier, 0, nullptr, 0, nullptr);
 }
 
-void memory_barrier_batch_insert_2(VkCommandBuffer command_buffer, std::span<VkImageMemoryBarrier2KHR> image_barriers, std::span<VkBufferMemoryBarrier2KHR> buffer_barriers,
-                                   std::span<VkMemoryBarrier2KHR> memory_barriers, VkDependencyFlags dependency_flags) {
+void memory_barrier_batch_insert_2(VkCommandBuffer command_buffer, std::span<VkImageMemoryBarrier2KHR> image_barriers,
+                                   std::span<VkBufferMemoryBarrier2KHR> buffer_barriers, std::span<VkMemoryBarrier2KHR> memory_barriers,
+                                   VkDependencyFlags dependency_flags) {
     VkDependencyInfoKHR dependency_info{};
     dependency_info.sType                    = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
     dependency_info.pNext                    = nullptr;
@@ -283,7 +255,8 @@ void memory_barrier_batch_insert_2(VkCommandBuffer command_buffer, std::span<VkI
     vkCmdPipelineBarrier2(command_buffer, &dependency_info);
 }
 
-void image_memory_barrier_batch_insert_2(VkCommandBuffer command_buffer, std::span<VkImageMemoryBarrier2KHR> image_barriers, VkDependencyFlags dependency_flags) {
+void image_memory_barrier_batch_insert_2(VkCommandBuffer command_buffer, std::span<VkImageMemoryBarrier2KHR> image_barriers,
+                                         VkDependencyFlags dependency_flags) {
     VkDependencyInfoKHR dependency_info{};
     dependency_info.sType                   = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
     dependency_info.pNext                   = nullptr;
@@ -294,7 +267,8 @@ void image_memory_barrier_batch_insert_2(VkCommandBuffer command_buffer, std::sp
     vkCmdPipelineBarrier2(command_buffer, &dependency_info);
 }
 
-void buffer_barrier_batch_insert_2(VkCommandBuffer command_buffer, std::span<VkBufferMemoryBarrier2KHR> buffer_barriers, VkDependencyFlags dependency_flags) {
+void buffer_barrier_batch_insert_2(VkCommandBuffer command_buffer, std::span<VkBufferMemoryBarrier2KHR> buffer_barriers,
+                                   VkDependencyFlags dependency_flags) {
     VkDependencyInfoKHR dependency_info{};
     dependency_info.sType                    = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
     dependency_info.pNext                    = nullptr;
@@ -305,7 +279,8 @@ void buffer_barrier_batch_insert_2(VkCommandBuffer command_buffer, std::span<VkB
     vkCmdPipelineBarrier2(command_buffer, &dependency_info);
 }
 
-void global_memory_barrier_batch_insert_2(VkCommandBuffer command_buffer, std::span<VkMemoryBarrier2KHR> memory_barriers, VkDependencyFlags dependency_flags) {
+void global_memory_barrier_batch_insert_2(VkCommandBuffer command_buffer, std::span<VkMemoryBarrier2KHR> memory_barriers,
+                                          VkDependencyFlags dependency_flags) {
     VkDependencyInfoKHR dependency_info{};
     dependency_info.sType              = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
     dependency_info.pNext              = nullptr;
@@ -316,9 +291,9 @@ void global_memory_barrier_batch_insert_2(VkCommandBuffer command_buffer, std::s
     vkCmdPipelineBarrier2(command_buffer, &dependency_info);
 }
 
-void memory_barrier_insert_2(VkCommandBuffer command_buffer, const VkImageMemoryBarrier2KHR* image_barrier, const
-                             VkBufferMemoryBarrier2KHR* buffer_barrier,
-                             const VkMemoryBarrier2KHR* memory_barrier, VkDependencyFlags dependency_flags) {
+void memory_barrier_insert_2(VkCommandBuffer command_buffer, const VkImageMemoryBarrier2KHR* image_barrier,
+                             const VkBufferMemoryBarrier2KHR* buffer_barrier, const VkMemoryBarrier2KHR* memory_barrier,
+                             VkDependencyFlags dependency_flags) {
     const uint32_t image_barrier_count  = image_barrier == nullptr ? 0 : 1;
     const uint32_t buffer_barrier_count = buffer_barrier == nullptr ? 0 : 1;
     const uint32_t memory_barrier_count = memory_barrier == nullptr ? 0 : 1;
@@ -337,7 +312,8 @@ void memory_barrier_insert_2(VkCommandBuffer command_buffer, const VkImageMemory
     vkCmdPipelineBarrier2(command_buffer, &dependency_info);
 }
 
-void image_memory_barrier_insert_2(VkCommandBuffer command_buffer, const VkImageMemoryBarrier2KHR* image_barrier, VkDependencyFlags dependency_flags) {
+void image_memory_barrier_insert_2(VkCommandBuffer command_buffer, const VkImageMemoryBarrier2KHR* image_barrier,
+                                   VkDependencyFlags dependency_flags) {
     VkDependencyInfoKHR dependency_info{};
     dependency_info.sType                    = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
     dependency_info.pNext                    = nullptr;
