@@ -45,7 +45,7 @@ VkResult instance_enumerate_layer_properties(std::vector<VkLayerProperties>* lay
 
 VkResult physical_device_enumerate_devices(VkInstance instance, std::vector<VkPhysicalDevice>* physical_devices);
 
-VkPhysicalDeviceProperties physical_device_get_properties(VkPhysicalDevice physical_device);
+[[nodiscard]] VkPhysicalDeviceProperties physical_device_get_properties(VkPhysicalDevice physical_device);
 
 [[nodiscard]] VkPhysicalDeviceFeatures physical_device_get_features(VkPhysicalDevice physical_device);
 

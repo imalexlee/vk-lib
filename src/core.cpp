@@ -84,8 +84,8 @@ VkResult instance_builder_instance_create(const InstanceBuilder* builder, VkInst
 void instance_destroy(VkInstance instance) { vkDestroyInstance(instance, nullptr); }
 
 VkResult instance_enumerate_layer_properties(std::vector<VkLayerProperties>* layer_properties) {
-    uint32_t layer_count;
-    VkResult result = vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
+    uint32_t       layer_count;
+    const VkResult result = vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
     if (result != VK_SUCCESS) {
         return result;
     }

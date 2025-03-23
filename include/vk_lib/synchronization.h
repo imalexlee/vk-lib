@@ -101,10 +101,10 @@ void buffer_barrier_builder_clear(BufferBarrierBuilder* builder);
 
 // BEGIN GLOBAL MEMORY BARRIER
 
-VkMemoryBarrier global_memory_barrier_create(VkAccessFlags src_access, VkAccessFlags dst_access);
+[[nodiscard]] VkMemoryBarrier global_memory_barrier_create(VkAccessFlags src_access, VkAccessFlags dst_access);
 
-VkMemoryBarrier2KHR global_memory_barrier_create_2(VkPipelineStageFlags2KHR src_stages, VkAccessFlags2KHR src_access,
-                                                   VkPipelineStageFlags2KHR dst_stages, VkAccessFlags2KHR dst_access);
+[[nodiscard]] VkMemoryBarrier2KHR global_memory_barrier_create_2(VkPipelineStageFlags2KHR src_stages, VkAccessFlags2KHR src_access,
+                                                                 VkPipelineStageFlags2KHR dst_stages, VkAccessFlags2KHR dst_access);
 
 // END GLOBAL MEMORY BARRIER
 

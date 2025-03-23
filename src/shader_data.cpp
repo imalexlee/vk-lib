@@ -100,3 +100,120 @@ VkResult descriptor_set_allocate(VkDevice device, VkDescriptorPool descriptor_po
 
     return vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, descriptor_set);
 }
+
+VkCopyDescriptorSet copy_descriptor_set_create(VkDescriptorSet src_set, VkDescriptorSet dst_set, uint32_t src_binding, uint32_t dst_binding,
+                                               uint32_t src_array_element, uint32_t dst_array_element, uint32_t descriptor_count) {
+    VkCopyDescriptorSet copy_descriptor_set{};
+    copy_descriptor_set.sType           = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
+    copy_descriptor_set.srcSet          = src_set;
+    copy_descriptor_set.srcBinding      = src_binding;
+    copy_descriptor_set.srcArrayElement = src_array_element;
+    copy_descriptor_set.dstSet          = dst_set;
+    copy_descriptor_set.dstBinding      = dst_binding;
+    copy_descriptor_set.dstArrayElement = dst_array_element;
+    copy_descriptor_set.descriptorCount = descriptor_count;
+
+    return copy_descriptor_set;
+}
+
+void descriptor_writer_write_image(DescriptorWriter* writer, uint32_t binding, VkImageView image_view, VkImageLayout image_layout,
+                                   VkDescriptorType type, VkSampler sampler, uint32_t array_element) {
+
+    const VkDescriptorImageInfo* image_info =
+        &writer->image_infos.emplace_back(VkDescriptorImageInfo{.sampler = sampler, .imageView = image_view, .imageLayout = image_layout});
+
+    VkWriteDescriptorSet write{};
+    write.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.dstBinding      = binding;
+    write.dstSet          = nullptr;
+    write.descriptorCount = 1;
+    write.descriptorType  = type;
+    write.pImageInfo      = image_info;
+    write.dstArrayElement = array_element;
+
+    writer->writes.push_back(write);
+}
+
+void descriptor_writer_write_buffer(DescriptorWriter* writer, uint32_t binding, VkBuffer buffer, uint64_t offset, uint64_t size,
+                                    VkDescriptorType type, uint32_t array_element) {
+    const VkDescriptorBufferInfo* buffer_info =
+        &writer->buffer_infos.emplace_back(VkDescriptorBufferInfo{.buffer = buffer, .offset = offset, .range = size});
+
+    VkWriteDescriptorSet write = {};
+    write.sType                = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.dstBinding           = binding;
+    write.dstSet               = nullptr;
+    write.descriptorCount      = 1;
+    write.descriptorType       = type;
+    write.pBufferInfo          = buffer_info;
+    write.dstArrayElement      = array_element;
+
+    writer->writes.push_back(write);
+}
+
+void descriptor_writer_write_acceleration_structure_khr(DescriptorWriter* writer, uint32_t binding,
+                                                        const VkAccelerationStructureKHR* acceleration_structure, uint32_t array_element) {
+    const VkWriteDescriptorSetAccelerationStructureKHR* accel_struct_write =
+        &writer->accel_struct_writes_khr.emplace_back(VkWriteDescriptorSetAccelerationStructureKHR{
+            .sType                      = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR,
+            .accelerationStructureCount = 1,
+            .pAccelerationStructures    = acceleration_structure,
+        });
+
+    VkWriteDescriptorSet write{};
+    write.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.dstBinding      = binding;
+    write.dstSet          = nullptr;
+    write.descriptorCount = 1;
+    write.descriptorType  = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+    write.dstArrayElement = array_element;
+    write.pNext           = accel_struct_write;
+
+    writer->writes.push_back(write);
+}
+
+void descriptor_writer_write_acceleration_structure_nv(DescriptorWriter* writer, uint32_t binding,
+                                                       const VkAccelerationStructureNV* acceleration_structure, uint32_t array_element) {
+    const VkWriteDescriptorSetAccelerationStructureNV* accel_struct_write =
+        &writer->accel_struct_writes_nv.emplace_back(VkWriteDescriptorSetAccelerationStructureNV{
+            .sType                      = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV,
+            .accelerationStructureCount = 1,
+            .pAccelerationStructures    = acceleration_structure,
+        });
+
+    VkWriteDescriptorSet write{};
+    write.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.dstBinding      = binding;
+    write.dstSet          = nullptr;
+    write.descriptorCount = 1;
+    write.descriptorType  = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV;
+    write.dstArrayElement = array_element;
+    write.pNext           = accel_struct_write;
+
+    writer->writes.push_back(write);
+}
+
+void descriptor_writer_write_extension_descriptor(DescriptorWriter* writer, uint32_t binding, const void* pNext, VkDescriptorType type,
+                                                  uint32_t array_element) {
+    VkWriteDescriptorSet write{};
+    write.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.dstBinding      = binding;
+    write.dstSet          = nullptr;
+    write.descriptorCount = 1;
+    write.descriptorType  = type;
+    write.dstArrayElement = array_element;
+    write.pNext           = pNext;
+
+    writer->writes.push_back(write);
+}
+
+void descriptor_writer_clear(DescriptorWriter* writer) { *writer = DescriptorWriter{}; }
+
+void desc_writer_update_descriptor_set(DescriptorWriter* writer, VkDevice device, VkDescriptorSet set,
+                                       std::span<VkCopyDescriptorSet> descriptor_copies) {
+    for (VkWriteDescriptorSet& write : writer->writes) {
+        write.dstSet = set;
+    }
+
+    vkUpdateDescriptorSets(device, writer->writes.size(), writer->writes.data(), descriptor_copies.size(), descriptor_copies.data());
+}
