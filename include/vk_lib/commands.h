@@ -18,7 +18,7 @@ VkResult command_buffer_begin(VkCommandBuffer command_buffer, VkCommandBufferUsa
 
 VkResult command_buffer_reset(VkCommandBuffer command_buffer, VkCommandBufferResetFlags flags = 0);
 
-VkCommandBufferSubmitInfoKHR command_buffer_submit_info_create(VkCommandBuffer command_buffer, uint32_t device_mask = 0, const void* pNext = nullptr);
+VkCommandBufferSubmitInfoKHR command_buffer_submit_info_create_2(VkCommandBuffer command_buffer, uint32_t device_mask = 0, const void* pNext = nullptr);
 
 struct SubmitInfoBuilder {
     VkSubmitInfo                      submit_info_1{VK_STRUCTURE_TYPE_SUBMIT_INFO};

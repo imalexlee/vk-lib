@@ -34,7 +34,7 @@ VkResult command_buffer_begin(VkCommandBuffer command_buffer, VkCommandBufferUsa
 
 VkResult command_buffer_reset(VkCommandBuffer command_buffer, VkCommandBufferResetFlags flags) { return vkResetCommandBuffer(command_buffer, flags); }
 
-VkCommandBufferSubmitInfoKHR command_buffer_submit_info_create(VkCommandBuffer command_buffer, uint32_t device_mask, const void* pNext) {
+VkCommandBufferSubmitInfoKHR command_buffer_submit_info_create_2(VkCommandBuffer command_buffer, uint32_t device_mask, const void* pNext) {
     VkCommandBufferSubmitInfoKHR command_buffer_submit_info{};
     command_buffer_submit_info.sType         = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
     command_buffer_submit_info.commandBuffer = command_buffer;
