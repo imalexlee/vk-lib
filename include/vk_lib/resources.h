@@ -41,6 +41,10 @@ void image_view_destroy(VkDevice device, VkImageView image_view);
 [[nodiscard]] VkImageSubresourceRange image_subresource_range_create(VkImageAspectFlags aspect_flags, uint32_t base_array_layer,
                                                                      uint32_t array_layer_count, uint32_t base_mip_level, uint32_t mip_level_count);
 
+[[nodiscard]] VkViewport viewport_create(float x, float y, float width, float height, float min_depth = 0.0f, float max_depth = 1.0f);
+
+[[nodiscard]] VkRect2D scissor_create(int32_t x, int32_t y, uint32_t width, uint32_t height);
+
 struct SamplerBuilder {
     VkSamplerCreateInfo sampler_create_info{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
 };

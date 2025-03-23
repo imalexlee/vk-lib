@@ -47,7 +47,6 @@ struct DescriptorWriter {
     std::deque<VkDescriptorImageInfo>                        image_infos;
     std::deque<VkDescriptorBufferInfo>                       buffer_infos;
     std::deque<VkWriteDescriptorSetAccelerationStructureKHR> accel_struct_writes_khr;
-    std::deque<VkWriteDescriptorSetAccelerationStructureNV>  accel_struct_writes_nv;
 
     std::vector<VkWriteDescriptorSet> writes;
 };
@@ -60,9 +59,6 @@ void descriptor_writer_write_buffer(DescriptorWriter* writer, uint32_t binding, 
 
 void descriptor_writer_write_acceleration_structure_khr(DescriptorWriter* writer, uint32_t binding,
                                                         const VkAccelerationStructureKHR* acceleration_structure, uint32_t array_element = 0);
-
-void descriptor_writer_write_acceleration_structure_nv(DescriptorWriter* writer, uint32_t binding,
-                                                       const VkAccelerationStructureNV* acceleration_structure, uint32_t array_element = 0);
 
 void descriptor_writer_write_extension_descriptor(DescriptorWriter* writer, uint32_t binding, const void* pNext, VkDescriptorType type,
                                                   uint32_t array_element = 0);

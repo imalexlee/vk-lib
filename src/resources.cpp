@@ -84,6 +84,23 @@ VkImageSubresourceRange image_subresource_range_create(VkImageAspectFlags aspect
 
     return subresource_range;
 }
+VkViewport viewport_create(float x, float y, float width, float height, float min_depth, float max_depth) {
+    VkViewport viewport{};
+    viewport.x        = x;
+    viewport.y        = y;
+    viewport.width    = width;
+    viewport.height   = height;
+    viewport.minDepth = min_depth;
+    viewport.maxDepth = max_depth;
+    return viewport;
+}
+
+VkRect2D scissor_create(int32_t x, int32_t y, uint32_t width, uint32_t height) {
+    VkRect2D scissor{};
+    scissor.offset = {x, y};
+    scissor.extent = {width, height};
+    return scissor;
+}
 
 void sampler_builder_set_filtering(SamplerBuilder* builder, VkFilter min_filter, VkFilter mag_filter, bool unnormalized_coordinates_enabled,
                                    VkBorderColor border_color) {

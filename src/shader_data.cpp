@@ -172,27 +172,6 @@ void descriptor_writer_write_acceleration_structure_khr(DescriptorWriter* writer
     writer->writes.push_back(write);
 }
 
-void descriptor_writer_write_acceleration_structure_nv(DescriptorWriter* writer, uint32_t binding,
-                                                       const VkAccelerationStructureNV* acceleration_structure, uint32_t array_element) {
-    const VkWriteDescriptorSetAccelerationStructureNV* accel_struct_write =
-        &writer->accel_struct_writes_nv.emplace_back(VkWriteDescriptorSetAccelerationStructureNV{
-            .sType                      = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV,
-            .accelerationStructureCount = 1,
-            .pAccelerationStructures    = acceleration_structure,
-        });
-
-    VkWriteDescriptorSet write{};
-    write.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.dstBinding      = binding;
-    write.dstSet          = nullptr;
-    write.descriptorCount = 1;
-    write.descriptorType  = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV;
-    write.dstArrayElement = array_element;
-    write.pNext           = accel_struct_write;
-
-    writer->writes.push_back(write);
-}
-
 void descriptor_writer_write_extension_descriptor(DescriptorWriter* writer, uint32_t binding, const void* pNext, VkDescriptorType type,
                                                   uint32_t array_element) {
     VkWriteDescriptorSet write{};
