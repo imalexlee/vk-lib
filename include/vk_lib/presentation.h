@@ -20,8 +20,7 @@ void swapchain_builder_set_surface_properties(SwapchainBuilder* builder, VkSurfa
                                               VkSwapchainCreateFlagsKHR create_flags = 0, bool clipped = true);
 
 void swapchain_builder_set_image_properties(SwapchainBuilder* builder, VkFormat format, VkColorSpaceKHR color_space, uint32_t width, uint32_t height,
-                                            uint32_t min_image_count, VkImageUsageFlags usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                                            uint32_t array_layers = 1);
+                                            uint32_t min_image_count, VkImageUsageFlags usage, uint32_t array_layers = 1);
 
 void swapchain_builder_set_sharing_mode(SwapchainBuilder* builder, VkSharingMode sharing_mode, std::span<uint32_t> queue_family_indices = {});
 

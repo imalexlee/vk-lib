@@ -29,9 +29,9 @@ VkResult image_builder_allocated_image_create(const ImageBuilder* builder, VkDev
 
 void allocated_image_destroy(VkImage image, VmaAllocator allocator, VmaAllocation allocation);
 
-VkResult image_builder_unallocated_image_create(const ImageBuilder* builder, VkDevice device, VkImage* image);
+VkResult image_builder_image_create(const ImageBuilder* builder, VkDevice device, VkImage* image);
 
-void unallocated_image_destroy(VkDevice device, VkImage image);
+void image_destroy(VkDevice device, VkImage image);
 
 VkResult image_view_create(VkDevice device, VkImage image, VkImageViewType view_type, VkFormat format, VkImageAspectFlags aspect_flags,
                            VkImageView* image_view, uint32_t mip_levels = 1, uint32_t array_layers = 1, const void* pNext = nullptr);
@@ -105,9 +105,9 @@ VkResult buffer_builder_allocated_buffer_create(const BufferBuilder* builder, Vk
 
 void allocated_buffer_destroy(VkBuffer buffer, VmaAllocator allocator, VmaAllocation allocation);
 
-VkResult buffer_builder_unallocated_buffer_create(const BufferBuilder* builder, VkDevice device, VkBuffer* buffer);
+VkResult buffer_builder_buffer_create(const BufferBuilder* builder, VkDevice device, VkBuffer* buffer);
 
-void unallocated_buffer_destroy(VkDevice device, VkBuffer buffer);
+void buffer_destroy(VkDevice device, VkBuffer buffer);
 
 VkResult buffer_view_create(VkDevice device, VkBuffer buffer, VkFormat format, VkBufferView* buffer_view, VkDeviceSize offset = 0,
                             VkDeviceSize range = VK_WHOLE_SIZE, const void* pNext = nullptr);

@@ -18,7 +18,8 @@ VkResult command_buffer_begin(VkCommandBuffer command_buffer, VkCommandBufferUsa
 
 VkResult command_buffer_reset(VkCommandBuffer command_buffer, VkCommandBufferResetFlags flags = 0);
 
-VkCommandBufferSubmitInfoKHR command_buffer_submit_info_create_2(VkCommandBuffer command_buffer, uint32_t device_mask = 0, const void* pNext = nullptr);
+[[nodiscard]] VkCommandBufferSubmitInfoKHR command_buffer_submit_info_create_2(VkCommandBuffer command_buffer, uint32_t device_mask = 0,
+                                                                               const void* pNext = nullptr);
 
 struct SubmitInfoBuilder {
     VkSubmitInfo                      submit_info_1{VK_STRUCTURE_TYPE_SUBMIT_INFO};
@@ -66,8 +67,6 @@ void submit_info_builder_clear(SubmitInfoBuilder* builder);
 [[nodiscard]] VkSubmitInfo submit_info_builder_create_submit_info(const SubmitInfoBuilder* builder);
 
 [[nodiscard]] VkSubmitInfo2KHR submit_info_builder_create_submit_info_2(const SubmitInfoBuilder* builder);
-
-
 
 VkResult queue_batch_submit(VkQueue queue, std::span<VkSubmitInfo> submit_infos, VkFence fence = nullptr);
 
