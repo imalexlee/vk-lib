@@ -67,6 +67,8 @@ void submit_info_builder_clear(SubmitInfoBuilder* builder);
 
 [[nodiscard]] VkSubmitInfo2KHR submit_info_builder_create_submit_info_2(const SubmitInfoBuilder* builder);
 
+
+
 VkResult queue_batch_submit(VkQueue queue, std::span<VkSubmitInfo> submit_infos, VkFence fence = nullptr);
 
 VkResult queue_submit(VkQueue queue, const VkSubmitInfo* submit_info, VkFence fence = nullptr);

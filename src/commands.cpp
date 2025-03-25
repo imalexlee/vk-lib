@@ -118,6 +118,12 @@ VkSubmitInfo submit_info_builder_create_submit_info(const SubmitInfoBuilder* bui
     return submit_info;
 }
 
+VkSubmitInfo submit_info_create() {
+
+    VkSubmitInfo submit_info{};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+}
+
 VkSubmitInfo2KHR submit_info_builder_create_submit_info_2(const SubmitInfoBuilder* builder) {
     VkSubmitInfo2KHR submit_info_2         = builder->submit_info_2;
     submit_info_2.pNext                    = builder->submit_info_2.pNext;
