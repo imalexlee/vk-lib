@@ -118,15 +118,6 @@ VkPhysicalDeviceFeatures physical_device_get_features(VkPhysicalDevice physical_
     return physical_device_features;
 }
 
-VkPhysicalDeviceFeatures2KHR physical_device_get_features_2(VkPhysicalDevice physical_device, void* extended_feature_chain) {
-    // must pass in the pNext chain of features to query for
-    VkPhysicalDeviceFeatures2KHR physical_device_features{};
-    physical_device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
-    physical_device_features.pNext = extended_feature_chain;
-    vkGetPhysicalDeviceFeatures2KHR(physical_device, &physical_device_features);
-    return physical_device_features;
-}
-
 std::vector<VkQueueFamilyProperties> physical_device_enumerate_queue_families(VkPhysicalDevice physical_device) {
     std::vector<VkQueueFamilyProperties> queue_family_properties;
     uint32_t                             family_property_count;
@@ -138,64 +129,38 @@ std::vector<VkQueueFamilyProperties> physical_device_enumerate_queue_families(Vk
     return queue_family_properties;
 }
 
-void logical_device_builder_set_device_features_1(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures features, void* extended_feature_chain) {
-    builder->physical_device_features_2.reset();
-    builder->physical_device_features_1 = features;
-    builder->extended_feature_chain     = extended_feature_chain;
+VkQueue queue_get(VkDevice device, uint32_t queue_family_index, uint32_t queue_index) {
+    VkQueue queue;
+    vkGetDeviceQueue(device, queue_family_index, queue_index, &queue);
+    return queue;
 }
 
-void logical_device_builder_set_device_features_2(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures2KHR features_2) {
-    // if using VkPhysicalDeviceFeatures2, pEnabledFeatures in vkDeviceCreateInfo must be null
-    // NOTE: if using VkPhysicalDeviceFeatures2, put all feature extensions (including vulkan 1.1, 1.2, etc.) in the
-    // pNext chain of VkPhysicalDeviceFeatures2
-    builder->physical_device_features_1.reset();
-    builder->physical_device_features_2 = features_2;
-    builder->extended_feature_chain     = nullptr;
+VkDeviceQueueCreateInfo queue_create_info_create(uint32_t family_index, uint32_t queue_count, std::span<float> queue_priorities,
+                                                 VkDeviceQueueCreateFlags flags, const void* pNext) {
+    VkDeviceQueueCreateInfo queue_create_info{};
+    queue_create_info.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queue_create_info.queueCount       = queue_count;
+    queue_create_info.queueFamilyIndex = family_index;
+    queue_create_info.pQueuePriorities = queue_priorities.data();
+    queue_create_info.flags            = flags;
+    queue_create_info.pNext            = pNext;
+
+    return queue_create_info;
 }
 
-void logical_device_builder_queue_create(LogicalDeviceBuilder* builder, uint32_t queue_family_index, float priority) {
-    builder->queue_family_creation_map[queue_family_index]++;
-    builder->queue_priorities_map[queue_family_index].push_back(priority);
-}
+void device_destroy(VkDevice device) { vkDestroyDevice(device, nullptr); }
 
-void logical_device_builder_set_device_extensions(LogicalDeviceBuilder* builder, std::span<const char*> device_extensions) {
-    builder->device_extensions.reserve(device_extensions.size());
-    for (const char* extension : device_extensions) {
-        builder->device_extensions.emplace_back(extension);
-    }
-}
-
-VkResult logical_device_builder_device_create(LogicalDeviceBuilder* builder, VkPhysicalDevice physical_device, VkDevice* device) {
-    std::vector<const char*> device_extensions;
-    device_extensions.reserve(builder->device_extensions.size());
-    for (const std::string& extension : builder->device_extensions) {
-        device_extensions.push_back(extension.c_str());
-    }
-
-    std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
-    queue_create_infos.reserve(builder->queue_family_creation_map.size());
-    for (const auto& [family_index, queue_count] : builder->queue_family_creation_map) {
-        VkDeviceQueueCreateInfo new_queue_create_info{};
-        new_queue_create_info.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        new_queue_create_info.queueCount       = queue_count;
-        new_queue_create_info.queueFamilyIndex = family_index;
-        new_queue_create_info.pQueuePriorities = builder->queue_priorities_map[family_index].data();
-
-        queue_create_infos.push_back(new_queue_create_info);
-    }
+VkResult device_create(VkPhysicalDevice physical_device, std::span<VkDeviceQueueCreateInfo> queue_create_infos, VkDevice* device,
+                       std::span<const char*> extension_names, const VkPhysicalDeviceFeatures* enabled_features, const void* pNext) {
 
     VkDeviceCreateInfo device_create_info{};
     device_create_info.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     device_create_info.pQueueCreateInfos       = queue_create_infos.data();
     device_create_info.queueCreateInfoCount    = queue_create_infos.size();
-    device_create_info.ppEnabledExtensionNames = device_extensions.data();
-    device_create_info.enabledExtensionCount   = device_extensions.size();
-    if (builder->physical_device_features_1.has_value()) {
-        device_create_info.pEnabledFeatures = &builder->physical_device_features_1.value();
-        device_create_info.pNext            = builder->extended_feature_chain;
-    } else if (builder->physical_device_features_2.has_value()) {
-        device_create_info.pNext = &builder->physical_device_features_2.value();
-    }
+    device_create_info.ppEnabledExtensionNames = extension_names.data();
+    device_create_info.enabledExtensionCount   = extension_names.size();
+    device_create_info.pEnabledFeatures        = enabled_features;
+    device_create_info.pNext                   = pNext;
 
     const VkResult result = vkCreateDevice(physical_device, &device_create_info, nullptr, device);
     if (result != VK_SUCCESS) {
@@ -207,10 +172,11 @@ VkResult logical_device_builder_device_create(LogicalDeviceBuilder* builder, VkP
     return VK_SUCCESS;
 }
 
-void logical_device_destroy(VkDevice device) { vkDestroyDevice(device, nullptr); }
-
-VkQueue queue_get(VkDevice device, uint32_t queue_family_index, uint32_t queue_index) {
-    VkQueue queue;
-    vkGetDeviceQueue(device, queue_family_index, queue_index, &queue);
-    return queue;
+VkPhysicalDeviceFeatures2KHR physical_device_get_features_2(VkPhysicalDevice physical_device, void* extended_feature_chain) {
+    // must pass in the pNext chain of features to query for
+    VkPhysicalDeviceFeatures2KHR physical_device_features{};
+    physical_device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
+    physical_device_features.pNext = extended_feature_chain;
+    vkGetPhysicalDeviceFeatures2KHR(physical_device, &physical_device_features);
+    return physical_device_features;
 }

@@ -5,8 +5,6 @@
 #pragma once
 #include <vk_lib/common.h>
 
-// BEGIN INSTANCE
-
 struct InstanceBuilder {
     uint32_t                 api_version{};
     uint32_t                 app_version{};
@@ -39,52 +37,30 @@ void instance_destroy(VkInstance instance);
 
 VkResult instance_enumerate_layer_properties(std::vector<VkLayerProperties>* layer_properties);
 
-// END INSTANCE
-
-// BEGIN PHYSICAL DEVICE MANAGEMENT
-
 VkResult physical_device_enumerate_devices(VkInstance instance, std::vector<VkPhysicalDevice>* physical_devices);
 
 [[nodiscard]] VkPhysicalDeviceProperties physical_device_get_properties(VkPhysicalDevice physical_device);
 
 [[nodiscard]] VkPhysicalDeviceFeatures physical_device_get_features(VkPhysicalDevice physical_device);
 
-[[nodiscard]] VkPhysicalDeviceFeatures2KHR physical_device_get_features_2(VkPhysicalDevice physical_device, void* extended_feature_chain);
-
 // index in vector represents the queue family index
 [[nodiscard]] std::vector<VkQueueFamilyProperties> physical_device_enumerate_queue_families(VkPhysicalDevice physical_device);
 
-// END PHYSICAL DEVICE MANAGEMENT
-
-// BEGIN LOGICAL DEVICE BUILDER
-
-struct LogicalDeviceBuilder {
-    // (family index, # queues to create from family)
-    std::map<uint32_t, uint32_t> queue_family_creation_map;
-    // (family index, priorities). lines up with the map above. Just here to preserve values
-    std::map<uint32_t, std::vector<float>>      queue_priorities_map;
-    std::vector<std::string>                    device_extensions;
-    std::optional<VkPhysicalDeviceFeatures>     physical_device_features_1;
-    std::optional<VkPhysicalDeviceFeatures2KHR> physical_device_features_2;
-    void*                                       extended_feature_chain = nullptr;
-};
-
-void logical_device_builder_set_device_features_1(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures features, void* extended_feature_chain);
-
-void logical_device_builder_set_device_features_2(LogicalDeviceBuilder* builder, VkPhysicalDeviceFeatures2KHR features_2);
-
-void logical_device_builder_queue_create(LogicalDeviceBuilder* builder, uint32_t queue_family_index, float priority);
-
-void logical_device_builder_set_device_extensions(LogicalDeviceBuilder* builder, std::span<const char*> device_extensions);
-
-VkResult logical_device_builder_device_create(LogicalDeviceBuilder* builder, VkPhysicalDevice physical_device, VkDevice* device);
-
-void logical_device_destroy(VkDevice device);
-
-// END LOGICAL DEVICE BUILDER
-
-// BEGIN LOGICAL DEVICE MANAGEMENT
+[[nodiscard]] VkDeviceQueueCreateInfo queue_create_info_create(uint32_t family_index, uint32_t queue_count, std::span<float> queue_priorities,
+                                                               VkDeviceQueueCreateFlags flags = 0, const void* pNext = nullptr);
 
 [[nodiscard]] VkQueue queue_get(VkDevice device, uint32_t queue_family_index, uint32_t queue_index);
 
-// END LOGICAL DEVICE MANAGEMENT
+void device_destroy(VkDevice device);
+
+VkResult device_create(VkPhysicalDevice physical_device, std::span<VkDeviceQueueCreateInfo> queue_create_infos, VkDevice* device,
+                       std::span<const char*> extension_names = {}, const VkPhysicalDeviceFeatures* enabled_features = nullptr,
+                       const void* pNext = nullptr);
+
+/*
+ * CORE EXTENSIONS
+ */
+
+// VULKAN 1.1
+
+[[nodiscard]] VkPhysicalDeviceFeatures2KHR physical_device_get_features_2(VkPhysicalDevice physical_device, void* extended_feature_chain);

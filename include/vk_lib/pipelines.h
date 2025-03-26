@@ -5,8 +5,11 @@
 #pragma once
 #include <vk_lib/common.h>
 
-VkStencilOpState stencil_op_state_create(VkStencilOp fail_op, VkStencilOp pass_op, VkStencilOp depth_fail_op, VkCompareOp compare_op,
-                                         uint32_t compare_mask, uint32_t write_mask, uint32_t reference);
+[[nodiscard]] VkStencilOpState stencil_op_state_create(VkStencilOp fail_op, VkStencilOp pass_op, VkStencilOp depth_fail_op, VkCompareOp compare_op,
+                                                       uint32_t compare_mask, uint32_t write_mask, uint32_t reference);
+
+VkResult pipeline_layout_create(VkDevice device, std::span<VkDescriptorSetLayout> set_layouts, std::span<VkPushConstantRange> push_constant_ranges,
+                                VkPipelineLayout* pipeline_layout, VkPipelineLayoutCreateFlags flags = 0, const void* pNext = nullptr);
 
 struct GraphicsPipelineBuilder {
     VkGraphicsPipelineCreateInfo                 graphics_pipeline_create_info{VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};

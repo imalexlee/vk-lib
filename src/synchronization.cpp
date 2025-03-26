@@ -1,25 +1,10 @@
 #include <vk_lib/synchronization.h>
 
-VkResult binary_semaphore_create(VkDevice device, VkSemaphore* semaphore, const void* pNext) {
+VkResult semaphore_create(VkDevice device, VkSemaphore* semaphore, const void* pNext) {
     VkSemaphoreCreateInfo semaphore_create_info{};
     semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     semaphore_create_info.flags = 0;
     semaphore_create_info.pNext = pNext;
-
-    return vkCreateSemaphore(device, &semaphore_create_info, nullptr, semaphore);
-}
-
-VkResult timeline_semaphore_create(VkDevice device, uint64_t initial_timeline_value, VkSemaphore* semaphore, const void* pNext) {
-    VkSemaphoreTypeCreateInfoKHR semaphore_type_create_info{};
-    semaphore_type_create_info.sType         = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR;
-    semaphore_type_create_info.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
-    semaphore_type_create_info.initialValue  = initial_timeline_value;
-    semaphore_type_create_info.pNext         = pNext;
-
-    VkSemaphoreCreateInfo semaphore_create_info{};
-    semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    semaphore_create_info.pNext = &semaphore_type_create_info;
-    semaphore_create_info.flags = 0;
 
     return vkCreateSemaphore(device, &semaphore_create_info, nullptr, semaphore);
 }
@@ -72,6 +57,49 @@ VkImageMemoryBarrier image_memory_barrier_create(VkImage image, const VkImageSub
     return image_mem_barrier;
 }
 
+VkBufferMemoryBarrier buffer_memory_barrier_create(VkBuffer buffer, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
+                                                   VkAccessFlags src_access_flags, VkAccessFlags dst_access_flags, uint64_t offset, uint64_t size,
+                                                   const void* pNext) {
+    VkBufferMemoryBarrier buffer_memory_barrier{};
+    buffer_memory_barrier.sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    buffer_memory_barrier.srcAccessMask       = src_access_flags;
+    buffer_memory_barrier.dstAccessMask       = dst_access_flags;
+    buffer_memory_barrier.srcQueueFamilyIndex = src_queue_family_index;
+    buffer_memory_barrier.dstQueueFamilyIndex = dst_queue_family_index;
+    buffer_memory_barrier.buffer              = buffer;
+    buffer_memory_barrier.offset              = offset;
+    buffer_memory_barrier.size                = size;
+    buffer_memory_barrier.pNext               = pNext;
+
+    return buffer_memory_barrier;
+}
+
+VkMemoryBarrier global_memory_barrier_create(VkAccessFlags src_access, VkAccessFlags dst_access) {
+    VkMemoryBarrier memory_barrier{};
+    memory_barrier.sType         = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+    memory_barrier.srcAccessMask = src_access;
+    memory_barrier.dstAccessMask = dst_access;
+
+    return memory_barrier;
+}
+
+void pipeline_barrier_insert(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_flags, VkPipelineStageFlags dst_stage_flags,
+                             std::span<VkImageMemoryBarrier> image_barriers, std::span<VkBufferMemoryBarrier> buffer_barriers,
+                             std::span<VkMemoryBarrier> memory_barriers, VkDependencyFlags dependency_flags) {
+    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, memory_barriers.size(), memory_barriers.data(),
+                         buffer_barriers.size(), buffer_barriers.data(), image_barriers.size(), image_barriers.data());
+}
+
+VkResult timeline_semaphore_create(VkDevice device, uint64_t initial_timeline_value, VkSemaphore* semaphore, const void* pNext) {
+    VkSemaphoreTypeCreateInfoKHR semaphore_type_create_info{};
+    semaphore_type_create_info.sType         = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR;
+    semaphore_type_create_info.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+    semaphore_type_create_info.initialValue  = initial_timeline_value;
+    semaphore_type_create_info.pNext         = pNext;
+
+    return semaphore_create(device, semaphore, &semaphore_type_create_info);
+}
+
 VkImageMemoryBarrier2KHR image_memory_barrier_2_create(VkImage image, const VkImageSubresourceRange* subresource_range, VkImageLayout old_layout,
                                                        VkImageLayout new_layout, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
                                                        VkPipelineStageFlags2 src_stage_flags, VkPipelineStageFlags2 dst_stage_flags,
@@ -91,23 +119,6 @@ VkImageMemoryBarrier2KHR image_memory_barrier_2_create(VkImage image, const VkIm
     image_mem_barrier_2.pNext               = pNext;
 
     return image_mem_barrier_2;
-}
-
-VkBufferMemoryBarrier buffer_memory_barrier_create(VkBuffer buffer, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
-                                                   VkAccessFlags src_access_flags, VkAccessFlags dst_access_flags, uint64_t offset, uint64_t size,
-                                                   const void* pNext) {
-    VkBufferMemoryBarrier buffer_memory_barrier{};
-    buffer_memory_barrier.sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    buffer_memory_barrier.srcAccessMask       = src_access_flags;
-    buffer_memory_barrier.dstAccessMask       = dst_access_flags;
-    buffer_memory_barrier.srcQueueFamilyIndex = src_queue_family_index;
-    buffer_memory_barrier.dstQueueFamilyIndex = dst_queue_family_index;
-    buffer_memory_barrier.buffer              = buffer;
-    buffer_memory_barrier.offset              = offset;
-    buffer_memory_barrier.size                = size;
-    buffer_memory_barrier.pNext               = pNext;
-
-    return buffer_memory_barrier;
 }
 
 VkBufferMemoryBarrier2KHR buffer_memory_barrier_2_create(VkBuffer buffer, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
@@ -130,16 +141,7 @@ VkBufferMemoryBarrier2KHR buffer_memory_barrier_2_create(VkBuffer buffer, uint32
     return buffer_memory_barrier_2;
 }
 
-VkMemoryBarrier global_memory_barrier_create(VkAccessFlags src_access, VkAccessFlags dst_access) {
-    VkMemoryBarrier memory_barrier{};
-    memory_barrier.sType         = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-    memory_barrier.srcAccessMask = src_access;
-    memory_barrier.dstAccessMask = dst_access;
-
-    return memory_barrier;
-}
-
-VkMemoryBarrier2KHR global_memory_barrier_create_2(VkPipelineStageFlags2KHR src_stages, VkAccessFlags2KHR src_access,
+VkMemoryBarrier2KHR global_memory_barrier_2_create(VkPipelineStageFlags2KHR src_stages, VkAccessFlags2KHR src_access,
                                                    VkPipelineStageFlags2KHR dst_stages, VkAccessFlags2KHR dst_access) {
     VkMemoryBarrier2KHR memory_barrier{};
     memory_barrier.sType         = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2_KHR;
@@ -149,13 +151,6 @@ VkMemoryBarrier2KHR global_memory_barrier_create_2(VkPipelineStageFlags2KHR src_
     memory_barrier.dstAccessMask = dst_access;
 
     return memory_barrier;
-}
-
-void memory_barrier_insert(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_flags, VkPipelineStageFlags dst_stage_flags,
-                           std::span<VkImageMemoryBarrier> image_barriers, std::span<VkBufferMemoryBarrier> buffer_barriers,
-                           std::span<VkMemoryBarrier> memory_barriers, VkDependencyFlags dependency_flags) {
-    vkCmdPipelineBarrier(command_buffer, src_stage_flags, dst_stage_flags, dependency_flags, memory_barriers.size(), memory_barriers.data(),
-                         buffer_barriers.size(), buffer_barriers.data(), image_barriers.size(), image_barriers.data());
 }
 
 VkDependencyInfoKHR dependency_info_create(std::span<VkImageMemoryBarrier2KHR> image_barriers, std::span<VkBufferMemoryBarrier2KHR> buffer_barriers,
@@ -174,6 +169,6 @@ VkDependencyInfoKHR dependency_info_create(std::span<VkImageMemoryBarrier2KHR> i
     return dependency_info;
 }
 
-void memory_barrier_insert_2(VkCommandBuffer command_buffer, const VkDependencyInfoKHR* dependency_info) {
+void pipeline_barrier_2_insert(VkCommandBuffer command_buffer, const VkDependencyInfoKHR* dependency_info) {
     vkCmdPipelineBarrier2(command_buffer, dependency_info);
 }

@@ -14,6 +14,20 @@ VkStencilOpState stencil_op_state_create(VkStencilOp fail_op, VkStencilOp pass_o
     return stencil_op_state;
 }
 
+VkResult pipeline_layout_create(VkDevice device, std::span<VkDescriptorSetLayout> set_layouts, std::span<VkPushConstantRange> push_constant_ranges,
+                                VkPipelineLayout* pipeline_layout, VkPipelineLayoutCreateFlags flags, const void* pNext) {
+    VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
+    pipeline_layout_create_info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipeline_layout_create_info.setLayoutCount         = set_layouts.size();
+    pipeline_layout_create_info.pSetLayouts            = set_layouts.data();
+    pipeline_layout_create_info.pushConstantRangeCount = push_constant_ranges.size();
+    pipeline_layout_create_info.pPushConstantRanges    = push_constant_ranges.data();
+    pipeline_layout_create_info.flags                  = flags;
+    pipeline_layout_create_info.pNext                  = pNext;
+
+    return vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, pipeline_layout);
+}
+
 void graphics_pipeline_builder_add_shader_stage(GraphicsPipelineBuilder* builder, VkShaderStageFlagBits stage, VkShaderModule shader_module,
                                                 VkPipelineShaderStageCreateFlags flags, const char* entry_point,
                                                 const VkSpecializationInfo* specialization_info, const void* pNext) {

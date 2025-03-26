@@ -47,10 +47,6 @@ void descriptor_set_layout_destroy(VkDevice device, VkDescriptorSetLayout descri
     vkDestroyDescriptorSetLayout(device, descriptor_set_layout, nullptr);
 }
 
-VkResult command_pool_reset(VkDevice device, VkCommandPool command_pool, VkCommandPoolResetFlags flags) {
-    return vkResetCommandPool(device, command_pool, flags);
-}
-
 VkResult descriptor_layout_builder_layout_create(const DescriptorLayoutBuilder* layout_builder, VkDevice device,
                                                  VkDescriptorSetLayout* descriptor_set_layout, VkDescriptorSetLayoutCreateFlags flags,
                                                  const void* pNext) {

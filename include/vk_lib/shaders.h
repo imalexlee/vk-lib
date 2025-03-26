@@ -9,6 +9,10 @@ VkResult shader_module_create(VkDevice device, const uint32_t* code, size_t code
 
 void shader_module_destroy(VkDevice device, VkShaderModule shader_module);
 
+/*
+ * NON-CORE EXTENSIONS
+ */
+
 // Only works for unlinked shaders currently
 struct ShaderObjectBuilder {
     VkShaderCreateInfoEXT              shader_create_info{VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT};
