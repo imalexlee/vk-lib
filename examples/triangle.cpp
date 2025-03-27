@@ -17,29 +17,33 @@
 struct VkContext {
     VkInstance       instance{};
     VkPhysicalDevice physical_device{};
+    VkDevice         device{};
     VkSurfaceKHR     surface{};
     GLFWwindow*      window{};
     uint32_t         graphics_present_queue_family{};
 };
 
+[[noreturn]] void abort_message(const char* message) {
+    std::cerr << message << std::endl;
+    std::abort();
+}
+
 VkInstance create_instance() {
+    if (!glfwVulkanSupported()) {
+        abort_message("GLFW cannot find the vulkan loader and an ICD");
+    }
     uint32_t                 glfw_extension_count = 0;
-    bool                     vulkan_supported     = glfwVulkanSupported();
     const char**             glfw_extensions      = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
     std::vector<const char*> extensions{};
-    extensions.reserve(glfw_extension_count + 3);
+    extensions.reserve(glfw_extension_count + 2);
     extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-    // extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     for (uint32_t i = 0; i < glfw_extension_count; i++) {
         extensions.push_back(glfw_extensions[i]);
     }
     InstanceBuilder instance_builder;
     instance_builder_set_names(&instance_builder, "hello triangle", "engine name");
     instance_builder_set_versions(&instance_builder, VK_API_VERSION_1_3);
-#ifdef __APPLE__
-    extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-    instance_builder_set_instance_flags(&instance_builder, VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR);
-#endif
     instance_builder_set_extensions(&instance_builder, extensions);
 #ifndef NDEBUG
     std::array layers = {"VK_LAYER_KHRONOS_validation"};
@@ -65,8 +69,7 @@ VkPhysicalDevice select_physical_device(VkInstance instance) {
         }
     }
     if (chosen_device == nullptr) {
-        std::cerr << "Could not find a suitable physical device" << std::endl;
-        std::abort();
+        abort_message("Could not find a suitable physical device");
     }
     return chosen_device;
 }
@@ -84,8 +87,7 @@ uint32_t select_queue_family(VkPhysicalDevice physical_device, VkSurfaceKHR surf
             }
         }
     }
-    std::cerr << "Could not find a suitable queue family" << std::endl;
-    std::abort();
+    abort_message("Could not find a suitable queue family");
 }
 
 VkDevice create_logical_device(VkPhysicalDevice physical_device, uint32_t queue_family) {
@@ -116,12 +118,15 @@ VkDevice create_logical_device(VkPhysicalDevice physical_device, uint32_t queue_
 int main() {
     VkContext vk_context{};
 
+    if (!glfwInit()) {
+        abort_message("GLFW cannot be initialized");
+    }
+
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     vk_context.window          = glfwCreateWindow(640, 480, "Hello Triangle", nullptr, nullptr);
     vk_context.instance        = create_instance();
     vk_context.physical_device = select_physical_device(vk_context.instance);
     VK_CHECK(glfwCreateWindowSurface(vk_context.instance, vk_context.window, nullptr, &vk_context.surface));
     vk_context.graphics_present_queue_family = select_queue_family(vk_context.physical_device, vk_context.surface);
-
-    std::vector<VkQueueFamilyProperties> queue_family_properties = physical_device_enumerate_queue_families(vk_context.physical_device);
+    vk_context.device                        = create_logical_device(vk_context.physical_device, vk_context.graphics_present_queue_family);
 }
