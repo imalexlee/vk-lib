@@ -7,6 +7,9 @@
 
 VkResult physical_device_get_surface_capabilities(VkPhysicalDevice physical_device, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR* capabilities);
 
+VkResult physical_device_get_surface_support(VkPhysicalDevice physical_device, VkSurfaceKHR surface, uint32_t queue_family_index,
+                                             bool* present_supported);
+
 VkResult physical_device_get_surface_formats(VkPhysicalDevice physical_device, VkSurfaceKHR surface, std::vector<VkSurfaceFormatKHR>* formats);
 
 VkResult physical_device_get_present_modes(VkPhysicalDevice physical_device, VkSurfaceKHR surface, std::vector<VkPresentModeKHR>* present_modes);

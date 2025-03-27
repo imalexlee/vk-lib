@@ -2,7 +2,7 @@
 
 VkRect2D rect_2d_create(uint32_t width, uint32_t height, int32_t x_offset, int32_t y_offset) {
     const VkOffset2D offset = {.x = x_offset, .y = y_offset};
-    const VkExtent2D extent = {.height = height, .width = width};
+    const VkExtent2D extent = {.width = width, .height = height};
 
     return VkRect2D{.offset = offset, .extent = extent};
 }

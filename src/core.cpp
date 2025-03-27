@@ -15,7 +15,7 @@ void instance_builder_set_instance_flags(InstanceBuilder* builder, VkInstanceCre
     builder->instance_create_flags = instance_create_flags;
 }
 
-void instance_builder_set_instance_extensions(InstanceBuilder* builder, std::span<const char*> instance_extensions) {
+void instance_builder_set_extensions(InstanceBuilder* builder, std::span<const char*> instance_extensions) {
     builder->instance_extensions.reserve(instance_extensions.size());
     for (const char* extension : instance_extensions) {
         builder->instance_extensions.emplace_back(extension);
@@ -63,13 +63,13 @@ VkResult instance_builder_instance_create(const InstanceBuilder* builder, VkInst
     instance_create_info.ppEnabledExtensionNames = instance_extensions.data();
     instance_create_info.enabledExtensionCount   = instance_extensions.size();
 
-    std::vector<const char*> validation_layers;
-    validation_layers.reserve(builder->layers.size());
+    std::vector<const char*> layers;
+    layers.reserve(builder->layers.size());
     for (const std::string& layer : builder->layers) {
-        validation_layers.push_back(layer.c_str());
+        layers.push_back(layer.c_str());
     }
-    instance_create_info.ppEnabledLayerNames = validation_layers.data();
-    instance_create_info.enabledLayerCount   = validation_layers.size();
+    instance_create_info.ppEnabledLayerNames = layers.data();
+    instance_create_info.enabledLayerCount   = layers.size();
 
     result = vkCreateInstance(&instance_create_info, nullptr, instance);
     if (result != VK_SUCCESS) {

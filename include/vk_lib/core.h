@@ -19,11 +19,12 @@ struct InstanceBuilder {
 
 void instance_builder_set_names(InstanceBuilder* builder, std::string_view app_name, std::string_view engine_name);
 
-void instance_builder_set_versions(InstanceBuilder* builder, uint32_t api, uint32_t app, uint32_t engine);
+void instance_builder_set_versions(InstanceBuilder* builder, uint32_t api, uint32_t app = VK_MAKE_API_VERSION(0, 1, 0, 0),
+                                   uint32_t engine = VK_MAKE_API_VERSION(0, 1, 0, 0));
 
 void instance_builder_set_instance_flags(InstanceBuilder* builder, VkInstanceCreateFlags instance_create_flags);
 
-void instance_builder_set_instance_extensions(InstanceBuilder* builder, std::span<const char*> instance_extensions);
+void instance_builder_set_extensions(InstanceBuilder* builder, std::span<const char*> instance_extensions);
 
 void instance_builder_set_layers(InstanceBuilder* builder, std::span<const char*> layers);
 

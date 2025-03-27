@@ -5,6 +5,18 @@ VkResult physical_device_get_surface_capabilities(VkPhysicalDevice physical_devi
     return vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, capabilities);
 }
 
+VkResult physical_device_get_surface_support(VkPhysicalDevice physical_device, VkSurfaceKHR surface, uint32_t queue_family_index,
+                                             bool* present_supported) {
+    VkBool32       supported = VK_FALSE;
+    const VkResult result    = vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, queue_family_index, surface, &supported);
+    if (result != VK_SUCCESS) {
+        return result;
+    }
+    *present_supported = supported;
+
+    return VK_SUCCESS;
+}
+
 VkResult physical_device_get_surface_formats(VkPhysicalDevice physical_device, VkSurfaceKHR surface, std::vector<VkSurfaceFormatKHR>* formats) {
     uint32_t       format_count = 0;
     const VkResult result       = vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, nullptr);
