@@ -5,8 +5,9 @@
 #pragma once
 #include <vk_lib/common.h>
 
-VkRect2D rect_2d_create(uint32_t width, uint32_t height, int32_t x_offset = 0, int32_t y_offset = 0);
+[[nodiscard]] VkRect2D rect_2d_create(uint32_t width, uint32_t height, int32_t x_offset = 0, int32_t y_offset = 0);
 
+[[nodiscard]] VkViewport viewport_create(float width, float height, float x_offset = 0, float y_offset = 0, float min_depth = 0, float max_depth = 1);
 /*
  * CORE EXTENSIONS
  */

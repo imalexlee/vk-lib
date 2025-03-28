@@ -29,7 +29,7 @@ VkResult pipeline_layout_create(VkDevice device, std::span<VkDescriptorSetLayout
 }
 
 void graphics_pipeline_builder_add_shader_stage(GraphicsPipelineBuilder* builder, VkShaderStageFlagBits stage, VkShaderModule shader_module,
-                                                VkPipelineShaderStageCreateFlags flags, const char* entry_point,
+                                                VkPipelineShaderStageCreateFlags flags, std::string_view entry_point,
                                                 const VkSpecializationInfo* specialization_info, const void* pNext) {
     builder->shader_stages.emplace_back(VkPipelineShaderStageCreateInfo{
         .sType               = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -37,7 +37,7 @@ void graphics_pipeline_builder_add_shader_stage(GraphicsPipelineBuilder* builder
         .flags               = flags,
         .stage               = stage,
         .module              = shader_module,
-        .pName               = entry_point,
+        .pName               = entry_point.data(),
         .pSpecializationInfo = specialization_info,
     });
     builder->graphics_pipeline_create_info.stageCount = builder->shader_stages.size();
@@ -111,10 +111,10 @@ void graphics_pipeline_builder_set_rasterization_state(GraphicsPipelineBuilder* 
     builder->rasterization_state.pNext                   = pNext;
 }
 
-void graphics_pipeline_builder_set_multisample_state(GraphicsPipelineBuilder* builder, uint32_t samples, bool sample_shading_enable,
+void graphics_pipeline_builder_set_multisample_state(GraphicsPipelineBuilder* builder, VkSampleCountFlagBits samples, bool sample_shading_enable,
                                                      float min_sample_shading, const VkSampleMask* sample_mask, bool alpha_to_coverage_enable,
                                                      bool alpha_to_one_enable) {
-    builder->multisample_state.rasterizationSamples  = static_cast<VkSampleCountFlagBits>(samples);
+    builder->multisample_state.rasterizationSamples  = samples;
     builder->multisample_state.sampleShadingEnable   = sample_shading_enable;
     builder->multisample_state.minSampleShading      = min_sample_shading;
     builder->multisample_state.pSampleMask           = sample_mask;
@@ -150,12 +150,12 @@ void graphics_pipeline_builder_set_color_blend_state(GraphicsPipelineBuilder* bu
     builder->color_blend_state.pNext             = pNext;
 }
 
-void graphics_pipeline_builder_add_color_blend_attachment(GraphicsPipelineBuilder* builder, VkBlendFactor src_color_blend_factor,
+void graphics_pipeline_builder_add_color_blend_attachment(GraphicsPipelineBuilder* builder, bool blend_enabled, VkBlendFactor src_color_blend_factor,
                                                           VkBlendFactor dst_color_blend_factor, VkBlendOp color_blend_op,
                                                           VkBlendFactor src_alpha_blend_factor, VkBlendFactor dst_alpha_blend_factor,
                                                           VkBlendOp alpha_blend_op, VkColorComponentFlags color_write_mask) {
     builder->color_blend_attachments.emplace_back(VkPipelineColorBlendAttachmentState{
-        .blendEnable         = true,
+        .blendEnable         = blend_enabled,
         .srcColorBlendFactor = src_color_blend_factor,
         .dstColorBlendFactor = dst_color_blend_factor,
         .colorBlendOp        = color_blend_op,
@@ -214,4 +214,18 @@ VkResult graphics_pipeline_builder_pipeline_create(const GraphicsPipelineBuilder
     graphics_pipeline_create_info.pDynamicState                = &builder->dynamic_state;
 
     return vkCreateGraphicsPipelines(device, pipeline_cache, 1, &graphics_pipeline_create_info, nullptr, graphics_pipeline);
+}
+
+VkPipelineRenderingCreateInfoKHR rendering_create_info_create(std::span<VkFormat> color_attachment_formats, VkFormat depth_attachment_format,
+                                                              VkFormat stencil_attachment_format, uint32_t view_mask, const void* pNext) {
+    VkPipelineRenderingCreateInfoKHR rendering_create_info{};
+    rendering_create_info.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+    rendering_create_info.viewMask                = view_mask;
+    rendering_create_info.colorAttachmentCount    = color_attachment_formats.size();
+    rendering_create_info.pColorAttachmentFormats = color_attachment_formats.data();
+    rendering_create_info.depthAttachmentFormat   = depth_attachment_format;
+    rendering_create_info.stencilAttachmentFormat = stencil_attachment_format;
+    rendering_create_info.pNext                   = pNext;
+
+    return rendering_create_info;
 }

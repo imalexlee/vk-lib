@@ -172,6 +172,18 @@ VkResult device_create(VkPhysicalDevice physical_device, std::span<VkDeviceQueue
     return VK_SUCCESS;
 }
 
+VkResult device_enumerate_extension_properties(VkPhysicalDevice physical_device, std::vector<VkExtensionProperties> extension_properties,
+                                               std::string_view layer_name) {
+    const char*    layer_str      = layer_name.empty() ? nullptr : layer_name.data();
+    uint32_t       property_count = 0;
+    const VkResult result         = vkEnumerateDeviceExtensionProperties(physical_device, layer_str, &property_count, nullptr);
+    if (result != VK_SUCCESS) {
+        return result;
+    }
+    extension_properties.resize(property_count);
+    return vkEnumerateDeviceExtensionProperties(physical_device, layer_str, &property_count, extension_properties.data());
+}
+
 VkPhysicalDeviceFeatures2KHR physical_device_get_features_2(VkPhysicalDevice physical_device, void* extended_feature_chain) {
     // must pass in the pNext chain of features to query for
     VkPhysicalDeviceFeatures2KHR physical_device_features{};

@@ -13,8 +13,8 @@ struct InstanceBuilder {
     std::string              engine_name{};
     std::vector<std::string> instance_extensions{};
     std::vector<std::string> layers{};
-    const void*              instance_pNext;
-    VkInstanceCreateFlags    instance_create_flags;
+    VkInstanceCreateFlags    instance_create_flags{};
+    const void*              instance_pNext{};
 };
 
 void instance_builder_set_names(InstanceBuilder* builder, std::string_view app_name, std::string_view engine_name);
@@ -57,6 +57,9 @@ void device_destroy(VkDevice device);
 VkResult device_create(VkPhysicalDevice physical_device, std::span<VkDeviceQueueCreateInfo> queue_create_infos, VkDevice* device,
                        std::span<const char*> extension_names = {}, const VkPhysicalDeviceFeatures* enabled_features = nullptr,
                        const void* pNext = nullptr);
+
+VkResult device_enumerate_extension_properties(VkPhysicalDevice physical_device, std::vector<VkExtensionProperties> extension_properties,
+                                               std::string_view layer_name = {});
 
 /*
  * CORE EXTENSIONS

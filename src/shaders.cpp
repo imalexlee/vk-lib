@@ -21,7 +21,7 @@ void shader_object_builder_set_stage(ShaderObjectBuilder* builder, VkShaderStage
 }
 
 void shader_object_builder_set_code(ShaderObjectBuilder* builder, const void* code, size_t code_size, VkShaderCodeTypeEXT code_type,
-                                    const char* entry_point_name) {
+                                    std::string_view entry_point_name) {
     builder->shader_code.resize(code_size);
     std::memcpy(builder->shader_code.data(), code, code_size);
 

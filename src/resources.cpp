@@ -57,8 +57,9 @@ VkResult image_builder_image_create(const ImageBuilder* builder, VkDevice device
 void image_destroy(VkDevice device, VkImage image) { vkDestroyImage(device, image, nullptr); }
 
 VkResult image_view_create(VkDevice device, VkImage image, VkImageViewType view_type, VkFormat format, VkImageAspectFlags aspect_flags,
-                           VkImageView* image_view, uint32_t mip_levels, uint32_t array_layers, const void* pNext) {
-    const VkImageSubresourceRange subresource_range = image_subresource_range_create(aspect_flags, 0, array_layers, 1, mip_levels);
+                           VkImageView* image_view, const VkComponentMapping* component_mapping, uint32_t mip_levels, uint32_t array_layers,
+                           const void* pNext) {
+    const VkImageSubresourceRange subresource_range = image_subresource_range_create(aspect_flags, 0, array_layers, 0, mip_levels);
 
     VkImageViewCreateInfo image_view_create_info{};
     image_view_create_info.sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -67,6 +68,14 @@ VkResult image_view_create(VkDevice device, VkImage image, VkImageViewType view_
     image_view_create_info.image            = image;
     image_view_create_info.viewType         = view_type;
     image_view_create_info.subresourceRange = subresource_range;
+    if (component_mapping == nullptr) {
+        image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    } else {
+        image_view_create_info.components = *component_mapping;
+    }
 
     return vkCreateImageView(device, &image_view_create_info, nullptr, image_view);
 }
@@ -83,23 +92,6 @@ VkImageSubresourceRange image_subresource_range_create(VkImageAspectFlags aspect
     subresource_range.levelCount     = mip_level_count;
 
     return subresource_range;
-}
-VkViewport viewport_create(float x, float y, float width, float height, float min_depth, float max_depth) {
-    VkViewport viewport{};
-    viewport.x        = x;
-    viewport.y        = y;
-    viewport.width    = width;
-    viewport.height   = height;
-    viewport.minDepth = min_depth;
-    viewport.maxDepth = max_depth;
-    return viewport;
-}
-
-VkRect2D scissor_create(int32_t x, int32_t y, uint32_t width, uint32_t height) {
-    VkRect2D scissor{};
-    scissor.offset = {x, y};
-    scissor.extent = {width, height};
-    return scissor;
 }
 
 void sampler_builder_set_filtering(SamplerBuilder* builder, VkFilter min_filter, VkFilter mag_filter, bool unnormalized_coordinates_enabled,

@@ -33,7 +33,7 @@ struct GraphicsPipelineBuilder {
 };
 
 void graphics_pipeline_builder_add_shader_stage(GraphicsPipelineBuilder* builder, VkShaderStageFlagBits stage, VkShaderModule shader_module,
-                                                VkPipelineShaderStageCreateFlags flags = 0, const char* entry_point = "main",
+                                                VkPipelineShaderStageCreateFlags flags = 0, std::string_view entry_point = "main",
                                                 const VkSpecializationInfo* specialization_info = nullptr, const void* pNext = nullptr);
 
 void graphics_pipeline_builder_clear_shader_stages(GraphicsPipelineBuilder* builder);
@@ -49,7 +49,8 @@ void graphics_pipeline_builder_set_tesselation_state(GraphicsPipelineBuilder* bu
 void graphics_pipeline_builder_set_viewports(GraphicsPipelineBuilder* builder, std::span<VkViewport> viewports, std::span<VkRect2D> scissors,
                                              const void* pNext = nullptr);
 
-void graphics_pipeline_builder_set_viewport(GraphicsPipelineBuilder* builder, const VkViewport* viewport, const VkRect2D* scissor, const void* pNext);
+void graphics_pipeline_builder_set_viewport(GraphicsPipelineBuilder* builder, const VkViewport* viewport, const VkRect2D* scissor,
+                                            const void* pNext = nullptr);
 
 void graphics_pipeline_builder_set_rasterization_state(GraphicsPipelineBuilder* builder, VkPolygonMode polygon_mode, VkCullModeFlags cull_mode,
                                                        VkFrontFace front_face, float line_width = 1.0f, bool depth_clamp_enable = false,
@@ -72,10 +73,13 @@ void graphics_pipeline_builder_set_color_blend_state(GraphicsPipelineBuilder* bu
                                                      std::array<float, 4>                 blend_constants = {0, 0, 0, 0},
                                                      VkPipelineColorBlendStateCreateFlags flags = 0, const void* pNext = nullptr);
 
-void graphics_pipeline_builder_add_color_blend_attachment(GraphicsPipelineBuilder* builder, VkBlendFactor src_color_blend_factor,
-                                                          VkBlendFactor dst_color_blend_factor, VkBlendOp color_blend_op,
-                                                          VkBlendFactor src_alpha_blend_factor, VkBlendFactor dst_alpha_blend_factor,
-                                                          VkBlendOp alpha_blend_op, VkColorComponentFlags color_write_mask);
+void graphics_pipeline_builder_add_color_blend_attachment(
+    GraphicsPipelineBuilder* builder, bool blend_enabled, VkBlendFactor src_color_blend_factor = VK_BLEND_FACTOR_ONE,
+    VkBlendFactor dst_color_blend_factor = VK_BLEND_FACTOR_ZERO, VkBlendOp color_blend_op = VK_BLEND_OP_ADD,
+    VkBlendFactor src_alpha_blend_factor = VK_BLEND_FACTOR_ONE, VkBlendFactor dst_alpha_blend_factor = VK_BLEND_FACTOR_ZERO,
+    VkBlendOp             alpha_blend_op   = VK_BLEND_OP_ADD,
+    VkColorComponentFlags color_write_mask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                                             VK_COLOR_COMPONENT_A_BIT);
 
 void graphics_pipeline_set_dynamic_states(GraphicsPipelineBuilder* builder, std::span<VkDynamicState> dynamic_states);
 
@@ -91,3 +95,14 @@ void graphics_pipeline_builder_set_base_pipeline(GraphicsPipelineBuilder* builde
 
 VkResult graphics_pipeline_builder_pipeline_create(const GraphicsPipelineBuilder* builder, VkDevice device, VkPipeline* graphics_pipeline,
                                                    VkPipelineCache pipeline_cache = nullptr);
+
+/*
+ * CORE EXTENSIONS
+ */
+
+// VULKAN 1.3
+
+[[nodiscard]] VkPipelineRenderingCreateInfoKHR rendering_create_info_create(std::span<VkFormat> color_attachment_formats,
+                                                                            VkFormat            depth_attachment_format   = VK_FORMAT_UNDEFINED,
+                                                                            VkFormat            stencil_attachment_format = VK_FORMAT_UNDEFINED,
+                                                                            uint32_t view_mask = 0, const void* pNext = nullptr);

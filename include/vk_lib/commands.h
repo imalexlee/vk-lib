@@ -13,7 +13,7 @@ void command_pool_destroy(VkDevice device, VkCommandPool command_pool);
 
 VkResult command_buffer_allocate(VkDevice device, VkCommandPool command_pool, VkCommandBufferLevel level, VkCommandBuffer* command_buffer);
 
-VkResult command_buffer_begin(VkCommandBuffer command_buffer, VkCommandBufferUsageFlags flags,
+VkResult command_buffer_begin(VkCommandBuffer command_buffer, VkCommandBufferUsageFlags flags = 0,
                               const VkCommandBufferInheritanceInfo* inheritance_info = nullptr, const void* pNext = nullptr);
 
 VkResult command_buffer_reset(VkCommandBuffer command_buffer, VkCommandBufferResetFlags flags = 0);

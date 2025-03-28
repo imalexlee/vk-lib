@@ -5,7 +5,7 @@
 #pragma once
 #include <vk_lib/common.h>
 
-VkResult shader_module_create(VkDevice device, const uint32_t* code, size_t code_size, VkShaderModule* shader_module, const void* pNext);
+VkResult shader_module_create(VkDevice device, const uint32_t* code, size_t code_size, VkShaderModule* shader_module, const void* pNext = nullptr);
 
 void shader_module_destroy(VkDevice device, VkShaderModule shader_module);
 
@@ -27,7 +27,7 @@ void shader_object_builder_set_stage(ShaderObjectBuilder* builder, VkShaderStage
                                      VkShaderCreateFlagsEXT create_flags = 0);
 
 void shader_object_builder_set_code(ShaderObjectBuilder* builder, const void* code, size_t code_size, VkShaderCodeTypeEXT code_type,
-                                    const char* entry_point_name = "main");
+                                    std::string_view entry_point_name = "main");
 
 void shader_object_builder_set_descriptor_set_layouts(ShaderObjectBuilder* builder, std::span<VkDescriptorSetLayout> descriptor_set_layouts);
 

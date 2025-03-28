@@ -95,6 +95,6 @@ VkResult swapchain_get_images(VkDevice device, VkSwapchainKHR swapchain, std::ve
     if (result != VK_SUCCESS) {
         return result;
     }
-
+    images->resize(swapchain_image_count);
     return vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, images->data());
 }

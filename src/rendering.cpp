@@ -7,6 +7,17 @@ VkRect2D rect_2d_create(uint32_t width, uint32_t height, int32_t x_offset, int32
     return VkRect2D{.offset = offset, .extent = extent};
 }
 
+VkViewport viewport_create(float width, float height, float x_offset, float y_offset, float min_depth, float max_depth) {
+    VkViewport viewport{};
+    viewport.width    = width;
+    viewport.height   = height;
+    viewport.x        = x_offset;
+    viewport.y        = y_offset;
+    viewport.minDepth = min_depth;
+    viewport.maxDepth = max_depth;
+    return viewport;
+}
+
 VkRenderingAttachmentInfoKHR rendering_attachment_info_create(VkImageView image_view, VkImageLayout image_layout, VkAttachmentLoadOp load_op,
                                                               VkAttachmentStoreOp store_op, const VkClearValue* clear_value,
                                                               VkResolveModeFlagBitsKHR resolve_mode, VkImageView resolve_image_view,
