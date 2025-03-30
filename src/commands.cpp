@@ -36,6 +36,8 @@ VkResult command_buffer_begin(VkCommandBuffer command_buffer, VkCommandBufferUsa
     return vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
 }
 
+VkResult command_buffer_end(VkCommandBuffer command_buffer) { return vkEndCommandBuffer(command_buffer); }
+
 VkResult command_buffer_reset(VkCommandBuffer command_buffer, VkCommandBufferResetFlags flags) { return vkResetCommandBuffer(command_buffer, flags); }
 
 VkCommandBufferSubmitInfoKHR command_buffer_submit_info_2_create(VkCommandBuffer command_buffer, uint32_t device_mask, const void* pNext) {

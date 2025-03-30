@@ -33,6 +33,12 @@ VkResult fence_create(VkDevice device, VkFenceCreateFlags flags, VkFence* fence,
     return vkCreateFence(device, &fence_create_info, nullptr, fence);
 }
 
+VkResult fence_batch_wait(VkDevice device, std::span<VkFence> fences, bool wait_all, uint64_t timeout) {
+    return vkWaitForFences(device, fences.size(), fences.data(), wait_all, timeout);
+}
+
+VkResult fence_wait(VkDevice device, VkFence fence, bool wait_all, uint64_t timeout) { return vkWaitForFences(device, 1, &fence, wait_all, timeout); }
+
 VkResult fence_batch_reset(VkDevice device, std::span<VkFence> fences) { return vkResetFences(device, fences.size(), fences.data()); }
 
 VkResult fence_reset(VkDevice device, VkFence fence) { return vkResetFences(device, 1, &fence); }

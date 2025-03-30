@@ -12,6 +12,7 @@
 #include <vk_lib/rendering.h>
 #include <vk_lib/resources.h>
 #include <vk_lib/shaders.h>
+#include <vk_lib/synchronization.h>
 
 #define VK_CHECK(x)                                                                                                                                  \
     do {                                                                                                                                             \
@@ -23,12 +24,11 @@
     } while (0)
 
 struct SwapchainContext {
-    VkSwapchainKHR                            swapchain{};
-    VkSurfaceFormatKHR                        surface_format{};
-    VkExtent2D                                extent{};
-    std::vector<VkImage>                      images{};
-    std::vector<VkImageView>                  image_views{};
-    std::vector<VkRenderingAttachmentInfoKHR> attachment_infos{};
+    VkSwapchainKHR           swapchain{};
+    VkSurfaceFormatKHR       surface_format{};
+    VkExtent2D               extent{};
+    std::vector<VkImage>     images{};
+    std::vector<VkImageView> image_views{};
 };
 
 struct GraphicsPipeline {
@@ -38,19 +38,27 @@ struct GraphicsPipeline {
     VkShaderModule   frag_shader{};
 };
 
+struct Frame {
+    VkSemaphore                  image_available_semaphore{};
+    VkSemaphore                  render_finished_semaphore{};
+    VkFence                      in_flight_fence{};
+    VkRenderingInfoKHR           rendering_info{};
+    VkCommandBuffer              command_buffer{};
+    VkRenderingAttachmentInfoKHR attachment_info{};
+};
+
 struct VkContext {
-    VkInstance                      instance{};
-    VkPhysicalDevice                physical_device{};
-    VkDevice                        device{};
-    VkSurfaceKHR                    surface{};
-    VkCommandPool                   command_pool{};
-    VkCommandBuffer                 command_buffer{};
-    GLFWwindow*                     window{};
-    uint32_t                        graphics_present_queue_family{};
-    std::vector<VkRenderingInfoKHR> rendering_infos{};
-    SwapchainContext                swapchain_ctx{};
-    GraphicsPipeline                graphics_pipeline{};
-    uint64_t                        curr_frame{};
+    VkInstance         instance{};
+    VkPhysicalDevice   physical_device{};
+    VkDevice           device{};
+    VkSurfaceKHR       surface{};
+    GLFWwindow*        window{};
+    uint32_t           graphics_present_queue_family{};
+    uint64_t           curr_frame{};
+    VkCommandPool      frame_command_pool{};
+    std::vector<Frame> frames{};
+    SwapchainContext   swapchain_ctx{};
+    GraphicsPipeline   graphics_pipeline{};
 };
 
 [[noreturn]] void abort_message(std::string_view message) {
@@ -149,7 +157,7 @@ VkDevice create_logical_device(VkPhysicalDevice physical_device, uint32_t queue_
     return device;
 }
 
-SwapchainContext create_swapchain(VkPhysicalDevice physical_device, VkDevice device, VkSurfaceKHR surface, GLFWwindow* window) {
+SwapchainContext create_swapchain_context(VkPhysicalDevice physical_device, VkDevice device, VkSurfaceKHR surface, GLFWwindow* window) {
     std::vector<VkSurfaceFormatKHR> surface_formats;
     VK_CHECK(physical_device_get_surface_formats(physical_device, surface, &surface_formats));
     VkSurfaceFormatKHR format = surface_formats[0];
@@ -185,10 +193,26 @@ SwapchainContext create_swapchain(VkPhysicalDevice physical_device, VkDevice dev
     VkSwapchainKHR swapchain;
     swapchain_builder_swapchain_create(&swapchain_builder, device, &swapchain);
 
+    // std::vector<VkImage> swapchain_images;
+
     SwapchainContext swapchain_context{};
     swapchain_context.extent         = swapchain_extent;
     swapchain_context.surface_format = format;
     swapchain_context.swapchain      = swapchain;
+
+    VK_CHECK(swapchain_get_images(device, swapchain, &swapchain_context.images));
+
+    swapchain_context.image_views.reserve(swapchain_context.images.size());
+    // swapchain_context.attachment_infos.reserve(swapchain_context.images.size());
+    for (VkImage image : swapchain_context.images) {
+        VkImageView image_view;
+        image_view_create(device, image, VK_IMAGE_VIEW_TYPE_2D, format.format, VK_IMAGE_ASPECT_COLOR_BIT, &image_view);
+        swapchain_context.image_views.push_back(image_view);
+        //
+        // VkRenderingAttachmentInfoKHR color_attachment_info = rendering_attachment_info_create(
+        //     image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
+        // swapchain_context.attachment_infos.push_back(color_attachment_info);
+    }
 
     return swapchain_context;
 }
@@ -208,10 +232,10 @@ VkShaderModule load_shader(VkDevice device, const std::filesystem::path& path) {
 }
 
 GraphicsPipeline create_graphics_pipeline(VkDevice device, VkFormat color_attachment_format, uint32_t width, uint32_t height) {
-    const VkShaderModule vert_shader = load_shader(device, "../../examples/shaders/triangle.vert.spv");
-    const VkShaderModule frag_shader = load_shader(device, "../../examples/shaders/triangle.frag.spv");
+    VkShaderModule vert_shader = load_shader(device, "../../examples/shaders/triangle.vert.spv");
+    VkShaderModule frag_shader = load_shader(device, "../../examples/shaders/triangle.frag.spv");
 
-    const VkViewport viewport = viewport_create(width, height);
+    const VkViewport viewport = viewport_create(static_cast<float>(width), static_cast<float>(height));
     const VkRect2D   scissor  = rect_2d_create(width, height);
 
     VkPipelineLayout pipeline_layout;
@@ -244,6 +268,23 @@ GraphicsPipeline create_graphics_pipeline(VkDevice device, VkFormat color_attach
     return graphics_pipeline;
 }
 
+std::vector<Frame> init_frames(VkDevice device, VkCommandPool command_pool, std::span<VkImageView> frame_image_views) {
+    std::vector<Frame> frames;
+    frames.reserve(frame_image_views.size());
+    for (VkImageView frame_image_view : frame_image_views) {
+        Frame new_frame{};
+        new_frame.attachment_info = rendering_attachment_info_create(frame_image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                                                     VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
+        VK_CHECK(command_buffer_allocate(device, command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, &new_frame.command_buffer));
+        VK_CHECK(semaphore_create(device, &new_frame.image_available_semaphore));
+        VK_CHECK(semaphore_create(device, &new_frame.render_finished_semaphore));
+        VK_CHECK(fence_create(device, VK_FENCE_CREATE_SIGNALED_BIT, &new_frame.in_flight_fence));
+
+        frames.push_back(new_frame);
+    }
+    return frames;
+}
+
 int main() {
     VkContext vk_context{};
 
@@ -255,46 +296,53 @@ int main() {
     vk_context.window          = glfwCreateWindow(640, 480, "Hello Triangle", nullptr, nullptr);
     vk_context.instance        = create_instance();
     vk_context.physical_device = select_physical_device(vk_context.instance);
+
     VK_CHECK(glfwCreateWindowSurface(vk_context.instance, vk_context.window, nullptr, &vk_context.surface));
+
     vk_context.graphics_present_queue_family = select_queue_family(vk_context.physical_device, vk_context.surface);
     vk_context.device                        = create_logical_device(vk_context.physical_device, vk_context.graphics_present_queue_family);
-    vk_context.swapchain_ctx                 = create_swapchain(vk_context.physical_device, vk_context.device, vk_context.surface, vk_context.window);
-    VK_CHECK(swapchain_get_images(vk_context.device, vk_context.swapchain_ctx.swapchain, &vk_context.swapchain_ctx.images));
-
-    vk_context.swapchain_ctx.image_views.reserve(vk_context.swapchain_ctx.images.size());
-    vk_context.swapchain_ctx.attachment_infos.reserve(vk_context.swapchain_ctx.images.size());
-    for (VkImage image : vk_context.swapchain_ctx.images) {
-        VkImageView image_view;
-        image_view_create(vk_context.device, image, VK_IMAGE_VIEW_TYPE_2D, vk_context.swapchain_ctx.surface_format.format, VK_IMAGE_ASPECT_COLOR_BIT,
-                          &image_view);
-        vk_context.swapchain_ctx.image_views.push_back(image_view);
-
-        VkRenderingAttachmentInfo color_attachment_info = rendering_attachment_info_create(image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                                                                           VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
-        vk_context.swapchain_ctx.attachment_infos.push_back(color_attachment_info);
-    }
+    vk_context.swapchain_ctx     = create_swapchain_context(vk_context.physical_device, vk_context.device, vk_context.surface, vk_context.window);
     vk_context.graphics_pipeline = create_graphics_pipeline(vk_context.device, vk_context.swapchain_ctx.surface_format.format,
                                                             vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);
     VK_CHECK(command_pool_create(vk_context.device, vk_context.graphics_present_queue_family, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-                                 &vk_context.command_pool));
-    VK_CHECK(command_buffer_allocate(vk_context.device, vk_context.command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, &vk_context.command_buffer));
+                                 &vk_context.frame_command_pool));
 
+    vk_context.frames = init_frames(vk_context.device, vk_context.frame_command_pool, vk_context.swapchain_ctx.image_views);
+
+    const VkRect2D render_area = rect_2d_create(vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);
     while (!glfwWindowShouldClose(vk_context.window)) {
         glfwPollEvents();
-        uint32_t                 frame_index = vk_context.curr_frame % 3;
-        VkRect2D                 render_area = rect_2d_create(vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);
-        std::array               color_attachment_infos = {vk_context.swapchain_ctx.attachment_infos[frame_index]};
+        const uint32_t           frame_index            = vk_context.curr_frame % 3;
+        const Frame*             current_frame          = &vk_context.frames[frame_index];
+        std::array               color_attachment_infos = {current_frame->attachment_info};
         const VkRenderingInfoKHR rendering_info         = rendering_info_create(render_area, color_attachment_infos);
 
-        command_buffer_begin(vk_context.command_buffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+        VkCommandBuffer command_buffer = current_frame->command_buffer;
 
-        rendering_begin(vk_context.command_buffer, &rendering_info);
+        VK_CHECK(fence_wait(vk_context.device, current_frame->in_flight_fence));
+        VK_CHECK(fence_reset(vk_context.device, current_frame->in_flight_fence));
 
-        vkCmdBindPipeline(vk_context.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_context.graphics_pipeline.pipeline);
+        uint32_t swapchain_image_index;
+        swapchain_acquire_next_image(vk_context.device, vk_context.swapchain_ctx.swapchain, &swapchain_image_index,
+                                     current_frame->image_available_semaphore);
 
-        vkCmdDraw(vk_context.command_buffer, 3, 1, 0, 0);
+        VK_CHECK(command_buffer_begin(command_buffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT));
 
-        rendering_end(vk_context.command_buffer);
+        rendering_begin(command_buffer, &rendering_info);
+
+        vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_context.graphics_pipeline.pipeline);
+
+        vkCmdDraw(command_buffer, 3, 1, 0, 0);
+
+        rendering_end(command_buffer);
+
+        VK_CHECK(command_buffer_end(command_buffer));
+
+        // TODO: Submit the buffer to the graphics queue. This will wait on the image available semaphore, and signal the render finished semaphore
+        // TODO: when done. Also, this will signal the in flight fence which lets the next iteration start drawing to the frame, knowing that the
+        // frame
+        // TODO: has been presented
+        // TODO: Then, present the image and set it to wait on that render finished semaphore.
 
         vk_context.curr_frame++;
     }

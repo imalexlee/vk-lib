@@ -98,3 +98,8 @@ VkResult swapchain_get_images(VkDevice device, VkSwapchainKHR swapchain, std::ve
     images->resize(swapchain_image_count);
     return vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, images->data());
 }
+
+VkResult swapchain_acquire_next_image(VkDevice device, VkSwapchainKHR swapchain, uint32_t* image_index, VkSemaphore semaphore, VkFence fence,
+                                      uint64_t timeout) {
+    return vkAcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, image_index);
+}

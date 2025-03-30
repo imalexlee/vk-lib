@@ -40,3 +40,6 @@ VkResult swapchain_builder_swapchain_create(const SwapchainBuilder* builder, VkD
 void swapchain_destroy(VkDevice device, VkSwapchainKHR swapchain);
 
 VkResult swapchain_get_images(VkDevice device, VkSwapchainKHR swapchain, std::vector<VkImage>* images);
+
+VkResult swapchain_acquire_next_image(VkDevice device, VkSwapchainKHR swapchain, uint32_t* image_index, VkSemaphore semaphore = nullptr,
+                                      VkFence fence = nullptr, uint64_t timeout = UINT64_MAX);
