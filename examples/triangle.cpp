@@ -280,19 +280,20 @@ std::vector<Frame> init_frames(VkDevice device, VkCommandPool command_pool, std:
         frame->attachment_info       = rendering_attachment_info_create(frame_image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                                                         VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
 
-        VK_CHECK(command_buffer_allocate(device, command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, &frame->command_buffer));
+        VkCommandBufferAllocateInfo command_buffer_ai = command_buffer_allocate_info(command_pool);
+        vkAllocateCommandBuffers(device, &command_buffer_ai, &frame->command_buffer);
         VK_CHECK(semaphore_create(device, &frame->image_available_semaphore));
         VK_CHECK(semaphore_create(device, &frame->render_finished_semaphore));
         VK_CHECK(fence_create(device, VK_FENCE_CREATE_SIGNALED_BIT, &frame->in_flight_fence));
 
-        frame->command_buffer_submit_info = command_buffer_submit_info_2_create(frame->command_buffer);
+        frame->command_buffer_submit_info = command_buffer_submit_info(frame->command_buffer);
         frame->wait_semaphore_submit_info =
             semaphore_submit_info_create(frame->image_available_semaphore, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR);
         frame->signal_semaphore_submit_info =
             semaphore_submit_info_create(frame->render_finished_semaphore, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR);
 
         frame->submit_info_2 =
-            submit_info_2_create(&frame->command_buffer_submit_info, &frame->wait_semaphore_submit_info, &frame->signal_semaphore_submit_info);
+            submit_info_2(&frame->command_buffer_submit_info, &frame->wait_semaphore_submit_info, &frame->signal_semaphore_submit_info);
 
         VkImageSubresourceRange subresource_range = image_subresource_range_create(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1);
 
@@ -314,7 +315,7 @@ void destroy_resources(VkContext* vk_context) {
         semaphore_destroy(vk_context->device, frame.render_finished_semaphore);
         fence_destroy(vk_context->device, frame.in_flight_fence);
     }
-    command_pool_destroy(vk_context->device, vk_context->frame_command_pool);
+    vkDestroyCommandPool(vk_context->device, vk_context->frame_command_pool, nullptr);
     pipeline_destroy(vk_context->device, vk_context->graphics_pipeline.pipeline);
     pipeline_layout_destroy(vk_context->device, vk_context->graphics_pipeline.pipeline_layout);
     shader_module_destroy(vk_context->device, vk_context->graphics_pipeline.vert_shader);
@@ -349,8 +350,9 @@ int main() {
     vk_context.swapchain_ctx     = create_swapchain_context(vk_context.physical_device, vk_context.device, vk_context.surface, vk_context.window);
     vk_context.graphics_pipeline = create_graphics_pipeline(vk_context.device, vk_context.swapchain_ctx.surface_format.format,
                                                             vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);
-    VK_CHECK(command_pool_create(vk_context.device, vk_context.graphics_present_queue_family, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-                                 &vk_context.frame_command_pool));
+    VkCommandPoolCreateInfo command_pool_ci =
+        command_pool_create_info(vk_context.graphics_present_queue_family, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+    vkCreateCommandPool(vk_context.device, &command_pool_ci, nullptr, &vk_context.frame_command_pool);
 
     vk_context.frames = init_frames(vk_context.device, vk_context.frame_command_pool, vk_context.swapchain_ctx.image_views,
                                     vk_context.swapchain_ctx.images, vk_context.graphics_present_queue_family);
@@ -377,9 +379,11 @@ int main() {
         uint32_t swapchain_image_index;
         swapchain_acquire_next_image(vk_context.device, vk_context.swapchain_ctx.swapchain, &swapchain_image_index,
                                      current_frame->image_available_semaphore);
-        VK_CHECK(command_buffer_reset(current_frame->command_buffer));
 
-        VK_CHECK(command_buffer_begin(command_buffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT));
+        VK_CHECK(vkResetCommandBuffer(command_buffer, 0));
+
+        VkCommandBufferBeginInfo begin_info = command_buffer_begin_info(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+        VK_CHECK(vkBeginCommandBuffer(command_buffer, &begin_info));
 
         rendering_begin(command_buffer, &rendering_info);
 
@@ -391,9 +395,9 @@ int main() {
 
         pipeline_barrier_2_insert(command_buffer, &current_frame->dependency_info);
 
-        VK_CHECK(command_buffer_end(command_buffer));
+        VK_CHECK(vkEndCommandBuffer(command_buffer));
 
-        queue_submit_2(vk_context.graphics_queue, &current_frame->submit_info_2, current_frame->in_flight_fence);
+        VK_CHECK(vkQueueSubmit2(vk_context.graphics_queue, 1, &current_frame->submit_info_2, current_frame->in_flight_fence));
 
         VkPresentInfoKHR present_info =
             present_info_create(&vk_context.swapchain_ctx.swapchain, &swapchain_image_index, &current_frame->render_finished_semaphore);
