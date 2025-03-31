@@ -5,6 +5,40 @@
 #pragma once
 #include <vk_lib/common.h>
 
+[[nodiscard]] VkPipelineShaderStageCreateInfo pipeline_shader_stage_create_info(VkShaderStageFlagBits stage, VkShaderModule shader_module,
+                                                                                VkPipelineShaderStageCreateFlags flags               = 0,
+                                                                                const char*                      entry_point         = "main",
+                                                                                const VkSpecializationInfo*      specialization_info = nullptr,
+                                                                                const void*                      pNext               = nullptr);
+
+[[nodiscard]] VkVertexInputBindingDescription vertex_input_binding_description(uint32_t binding, uint32_t stride, VkVertexInputRate input_rate);
+
+[[nodiscard]] VkVertexInputAttributeDescription vertex_input_attribute_description(uint32_t location, uint32_t binding, VkFormat format,
+                                                                                   uint32_t offset);
+
+[[nodiscard]] VkPipelineVertexInputStateCreateInfo pipeline_vertex_input_state_create_info(std::span<VkVertexInputBindingDescription>   bindings,
+                                                                                           std::span<VkVertexInputAttributeDescription> attributes,
+                                                                                           const void* pNext = nullptr);
+
+[[nodiscard]] VkPipelineInputAssemblyStateCreateInfo pipeline_input_assembly_state_create_info(VkPrimitiveTopology topology,
+                                                                                               bool                primitive_restart_enabled = false);
+
+[[nodiscard]] VkPipelineTessellationStateCreateInfo pipeline_tessellation_state_create_info(uint32_t    patch_control_points,
+                                                                                            const void* pNext = nullptr);
+
+[[nodiscard]] VkPipelineViewportStateCreateInfo pipeline_multi_viewport_state_create_info(std::span<VkViewport> viewports,
+                                                                                          std::span<VkRect2D> scissors, const void* pNext = nullptr);
+
+[[nodiscard]] VkPipelineViewportStateCreateInfo pipeline_viewport_state_create_info(const VkViewport* viewport, const VkRect2D* scissor,
+                                                                                    const void* pNext = nullptr);
+
+[[nodiscard]] VkPipelineRasterizationStateCreateInfo
+rasterization_state_create_info(VkPolygonMode polygon_mode, VkCullModeFlags cull_mode, VkFrontFace front_face, float line_width = 1.0f,
+                                bool depth_clamp_enable = false, bool rasterizer_discard_enable = false, float depth_bias_constant_factor = 0.0f,
+                                float depth_bias_clamp = 0.0f, float depth_bias_slope_factor = 0.0f, const void* pNext = nullptr);
+
+// TODO: add multisample state create info
+
 [[nodiscard]] VkStencilOpState stencil_op_state_create(VkStencilOp fail_op, VkStencilOp pass_op, VkStencilOp depth_fail_op, VkCompareOp compare_op,
                                                        uint32_t compare_mask, uint32_t write_mask, uint32_t reference);
 

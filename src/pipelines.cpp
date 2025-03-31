@@ -1,5 +1,115 @@
 #include <vk_lib/pipelines.h>
 
+VkPipelineShaderStageCreateInfo pipeline_shader_stage_create_info(VkShaderStageFlagBits stage, VkShaderModule shader_module,
+                                                                  VkPipelineShaderStageCreateFlags flags, const char* entry_point,
+                                                                  const VkSpecializationInfo* specialization_info, const void* pNext) {
+    VkPipelineShaderStageCreateInfo shader_stage_create_info{};
+    shader_stage_create_info.sType               = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shader_stage_create_info.flags               = flags;
+    shader_stage_create_info.stage               = stage;
+    shader_stage_create_info.module              = shader_module;
+    shader_stage_create_info.pName               = entry_point;
+    shader_stage_create_info.pSpecializationInfo = specialization_info;
+    shader_stage_create_info.pNext               = pNext;
+
+    return shader_stage_create_info;
+}
+
+VkVertexInputBindingDescription vertex_input_binding_description(uint32_t binding, uint32_t stride, VkVertexInputRate input_rate) {
+    VkVertexInputBindingDescription input_binding_description{};
+    input_binding_description.binding   = binding;
+    input_binding_description.stride    = stride;
+    input_binding_description.inputRate = input_rate;
+
+    return input_binding_description;
+}
+
+VkVertexInputAttributeDescription vertex_input_attribute_description(uint32_t location, uint32_t binding, VkFormat format, uint32_t offset) {
+    VkVertexInputAttributeDescription input_attribute_description{};
+    input_attribute_description.location = location;
+    input_attribute_description.binding  = binding;
+    input_attribute_description.format   = format;
+    input_attribute_description.offset   = offset;
+
+    return input_attribute_description;
+}
+
+VkPipelineVertexInputStateCreateInfo pipeline_vertex_input_state_create_info(std::span<VkVertexInputBindingDescription>   bindings,
+                                                                             std::span<VkVertexInputAttributeDescription> attributes,
+                                                                             const void*                                  pNext) {
+    VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info{};
+    vertex_input_state_create_info.vertexBindingDescriptionCount   = bindings.size();
+    vertex_input_state_create_info.pVertexBindingDescriptions      = bindings.data();
+    vertex_input_state_create_info.vertexAttributeDescriptionCount = attributes.size();
+    vertex_input_state_create_info.pVertexAttributeDescriptions    = attributes.data();
+    vertex_input_state_create_info.pNext                           = pNext;
+
+    return vertex_input_state_create_info;
+}
+
+VkPipelineInputAssemblyStateCreateInfo pipeline_input_assembly_state_create_info(VkPrimitiveTopology topology, bool primitive_restart_enabled) {
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_state_create_info{};
+    input_assembly_state_create_info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    input_assembly_state_create_info.topology               = topology;
+    input_assembly_state_create_info.primitiveRestartEnable = primitive_restart_enabled;
+
+    return input_assembly_state_create_info;
+}
+
+VkPipelineTessellationStateCreateInfo pipeline_tessellation_state_create_info(uint32_t patch_control_points, const void* pNext) {
+    VkPipelineTessellationStateCreateInfo tessellation_state_create_info{};
+    tessellation_state_create_info.sType              = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+    tessellation_state_create_info.patchControlPoints = patch_control_points;
+    tessellation_state_create_info.pNext              = pNext;
+
+    return tessellation_state_create_info;
+}
+
+VkPipelineViewportStateCreateInfo pipeline_multi_viewport_state_create_info(std::span<VkViewport> viewports, std::span<VkRect2D> scissors,
+                                                                            const void* pNext) {
+    VkPipelineViewportStateCreateInfo viewport_state_create_info{};
+    viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewport_state_create_info.viewportCount = viewports.size();
+    viewport_state_create_info.pViewports    = viewports.data();
+    viewport_state_create_info.scissorCount  = scissors.size();
+    viewport_state_create_info.pScissors     = scissors.data();
+    viewport_state_create_info.pNext         = pNext;
+
+    return viewport_state_create_info;
+}
+
+VkPipelineViewportStateCreateInfo pipeline_viewport_state_create_info(const VkViewport* viewport, const VkRect2D* scissor, const void* pNext) {
+    VkPipelineViewportStateCreateInfo viewport_state_create_info{};
+    viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewport_state_create_info.viewportCount = 1;
+    viewport_state_create_info.pViewports    = viewport;
+    viewport_state_create_info.scissorCount  = 1;
+    viewport_state_create_info.pScissors     = scissor;
+    viewport_state_create_info.pNext         = pNext;
+
+    return viewport_state_create_info;
+}
+
+VkPipelineRasterizationStateCreateInfo rasterization_state_create_info(VkPolygonMode polygon_mode, VkCullModeFlags cull_mode, VkFrontFace front_face,
+                                                                       float line_width, bool depth_clamp_enable, bool rasterizer_discard_enable,
+                                                                       float depth_bias_constant_factor, float depth_bias_clamp,
+                                                                       float depth_bias_slope_factor, const void* pNext) {
+    VkPipelineRasterizationStateCreateInfo rasterization_state_create_info{};
+    rasterization_state_create_info.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasterization_state_create_info.polygonMode             = polygon_mode;
+    rasterization_state_create_info.cullMode                = cull_mode;
+    rasterization_state_create_info.frontFace               = front_face;
+    rasterization_state_create_info.lineWidth               = line_width;
+    rasterization_state_create_info.depthClampEnable        = depth_clamp_enable;
+    rasterization_state_create_info.rasterizerDiscardEnable = rasterizer_discard_enable;
+    rasterization_state_create_info.depthBiasConstantFactor = depth_bias_constant_factor;
+    rasterization_state_create_info.depthBiasClamp          = depth_bias_clamp;
+    rasterization_state_create_info.depthBiasSlopeFactor    = depth_bias_slope_factor;
+    rasterization_state_create_info.pNext                   = pNext;
+
+    return rasterization_state_create_info;
+}
+
 VkStencilOpState stencil_op_state_create(VkStencilOp fail_op, VkStencilOp pass_op, VkStencilOp depth_fail_op, VkCompareOp compare_op,
                                          uint32_t compare_mask, uint32_t write_mask, uint32_t reference) {
     VkStencilOpState stencil_op_state{};
