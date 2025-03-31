@@ -86,26 +86,25 @@ VkInstance create_instance() {
     for (uint32_t i = 0; i < glfw_extension_count; i++) {
         extensions.push_back(glfw_extensions[i]);
     }
-    InstanceBuilder instance_builder;
-    instance_builder_set_names(&instance_builder, "hello triangle", "engine name");
-    instance_builder_set_versions(&instance_builder, VK_API_VERSION_1_3);
-    instance_builder_set_extensions(&instance_builder, extensions);
+    std::vector<const char*> layers;
 #ifndef NDEBUG
-    std::array layers = {"VK_LAYER_KHRONOS_validation"};
-    instance_builder_set_layers(&instance_builder, layers);
+    layers.push_back("VK_LAYER_KHRONOS_validation");
 #endif
-    VkInstance instance;
-    VK_CHECK(instance_builder_instance_create(&instance_builder, &instance));
+    VkApplicationInfo    app_info    = application_info("hello triangle", "engine name", VK_API_VERSION_1_3);
+    VkInstanceCreateInfo instance_ci = instance_create_info(&app_info, layers, extensions);
+    VkInstance           instance;
+    VK_CHECK(vkCreateInstance(&instance_ci, nullptr, &instance));
     return instance;
 }
 
 VkPhysicalDevice select_physical_device(VkInstance instance) {
     // Find a device that supports vulkan 1.3. Prefer discrete GPU's
     std::vector<VkPhysicalDevice> physical_devices;
-    VK_CHECK(physical_device_enumerate_devices(instance, &physical_devices));
+    VK_CHECK(enumerate_physical_devices(instance, &physical_devices));
     VkPhysicalDevice chosen_device = nullptr;
     for (const VkPhysicalDevice& physical_device : physical_devices) {
-        const VkPhysicalDeviceProperties properties = physical_device_get_properties(physical_device);
+        VkPhysicalDeviceProperties properties;
+        vkGetPhysicalDeviceProperties(physical_device, &properties);
         if (properties.apiVersion < VK_API_VERSION_1_3) {
             continue;
         }
@@ -121,7 +120,7 @@ VkPhysicalDevice select_physical_device(VkInstance instance) {
 }
 
 uint32_t select_queue_family(VkPhysicalDevice physical_device, VkSurfaceKHR surface) {
-    const std::vector<VkQueueFamilyProperties> queue_family_properties = physical_device_enumerate_queue_families(physical_device);
+    const std::vector<VkQueueFamilyProperties> queue_family_properties = physical_device_queue_family_properties(physical_device);
     // Find a queue family with both graphics and presentation capabilities
     for (uint32_t i = 0; i < queue_family_properties.size(); i++) {
         const VkQueueFamilyProperties* family_properties = &queue_family_properties[i];
@@ -137,17 +136,17 @@ uint32_t select_queue_family(VkPhysicalDevice physical_device, VkSurfaceKHR surf
 }
 
 VkDevice create_logical_device(VkPhysicalDevice physical_device, uint32_t queue_family) {
-    VkDevice                device;
     std::array              queue_priorities   = {1.f};
-    VkDeviceQueueCreateInfo queue_create_info  = queue_create_info_create(queue_family, 1, queue_priorities);
-    std::array              queue_create_infos = {queue_create_info};
+    VkDeviceQueueCreateInfo queue_ci           = device_queue_create_info(queue_family, 1, queue_priorities);
+    std::array              queue_create_infos = {queue_ci};
 
     std::array device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
                                     VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME};
     // query for required features first
     VkPhysicalDeviceVulkan13Features vk_1_3_features{};
     vk_1_3_features.sType                                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
-    VkPhysicalDeviceFeatures2 physical_device_features_2 = physical_device_get_features_2(physical_device, &vk_1_3_features);
+    VkPhysicalDeviceFeatures2 physical_device_features_2 = VkPhysicalDeviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR};
+    physical_device_features_2.pNext                     = &vk_1_3_features;
 
     if (vk_1_3_features.dynamicRendering == VK_FALSE || vk_1_3_features.synchronization2 == VK_FALSE) {
         abort_message("Required features are not supported by this device");
@@ -160,7 +159,10 @@ VkDevice create_logical_device(VkPhysicalDevice physical_device, uint32_t queue_
     physical_device_features_2       = VkPhysicalDeviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR};
     physical_device_features_2.pNext = &vk_1_3_features;
 
-    device_create(physical_device, queue_create_infos, &device, device_extensions, nullptr, &physical_device_features_2);
+    VkDeviceCreateInfo device_ci = device_create_info(queue_create_infos, device_extensions, nullptr, &physical_device_features_2);
+    VkDevice           device;
+    create_device_with_entrypoints(physical_device, &device_ci, &device);
+
     return device;
 }
 
@@ -325,11 +327,11 @@ void destroy_resources(VkContext* vk_context) {
     for (VkImageView image_view : vk_context->swapchain_ctx.image_views) {
         image_view_destroy(vk_context->device, image_view);
     }
-    device_destroy(vk_context->device);
+    vkDestroyDevice(vk_context->device, nullptr);
 
     glfwDestroyWindow(vk_context->window);
     glfwTerminate();
-    instance_destroy(vk_context->instance);
+    vkDestroyInstance(vk_context->instance, nullptr);
 };
 
 int main() {
@@ -345,8 +347,8 @@ int main() {
     VK_CHECK(glfwCreateWindowSurface(vk_context.instance, vk_context.window, nullptr, &vk_context.surface));
     vk_context.graphics_present_queue_family = select_queue_family(vk_context.physical_device, vk_context.surface);
     vk_context.device                        = create_logical_device(vk_context.physical_device, vk_context.graphics_present_queue_family);
-    vk_context.graphics_queue                = queue_get(vk_context.device, vk_context.graphics_present_queue_family, 0);
-    vk_context.present_queue                 = queue_get(vk_context.device, vk_context.graphics_present_queue_family, 0);
+    vkGetDeviceQueue(vk_context.device, vk_context.graphics_present_queue_family, 0, &vk_context.graphics_queue);
+    vkGetDeviceQueue(vk_context.device, vk_context.graphics_present_queue_family, 0, &vk_context.present_queue);
     vk_context.swapchain_ctx     = create_swapchain_context(vk_context.physical_device, vk_context.device, vk_context.surface, vk_context.window);
     vk_context.graphics_pipeline = create_graphics_pipeline(vk_context.device, vk_context.swapchain_ctx.surface_format.format,
                                                             vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);

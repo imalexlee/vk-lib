@@ -31,7 +31,7 @@ TEST_F(CoreTestsFixture, createDebugInstance) {
     bool                           validation_layer_available = false;
     const char*                    validation_layer_name      = "VK_LAYER_KHRONOS_validation";
     std::vector<VkLayerProperties> available_layers;
-    instance_enumerate_layer_properties(&available_layers);
+    enumerate_instance_layer_properties(&available_layers);
 
     for (const auto& layer : available_layers) {
         if (strcmp(layer.layerName, validation_layer_name) == 0) {
