@@ -11,6 +11,8 @@
 VkResult pipeline_layout_create(VkDevice device, std::span<VkDescriptorSetLayout> set_layouts, std::span<VkPushConstantRange> push_constant_ranges,
                                 VkPipelineLayout* pipeline_layout, VkPipelineLayoutCreateFlags flags = 0, const void* pNext = nullptr);
 
+void pipeline_layout_destroy(VkDevice device, VkPipelineLayout pipeline_layout);
+
 struct GraphicsPipelineBuilder {
     VkGraphicsPipelineCreateInfo                 graphics_pipeline_create_info{VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
     std::vector<VkPipelineShaderStageCreateInfo> shader_stages{};
@@ -95,6 +97,8 @@ void graphics_pipeline_builder_set_base_pipeline(GraphicsPipelineBuilder* builde
 
 VkResult graphics_pipeline_builder_pipeline_create(const GraphicsPipelineBuilder* builder, VkDevice device, VkPipeline* graphics_pipeline,
                                                    VkPipelineCache pipeline_cache = nullptr);
+
+void pipeline_destroy(VkDevice device, VkPipeline pipeline);
 
 /*
  * CORE EXTENSIONS

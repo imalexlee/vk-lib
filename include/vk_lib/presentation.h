@@ -43,3 +43,14 @@ VkResult swapchain_get_images(VkDevice device, VkSwapchainKHR swapchain, std::ve
 
 VkResult swapchain_acquire_next_image(VkDevice device, VkSwapchainKHR swapchain, uint32_t* image_index, VkSemaphore semaphore = nullptr,
                                       VkFence fence = nullptr, uint64_t timeout = UINT64_MAX);
+
+VkPresentInfoKHR present_info_batch_create(std::span<VkSwapchainKHR> swapchains, std::span<uint32_t> image_indices,
+                                           std::span<VkSemaphore> wait_semaphores = {}, std::vector<VkResult>* results = nullptr,
+                                           const void* pNext = nullptr);
+
+VkPresentInfoKHR present_info_create(const VkSwapchainKHR* swapchain, const uint32_t* image_index, const VkSemaphore* wait_semaphore = nullptr,
+                                     const void* pNext = nullptr);
+
+VkResult queue_present(VkQueue present_queue, const VkPresentInfoKHR* present_info);
+
+void surface_destroy(VkInstance instance, VkSurfaceKHR surface);

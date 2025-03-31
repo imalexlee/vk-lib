@@ -106,7 +106,7 @@ VkResult timeline_semaphore_create(VkDevice device, uint64_t initial_timeline_va
     return semaphore_create(device, semaphore, &semaphore_type_create_info);
 }
 
-VkImageMemoryBarrier2KHR image_memory_barrier_2_create(VkImage image, const VkImageSubresourceRange* subresource_range, VkImageLayout old_layout,
+VkImageMemoryBarrier2KHR image_memory_barrier_2_create(VkImage image, VkImageSubresourceRange subresource_range, VkImageLayout old_layout,
                                                        VkImageLayout new_layout, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
                                                        VkPipelineStageFlags2 src_stage_flags, VkPipelineStageFlags2 dst_stage_flags,
                                                        VkAccessFlags2 src_access_flags, VkAccessFlags2 dst_access_flags, const void* pNext) {
@@ -121,7 +121,7 @@ VkImageMemoryBarrier2KHR image_memory_barrier_2_create(VkImage image, const VkIm
     image_mem_barrier_2.newLayout           = new_layout;
     image_mem_barrier_2.srcQueueFamilyIndex = src_queue_family_index;
     image_mem_barrier_2.dstQueueFamilyIndex = dst_queue_family_index;
-    image_mem_barrier_2.subresourceRange    = *subresource_range;
+    image_mem_barrier_2.subresourceRange    = subresource_range;
     image_mem_barrier_2.pNext               = pNext;
 
     return image_mem_barrier_2;
@@ -159,8 +159,9 @@ VkMemoryBarrier2KHR global_memory_barrier_2_create(VkPipelineStageFlags2KHR src_
     return memory_barrier;
 }
 
-VkDependencyInfoKHR dependency_info_create(std::span<VkImageMemoryBarrier2KHR> image_barriers, std::span<VkBufferMemoryBarrier2KHR> buffer_barriers,
-                                           std::span<VkMemoryBarrier2KHR> memory_barriers, VkDependencyFlags dependency_flags) {
+VkDependencyInfoKHR dependency_info_batch_create(std::span<VkImageMemoryBarrier2KHR>  image_barriers,
+                                                 std::span<VkBufferMemoryBarrier2KHR> buffer_barriers, std::span<VkMemoryBarrier2KHR> memory_barriers,
+                                                 VkDependencyFlags dependency_flags) {
     VkDependencyInfoKHR dependency_info{};
     dependency_info.sType                    = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
     dependency_info.pNext                    = nullptr;
@@ -170,6 +171,22 @@ VkDependencyInfoKHR dependency_info_create(std::span<VkImageMemoryBarrier2KHR> i
     dependency_info.bufferMemoryBarrierCount = buffer_barriers.size();
     dependency_info.pMemoryBarriers          = memory_barriers.data();
     dependency_info.memoryBarrierCount       = memory_barriers.size();
+    dependency_info.dependencyFlags          = dependency_flags;
+
+    return dependency_info;
+}
+
+VkDependencyInfoKHR dependency_info_create(const VkImageMemoryBarrier2KHR* image_barrier, const VkBufferMemoryBarrier2KHR* buffer_barrier,
+                                           const VkMemoryBarrier2KHR* memory_barrier, VkDependencyFlags dependency_flags) {
+    VkDependencyInfoKHR dependency_info{};
+    dependency_info.sType                    = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+    dependency_info.pNext                    = nullptr;
+    dependency_info.pImageMemoryBarriers     = image_barrier;
+    dependency_info.imageMemoryBarrierCount  = image_barrier == nullptr ? 0 : 1;
+    dependency_info.pBufferMemoryBarriers    = buffer_barrier;
+    dependency_info.bufferMemoryBarrierCount = buffer_barrier == nullptr ? 0 : 1;
+    dependency_info.pMemoryBarriers          = memory_barrier;
+    dependency_info.memoryBarrierCount       = memory_barrier == nullptr ? 0 : 1;
     dependency_info.dependencyFlags          = dependency_flags;
 
     return dependency_info;

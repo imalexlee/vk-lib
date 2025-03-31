@@ -45,20 +45,28 @@ struct Frame {
     VkRenderingInfoKHR           rendering_info{};
     VkCommandBuffer              command_buffer{};
     VkRenderingAttachmentInfoKHR attachment_info{};
+    VkCommandBufferSubmitInfoKHR command_buffer_submit_info{};
+    VkSemaphoreSubmitInfoKHR     wait_semaphore_submit_info{};
+    VkSemaphoreSubmitInfoKHR     signal_semaphore_submit_info{};
+    VkSubmitInfo2                submit_info_2{};
+    VkImageMemoryBarrier2        end_render_image_memory_barrier{};
+    VkDependencyInfoKHR          dependency_info{};
 };
 
 struct VkContext {
     VkInstance         instance{};
     VkPhysicalDevice   physical_device{};
     VkDevice           device{};
-    VkSurfaceKHR       surface{};
+    VkCommandPool      frame_command_pool{};
+    VkQueue            graphics_queue{};
+    VkQueue            present_queue{};
     GLFWwindow*        window{};
     uint32_t           graphics_present_queue_family{};
-    uint64_t           curr_frame{};
-    VkCommandPool      frame_command_pool{};
-    std::vector<Frame> frames{};
+    VkSurfaceKHR       surface{};
     SwapchainContext   swapchain_ctx{};
     GraphicsPipeline   graphics_pipeline{};
+    std::vector<Frame> frames{};
+    uint64_t           curr_frame{};
 };
 
 [[noreturn]] void abort_message(std::string_view message) {
@@ -136,7 +144,6 @@ VkDevice create_logical_device(VkPhysicalDevice physical_device, uint32_t queue_
 
     std::array device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
                                     VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME};
-
     // query for required features first
     VkPhysicalDeviceVulkan13Features vk_1_3_features{};
     vk_1_3_features.sType                                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
@@ -193,8 +200,6 @@ SwapchainContext create_swapchain_context(VkPhysicalDevice physical_device, VkDe
     VkSwapchainKHR swapchain;
     swapchain_builder_swapchain_create(&swapchain_builder, device, &swapchain);
 
-    // std::vector<VkImage> swapchain_images;
-
     SwapchainContext swapchain_context{};
     swapchain_context.extent         = swapchain_extent;
     swapchain_context.surface_format = format;
@@ -203,15 +208,10 @@ SwapchainContext create_swapchain_context(VkPhysicalDevice physical_device, VkDe
     VK_CHECK(swapchain_get_images(device, swapchain, &swapchain_context.images));
 
     swapchain_context.image_views.reserve(swapchain_context.images.size());
-    // swapchain_context.attachment_infos.reserve(swapchain_context.images.size());
     for (VkImage image : swapchain_context.images) {
         VkImageView image_view;
         image_view_create(device, image, VK_IMAGE_VIEW_TYPE_2D, format.format, VK_IMAGE_ASPECT_COLOR_BIT, &image_view);
         swapchain_context.image_views.push_back(image_view);
-        //
-        // VkRenderingAttachmentInfoKHR color_attachment_info = rendering_attachment_info_create(
-        //     image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
-        // swapchain_context.attachment_infos.push_back(color_attachment_info);
     }
 
     return swapchain_context;
@@ -268,50 +268,102 @@ GraphicsPipeline create_graphics_pipeline(VkDevice device, VkFormat color_attach
     return graphics_pipeline;
 }
 
-std::vector<Frame> init_frames(VkDevice device, VkCommandPool command_pool, std::span<VkImageView> frame_image_views) {
+std::vector<Frame> init_frames(VkDevice device, VkCommandPool command_pool, std::span<VkImageView> frame_image_views, std::span<VkImage> frame_images,
+                               uint32_t queue_family_index) {
     std::vector<Frame> frames;
-    frames.reserve(frame_image_views.size());
-    for (VkImageView frame_image_view : frame_image_views) {
-        Frame new_frame{};
-        new_frame.attachment_info = rendering_attachment_info_create(frame_image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                                                     VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
-        VK_CHECK(command_buffer_allocate(device, command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, &new_frame.command_buffer));
-        VK_CHECK(semaphore_create(device, &new_frame.image_available_semaphore));
-        VK_CHECK(semaphore_create(device, &new_frame.render_finished_semaphore));
-        VK_CHECK(fence_create(device, VK_FENCE_CREATE_SIGNALED_BIT, &new_frame.in_flight_fence));
+    frames.resize(frame_image_views.size());
 
-        frames.push_back(new_frame);
+    for (uint32_t i = 0; i < frame_image_views.size(); i++) {
+        Frame* frame = &frames[i];
+
+        VkImageView frame_image_view = frame_image_views[i];
+        frame->attachment_info       = rendering_attachment_info_create(frame_image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                                                        VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
+
+        VK_CHECK(command_buffer_allocate(device, command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, &frame->command_buffer));
+        VK_CHECK(semaphore_create(device, &frame->image_available_semaphore));
+        VK_CHECK(semaphore_create(device, &frame->render_finished_semaphore));
+        VK_CHECK(fence_create(device, VK_FENCE_CREATE_SIGNALED_BIT, &frame->in_flight_fence));
+
+        frame->command_buffer_submit_info = command_buffer_submit_info_2_create(frame->command_buffer);
+        frame->wait_semaphore_submit_info =
+            semaphore_submit_info_create(frame->image_available_semaphore, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR);
+        frame->signal_semaphore_submit_info =
+            semaphore_submit_info_create(frame->render_finished_semaphore, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR);
+
+        frame->submit_info_2 =
+            submit_info_2_create(&frame->command_buffer_submit_info, &frame->wait_semaphore_submit_info, &frame->signal_semaphore_submit_info);
+
+        VkImageSubresourceRange subresource_range = image_subresource_range_create(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1);
+
+        VkImage frame_image                    = frame_images[i];
+        frame->end_render_image_memory_barrier = image_memory_barrier_2_create(
+            frame_image, subresource_range, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, queue_family_index, queue_family_index,
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_2_NONE);
+        frame->dependency_info = dependency_info_create(&frame->end_render_image_memory_barrier, nullptr, nullptr);
     }
+
     return frames;
 }
 
+void destroy_resources(VkContext* vk_context) {
+    vkDeviceWaitIdle(vk_context->device);
+    for (Frame& frame : vk_context->frames) {
+        semaphore_destroy(vk_context->device, frame.image_available_semaphore);
+        semaphore_destroy(vk_context->device, frame.render_finished_semaphore);
+        fence_destroy(vk_context->device, frame.in_flight_fence);
+    }
+    command_pool_destroy(vk_context->device, vk_context->frame_command_pool);
+    pipeline_destroy(vk_context->device, vk_context->graphics_pipeline.pipeline);
+    pipeline_layout_destroy(vk_context->device, vk_context->graphics_pipeline.pipeline_layout);
+    shader_module_destroy(vk_context->device, vk_context->graphics_pipeline.vert_shader);
+    shader_module_destroy(vk_context->device, vk_context->graphics_pipeline.frag_shader);
+    swapchain_destroy(vk_context->device, vk_context->swapchain_ctx.swapchain);
+    surface_destroy(vk_context->instance, vk_context->surface);
+    for (VkImageView image_view : vk_context->swapchain_ctx.image_views) {
+        image_view_destroy(vk_context->device, image_view);
+    }
+    device_destroy(vk_context->device);
+
+    glfwDestroyWindow(vk_context->window);
+    glfwTerminate();
+    instance_destroy(vk_context->instance);
+};
+
 int main() {
     VkContext vk_context{};
-
     if (!glfwInit()) {
         abort_message("GLFW cannot be initialized");
     }
-
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     vk_context.window          = glfwCreateWindow(640, 480, "Hello Triangle", nullptr, nullptr);
     vk_context.instance        = create_instance();
     vk_context.physical_device = select_physical_device(vk_context.instance);
-
     VK_CHECK(glfwCreateWindowSurface(vk_context.instance, vk_context.window, nullptr, &vk_context.surface));
-
     vk_context.graphics_present_queue_family = select_queue_family(vk_context.physical_device, vk_context.surface);
     vk_context.device                        = create_logical_device(vk_context.physical_device, vk_context.graphics_present_queue_family);
+    vk_context.graphics_queue                = queue_get(vk_context.device, vk_context.graphics_present_queue_family, 0);
+    vk_context.present_queue                 = queue_get(vk_context.device, vk_context.graphics_present_queue_family, 0);
     vk_context.swapchain_ctx     = create_swapchain_context(vk_context.physical_device, vk_context.device, vk_context.surface, vk_context.window);
     vk_context.graphics_pipeline = create_graphics_pipeline(vk_context.device, vk_context.swapchain_ctx.surface_format.format,
                                                             vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);
     VK_CHECK(command_pool_create(vk_context.device, vk_context.graphics_present_queue_family, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
                                  &vk_context.frame_command_pool));
 
-    vk_context.frames = init_frames(vk_context.device, vk_context.frame_command_pool, vk_context.swapchain_ctx.image_views);
+    vk_context.frames = init_frames(vk_context.device, vk_context.frame_command_pool, vk_context.swapchain_ctx.image_views,
+                                    vk_context.swapchain_ctx.images, vk_context.graphics_present_queue_family);
 
     const VkRect2D render_area = rect_2d_create(vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);
     while (!glfwWindowShouldClose(vk_context.window)) {
         glfwPollEvents();
+        int width, height;
+        glfwGetFramebufferSize(vk_context.window, &width, &height);
+        while (width == 0 || height == 0) {
+            glfwGetFramebufferSize(vk_context.window, &width, &height);
+            glfwWaitEvents();
+        }
         const uint32_t           frame_index            = vk_context.curr_frame % 3;
         const Frame*             current_frame          = &vk_context.frames[frame_index];
         std::array               color_attachment_infos = {current_frame->attachment_info};
@@ -325,6 +377,7 @@ int main() {
         uint32_t swapchain_image_index;
         swapchain_acquire_next_image(vk_context.device, vk_context.swapchain_ctx.swapchain, &swapchain_image_index,
                                      current_frame->image_available_semaphore);
+        VK_CHECK(command_buffer_reset(current_frame->command_buffer));
 
         VK_CHECK(command_buffer_begin(command_buffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT));
 
@@ -336,14 +389,18 @@ int main() {
 
         rendering_end(command_buffer);
 
+        pipeline_barrier_2_insert(command_buffer, &current_frame->dependency_info);
+
         VK_CHECK(command_buffer_end(command_buffer));
 
-        // TODO: Submit the buffer to the graphics queue. This will wait on the image available semaphore, and signal the render finished semaphore
-        // TODO: when done. Also, this will signal the in flight fence which lets the next iteration start drawing to the frame, knowing that the
-        // frame
-        // TODO: has been presented
-        // TODO: Then, present the image and set it to wait on that render finished semaphore.
+        queue_submit_2(vk_context.graphics_queue, &current_frame->submit_info_2, current_frame->in_flight_fence);
+
+        VkPresentInfoKHR present_info =
+            present_info_create(&vk_context.swapchain_ctx.swapchain, &swapchain_image_index, &current_frame->render_finished_semaphore);
+
+        queue_present(vk_context.present_queue, &present_info);
 
         vk_context.curr_frame++;
     }
+    destroy_resources(&vk_context);
 }

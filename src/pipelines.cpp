@@ -28,6 +28,8 @@ VkResult pipeline_layout_create(VkDevice device, std::span<VkDescriptorSetLayout
     return vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, pipeline_layout);
 }
 
+void pipeline_layout_destroy(VkDevice device, VkPipelineLayout pipeline_layout) { vkDestroyPipelineLayout(device, pipeline_layout, nullptr); }
+
 void graphics_pipeline_builder_add_shader_stage(GraphicsPipelineBuilder* builder, VkShaderStageFlagBits stage, VkShaderModule shader_module,
                                                 VkPipelineShaderStageCreateFlags flags, std::string_view entry_point,
                                                 const VkSpecializationInfo* specialization_info, const void* pNext) {
@@ -215,6 +217,8 @@ VkResult graphics_pipeline_builder_pipeline_create(const GraphicsPipelineBuilder
 
     return vkCreateGraphicsPipelines(device, pipeline_cache, 1, &graphics_pipeline_create_info, nullptr, graphics_pipeline);
 }
+
+void pipeline_destroy(VkDevice device, VkPipeline pipeline) { vkDestroyPipeline(device, pipeline, nullptr); }
 
 VkPipelineRenderingCreateInfoKHR rendering_create_info_create(std::span<VkFormat> color_attachment_formats, VkFormat depth_attachment_format,
                                                               VkFormat stencil_attachment_format, uint32_t view_mask, const void* pNext) {

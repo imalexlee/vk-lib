@@ -103,3 +103,39 @@ VkResult swapchain_acquire_next_image(VkDevice device, VkSwapchainKHR swapchain,
                                       uint64_t timeout) {
     return vkAcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, image_index);
 }
+
+VkPresentInfoKHR present_info_batch_create(std::span<VkSwapchainKHR> swapchains, std::span<uint32_t> image_indices,
+                                           std::span<VkSemaphore> wait_semaphores, std::vector<VkResult>* results, const void* pNext) {
+    VkPresentInfoKHR present_info{};
+    present_info.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    present_info.swapchainCount     = swapchains.size();
+    present_info.pSwapchains        = swapchains.data();
+    present_info.waitSemaphoreCount = wait_semaphores.size();
+    present_info.pWaitSemaphores    = wait_semaphores.data();
+    present_info.pImageIndices      = image_indices.data();
+    present_info.pNext              = pNext;
+    if (results != nullptr) {
+        results->resize(swapchains.size());
+        present_info.pResults = results->data();
+    }
+
+    return present_info;
+}
+
+VkPresentInfoKHR present_info_create(const VkSwapchainKHR* swapchain, const uint32_t* image_index, const VkSemaphore* wait_semaphore,
+                                     const void* pNext) {
+    VkPresentInfoKHR present_info{};
+    present_info.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    present_info.swapchainCount     = 1;
+    present_info.pSwapchains        = swapchain;
+    present_info.waitSemaphoreCount = wait_semaphore == nullptr ? 0 : 1;
+    present_info.pWaitSemaphores    = wait_semaphore;
+    present_info.pImageIndices      = image_index;
+    present_info.pNext              = pNext;
+
+    return present_info;
+}
+
+VkResult queue_present(VkQueue present_queue, const VkPresentInfoKHR* present_info) { return vkQueuePresentKHR(present_queue, present_info); }
+
+void surface_destroy(VkInstance instance, VkSurfaceKHR surface) { vkDestroySurfaceKHR(instance, surface, nullptr); }

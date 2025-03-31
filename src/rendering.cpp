@@ -23,15 +23,17 @@ VkRenderingAttachmentInfoKHR rendering_attachment_info_create(VkImageView image_
                                                               VkResolveModeFlagBitsKHR resolve_mode, VkImageView resolve_image_view,
                                                               VkImageLayout resolve_image_layout) {
     VkRenderingAttachmentInfoKHR rendering_attachment_info{};
-    rendering_attachment_info.sType              = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+    rendering_attachment_info.sType              = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
     rendering_attachment_info.imageView          = image_view;
     rendering_attachment_info.imageLayout        = image_layout;
     rendering_attachment_info.loadOp             = load_op;
     rendering_attachment_info.storeOp            = store_op;
-    rendering_attachment_info.clearValue         = *clear_value;
     rendering_attachment_info.resolveMode        = resolve_mode;
     rendering_attachment_info.resolveImageView   = resolve_image_view;
     rendering_attachment_info.resolveImageLayout = resolve_image_layout;
+    if (clear_value != nullptr) {
+        rendering_attachment_info.clearValue = *clear_value;
+    }
 
     return rendering_attachment_info;
 }

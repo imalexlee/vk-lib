@@ -40,6 +40,12 @@ VkResult command_buffer_end(VkCommandBuffer command_buffer) { return vkEndComman
 
 VkResult command_buffer_reset(VkCommandBuffer command_buffer, VkCommandBufferResetFlags flags) { return vkResetCommandBuffer(command_buffer, flags); }
 
+VkResult queue_batch_submit(VkQueue queue, std::span<VkSubmitInfo> submit_infos, VkFence fence) {
+    return vkQueueSubmit(queue, submit_infos.size(), submit_infos.data(), fence);
+}
+
+VkResult queue_submit(VkQueue queue, const VkSubmitInfo* submit_info, VkFence fence) { return vkQueueSubmit(queue, 1, submit_info, fence); }
+
 VkCommandBufferSubmitInfoKHR command_buffer_submit_info_2_create(VkCommandBuffer command_buffer, uint32_t device_mask, const void* pNext) {
     VkCommandBufferSubmitInfoKHR command_buffer_submit_info{};
     command_buffer_submit_info.sType         = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR;
@@ -50,9 +56,9 @@ VkCommandBufferSubmitInfoKHR command_buffer_submit_info_2_create(VkCommandBuffer
     return command_buffer_submit_info;
 }
 
-VkSubmitInfo submit_info_create(std::span<VkCommandBuffer> command_buffers, std::span<VkSemaphore> wait_semaphores,
-                                std::span<VkPipelineStageFlags> wait_semaphore_stage_flags, std::span<VkSemaphore> signal_semaphores,
-                                const void* pNext) {
+VkSubmitInfo submit_info_batch_create(std::span<VkCommandBuffer> command_buffers, std::span<VkSemaphore> wait_semaphores,
+                                      std::span<VkPipelineStageFlags> wait_semaphore_stage_flags, std::span<VkSemaphore> signal_semaphores,
+                                      const void* pNext) {
     VkSubmitInfo submit_info{};
     submit_info.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit_info.commandBufferCount   = command_buffers.size();
@@ -67,10 +73,27 @@ VkSubmitInfo submit_info_create(std::span<VkCommandBuffer> command_buffers, std:
     return submit_info;
 }
 
-VkSubmitInfo2KHR submit_info_2_create(std::span<VkCommandBufferSubmitInfoKHR> command_buffer_submit_infos,
-                                      std::span<VkSemaphoreSubmitInfoKHR>     wait_semaphores_submit_infos,
-                                      std::span<VkSemaphoreSubmitInfoKHR> signal_semaphores_submit_infos, VkSubmitFlagsKHR submit_flags,
-                                      const void* pNext) {
+[[nodiscard]] VkSubmitInfo submit_info_create(const VkCommandBuffer* command_buffer, const VkSemaphore* wait_semaphore,
+                                              const VkPipelineStageFlags* wait_semaphore_stage_flags, const VkSemaphore* signal_semaphore,
+                                              const void* pNext) {
+    VkSubmitInfo submit_info{};
+    submit_info.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount   = 1;
+    submit_info.pCommandBuffers      = command_buffer;
+    submit_info.waitSemaphoreCount   = 1;
+    submit_info.pWaitSemaphores      = wait_semaphore;
+    submit_info.pWaitDstStageMask    = wait_semaphore_stage_flags;
+    submit_info.signalSemaphoreCount = 1;
+    submit_info.pSignalSemaphores    = signal_semaphore;
+    submit_info.pNext                = pNext;
+
+    return submit_info;
+}
+
+VkSubmitInfo2KHR submit_info_2_batch_create(std::span<VkCommandBufferSubmitInfoKHR> command_buffer_submit_infos,
+                                            std::span<VkSemaphoreSubmitInfoKHR>     wait_semaphores_submit_infos,
+                                            std::span<VkSemaphoreSubmitInfoKHR> signal_semaphores_submit_infos, VkSubmitFlagsKHR submit_flags,
+                                            const void* pNext) {
     VkSubmitInfo2KHR submit_info_2{};
     submit_info_2.sType                    = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
     submit_info_2.commandBufferInfoCount   = command_buffer_submit_infos.size();
@@ -85,11 +108,23 @@ VkSubmitInfo2KHR submit_info_2_create(std::span<VkCommandBufferSubmitInfoKHR> co
     return submit_info_2;
 }
 
-VkResult queue_batch_submit(VkQueue queue, std::span<VkSubmitInfo> submit_infos, VkFence fence) {
-    return vkQueueSubmit(queue, submit_infos.size(), submit_infos.data(), fence);
-}
+[[nodiscard]] VkSubmitInfo2KHR submit_info_2_create(const VkCommandBufferSubmitInfoKHR* command_buffer_submit_info,
+                                                    const VkSemaphoreSubmitInfoKHR*     wait_semaphores_submit_info,
+                                                    const VkSemaphoreSubmitInfoKHR* signal_semaphores_submit_info, VkSubmitFlagsKHR submit_flags,
+                                                    const void* pNext) {
+    VkSubmitInfo2KHR submit_info_2{};
+    submit_info_2.sType                    = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
+    submit_info_2.commandBufferInfoCount   = 1;
+    submit_info_2.pCommandBufferInfos      = command_buffer_submit_info;
+    submit_info_2.waitSemaphoreInfoCount   = 1;
+    submit_info_2.pWaitSemaphoreInfos      = wait_semaphores_submit_info;
+    submit_info_2.signalSemaphoreInfoCount = 1;
+    submit_info_2.pSignalSemaphoreInfos    = signal_semaphores_submit_info;
+    submit_info_2.flags                    = submit_flags;
+    submit_info_2.pNext                    = pNext;
 
-VkResult queue_submit(VkQueue queue, const VkSubmitInfo* submit_info, VkFence fence) { return vkQueueSubmit(queue, 1, submit_info, fence); }
+    return submit_info_2;
+}
 
 VkResult queue_batch_submit_2(VkQueue queue, std::span<VkSubmitInfo2KHR> submit_infos, VkFence fence) {
     return vkQueueSubmit2(queue, submit_infos.size(), submit_infos.data(), fence);
