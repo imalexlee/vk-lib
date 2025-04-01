@@ -1,5 +1,7 @@
 #include <vk_lib/commands.h>
 
+namespace vk_lib {
+
 VkCommandPoolCreateInfo command_pool_create_info(uint32_t queue_family_index, VkCommandPoolCreateFlags flags) {
     VkCommandPoolCreateInfo command_pool_create_info{};
     command_pool_create_info.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -108,3 +110,5 @@ VkSubmitInfo2KHR submit_info_2_batch(std::span<VkCommandBufferSubmitInfoKHR> com
 
     return submit_info_2;
 }
+
+} // namespace vk_lib

@@ -5,6 +5,7 @@
 #pragma once
 #include <vk_lib/common.h>
 
+namespace vk_lib {
 [[nodiscard]] VkPipelineShaderStageCreateInfo pipeline_shader_stage_create_info(VkShaderStageFlagBits stage, VkShaderModule shader_module,
                                                                                 VkPipelineShaderStageCreateFlags flags               = 0,
                                                                                 const char*                      entry_point         = "main",
@@ -90,3 +91,5 @@ pipeline_color_blend_state_create_info(std::span<VkPipelineColorBlendAttachmentS
                                                                               VkFormat            depth_attachment_format   = VK_FORMAT_UNDEFINED,
                                                                               VkFormat            stencil_attachment_format = VK_FORMAT_UNDEFINED,
                                                                               uint32_t view_mask = 0, const void* pNext = nullptr);
+
+} // namespace vk_lib

@@ -1,5 +1,6 @@
 #include <vk_lib/pipelines.h>
 
+namespace vk_lib {
 VkPipelineShaderStageCreateInfo pipeline_shader_stage_create_info(VkShaderStageFlagBits stage, VkShaderModule shader_module,
                                                                   VkPipelineShaderStageCreateFlags flags, const char* entry_point,
                                                                   const VkSpecializationInfo* specialization_info, const void* pNext) {
@@ -267,3 +268,5 @@ VkPipelineRenderingCreateInfoKHR pipeline_rendering_create_info(std::span<VkForm
 
     return rendering_create_info;
 }
+
+} // namespace vk_lib

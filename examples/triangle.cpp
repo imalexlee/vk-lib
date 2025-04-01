@@ -120,13 +120,13 @@ VkPhysicalDevice select_physical_device(VkInstance instance) {
 }
 
 uint32_t select_queue_family(VkPhysicalDevice physical_device, VkSurfaceKHR surface) {
-    const std::vector<VkQueueFamilyProperties> queue_family_properties = physical_device_queue_family_properties(physical_device);
+    const std::vector<VkQueueFamilyProperties> queue_family_properties = get_physical_device_queue_family_properties(physical_device);
     // Find a queue family with both graphics and presentation capabilities
     for (uint32_t i = 0; i < queue_family_properties.size(); i++) {
         const VkQueueFamilyProperties* family_properties = &queue_family_properties[i];
         if (family_properties->queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-            bool present_supported = false;
-            physical_device_get_surface_support(physical_device, surface, i, &present_supported);
+            VkBool32 present_supported = VK_FALSE;
+            vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, surface, &present_supported);
             if (present_supported) {
                 return i;
             }
@@ -168,7 +168,7 @@ VkDevice create_logical_device(VkPhysicalDevice physical_device, uint32_t queue_
 
 SwapchainContext create_swapchain_context(VkPhysicalDevice physical_device, VkDevice device, VkSurfaceKHR surface, GLFWwindow* window) {
     std::vector<VkSurfaceFormatKHR> surface_formats;
-    VK_CHECK(physical_device_get_surface_formats(physical_device, surface, &surface_formats));
+    VK_CHECK(vk_lib::get_physical_device_surface_formats(physical_device, surface, &surface_formats));
     VkSurfaceFormatKHR format = surface_formats[0];
     for (const VkSurfaceFormatKHR& available_format : surface_formats) {
         if (available_format.format == VK_FORMAT_B8G8R8A8_SRGB && available_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -176,7 +176,8 @@ SwapchainContext create_swapchain_context(VkPhysicalDevice physical_device, VkDe
         }
     }
     VkSurfaceCapabilitiesKHR capabilities;
-    VK_CHECK(physical_device_get_surface_capabilities(physical_device, surface, &capabilities));
+    VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &capabilities));
+
     VkExtent2D swapchain_extent{};
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         swapchain_extent = capabilities.currentExtent;
@@ -186,28 +187,23 @@ SwapchainContext create_swapchain_context(VkPhysicalDevice physical_device, VkDe
         swapchain_extent.width  = std::clamp(static_cast<uint32_t>(width), capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
         swapchain_extent.height = std::clamp(static_cast<uint32_t>(height), capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
     }
-    // we want triple buffering
+    // We want triple buffering
     uint32_t image_count = std::max(capabilities.minImageCount, 3u);
     if (capabilities.maxImageCount != 0) {
         image_count = std::min(image_count, capabilities.maxImageCount);
     }
 
-    SwapchainBuilder swapchain_builder{};
-    swapchain_builder_set_image_properties(&swapchain_builder, format.format, format.colorSpace, swapchain_extent.width, swapchain_extent.height,
-                                           image_count, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-    swapchain_builder_set_presentation_properties(&swapchain_builder, VK_PRESENT_MODE_FIFO_KHR);
-    swapchain_builder_set_surface_properties(&swapchain_builder, surface, capabilities.currentTransform);
-    swapchain_builder_set_sharing_mode(&swapchain_builder, VK_SHARING_MODE_EXCLUSIVE);
-
+    VkSwapchainCreateInfoKHR swapchain_ci =
+        vk_lib::swapchain_create_info(surface, image_count, format.format, format.colorSpace, swapchain_extent, capabilities.currentTransform);
     VkSwapchainKHR swapchain;
-    swapchain_builder_swapchain_create(&swapchain_builder, device, &swapchain);
+    VK_CHECK(vkCreateSwapchainKHR(device, &swapchain_ci, nullptr, &swapchain));
 
     SwapchainContext swapchain_context{};
     swapchain_context.extent         = swapchain_extent;
     swapchain_context.surface_format = format;
     swapchain_context.swapchain      = swapchain;
 
-    VK_CHECK(swapchain_get_images(device, swapchain, &swapchain_context.images));
+    VK_CHECK(vk_lib::get_swapchain_images(device, swapchain, &swapchain_context.images));
 
     swapchain_context.image_views.reserve(swapchain_context.images.size());
     for (VkImage image : swapchain_context.images) {
@@ -235,8 +231,8 @@ VkShaderModule load_shader(VkDevice device, const std::filesystem::path& path) {
 
 GraphicsPipeline create_graphics_pipeline(VkDevice device, VkFormat color_attachment_format, uint32_t width, uint32_t height) {
 
-    const VkViewport viewport = viewport_create(static_cast<float>(width), static_cast<float>(height));
-    const VkRect2D   scissor  = rect_2d_create(width, height);
+    const VkViewport view    = viewport(static_cast<float>(width), static_cast<float>(height));
+    const VkRect2D   scissor = rect_2d(width, height);
 
     VkPipelineLayoutCreateInfo layout_create_info = pipeline_layout_create_info();
     VkPipelineLayout           pipeline_layout;
@@ -252,7 +248,7 @@ GraphicsPipeline create_graphics_pipeline(VkDevice device, VkFormat color_attach
     std::array                             shader_stages        = {vert_shader_stage, frag_shader_stage};
     VkPipelineVertexInputStateCreateInfo   vertex_input_state   = pipeline_vertex_input_state_create_info();
     VkPipelineInputAssemblyStateCreateInfo input_assembly_state = pipeline_input_assembly_state_create_info(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    VkPipelineViewportStateCreateInfo      viewport_state       = pipeline_viewport_state_create_info(&viewport, &scissor);
+    VkPipelineViewportStateCreateInfo      viewport_state       = pipeline_viewport_state_create_info(&view, &scissor);
     VkPipelineRasterizationStateCreateInfo rasterization_state =
         pipeline_rasterization_state_create_info(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo  multisample_state            = pipeline_multisample_state_create_info(VK_SAMPLE_COUNT_1_BIT);
@@ -285,8 +281,8 @@ std::vector<Frame> init_frames(VkDevice device, VkCommandPool command_pool, std:
         Frame* frame = &frames[i];
 
         VkImageView frame_image_view = frame_image_views[i];
-        frame->attachment_info       = rendering_attachment_info_create(frame_image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                                                        VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
+        frame->attachment_info = rendering_attachment_info(frame_image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_LOAD,
+                                                           VK_ATTACHMENT_STORE_OP_STORE);
 
         VkCommandBufferAllocateInfo command_buffer_ai = command_buffer_allocate_info(command_pool);
         vkAllocateCommandBuffers(device, &command_buffer_ai, &frame->command_buffer);
@@ -317,24 +313,24 @@ std::vector<Frame> init_frames(VkDevice device, VkCommandPool command_pool, std:
 }
 
 void destroy_resources(VkContext* vk_context) {
-    vkDeviceWaitIdle(vk_context->device);
+    VkDevice device = vk_context->device;
+    vkDeviceWaitIdle(device);
     for (Frame& frame : vk_context->frames) {
-        semaphore_destroy(vk_context->device, frame.image_available_semaphore);
-        semaphore_destroy(vk_context->device, frame.render_finished_semaphore);
-        fence_destroy(vk_context->device, frame.in_flight_fence);
+        semaphore_destroy(device, frame.image_available_semaphore);
+        semaphore_destroy(device, frame.render_finished_semaphore);
+        fence_destroy(device, frame.in_flight_fence);
     }
-    vkDestroyCommandPool(vk_context->device, vk_context->frame_command_pool, nullptr);
-    vkDestroyPipeline(vk_context->device, vk_context->graphics_pipeline.pipeline, nullptr);
-    vkDestroyPipelineLayout(vk_context->device, vk_context->graphics_pipeline.pipeline_layout, nullptr);
-    shader_module_destroy(vk_context->device, vk_context->graphics_pipeline.vert_shader);
-    shader_module_destroy(vk_context->device, vk_context->graphics_pipeline.frag_shader);
-    swapchain_destroy(vk_context->device, vk_context->swapchain_ctx.swapchain);
-    surface_destroy(vk_context->instance, vk_context->surface);
+    vkDestroyCommandPool(device, vk_context->frame_command_pool, nullptr);
+    vkDestroyPipeline(device, vk_context->graphics_pipeline.pipeline, nullptr);
+    vkDestroyPipelineLayout(device, vk_context->graphics_pipeline.pipeline_layout, nullptr);
+    shader_module_destroy(device, vk_context->graphics_pipeline.vert_shader);
+    shader_module_destroy(device, vk_context->graphics_pipeline.frag_shader);
+    vkDestroySwapchainKHR(device, vk_context->swapchain_ctx.swapchain, nullptr);
+    vkDestroySurfaceKHR(vk_context->instance, vk_context->surface, nullptr);
     for (VkImageView image_view : vk_context->swapchain_ctx.image_views) {
-        image_view_destroy(vk_context->device, image_view);
+        image_view_destroy(device, image_view);
     }
-    vkDestroyDevice(vk_context->device, nullptr);
-
+    vkDestroyDevice(device, nullptr);
     glfwDestroyWindow(vk_context->window);
     glfwTerminate();
     vkDestroyInstance(vk_context->instance, nullptr);
@@ -365,7 +361,7 @@ int main() {
     vk_context.frames = init_frames(vk_context.device, vk_context.frame_command_pool, vk_context.swapchain_ctx.image_views,
                                     vk_context.swapchain_ctx.images, vk_context.graphics_present_queue_family);
 
-    const VkRect2D render_area = rect_2d_create(vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);
+    const VkRect2D render_area = rect_2d(vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);
     while (!glfwWindowShouldClose(vk_context.window)) {
         glfwPollEvents();
         int width, height;
@@ -377,7 +373,7 @@ int main() {
         const uint32_t           frame_index            = vk_context.curr_frame % 3;
         const Frame*             current_frame          = &vk_context.frames[frame_index];
         std::array               color_attachment_infos = {current_frame->attachment_info};
-        const VkRenderingInfoKHR rendering_info         = rendering_info_create(render_area, color_attachment_infos);
+        const VkRenderingInfoKHR rendering              = rendering_info(render_area, color_attachment_infos);
 
         VkCommandBuffer command_buffer = current_frame->command_buffer;
 
@@ -385,21 +381,20 @@ int main() {
         VK_CHECK(fence_reset(vk_context.device, current_frame->in_flight_fence));
 
         uint32_t swapchain_image_index;
-        swapchain_acquire_next_image(vk_context.device, vk_context.swapchain_ctx.swapchain, &swapchain_image_index,
-                                     current_frame->image_available_semaphore);
-
+        vkAcquireNextImageKHR(vk_context.device, vk_context.swapchain_ctx.swapchain, UINT64_MAX, current_frame->image_available_semaphore, nullptr,
+                              &swapchain_image_index);
         VK_CHECK(vkResetCommandBuffer(command_buffer, 0));
 
         VkCommandBufferBeginInfo begin_info = command_buffer_begin_info(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
         VK_CHECK(vkBeginCommandBuffer(command_buffer, &begin_info));
 
-        rendering_begin(command_buffer, &rendering_info);
+        vkCmdBeginRenderingKHR(command_buffer, &rendering);
 
         vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_context.graphics_pipeline.pipeline);
 
         vkCmdDraw(command_buffer, 3, 1, 0, 0);
 
-        rendering_end(command_buffer);
+        vkCmdEndRenderingKHR(command_buffer);
 
         pipeline_barrier_2_insert(command_buffer, &current_frame->dependency_info);
 
@@ -407,10 +402,10 @@ int main() {
 
         VK_CHECK(vkQueueSubmit2(vk_context.graphics_queue, 1, &current_frame->submit_info_2, current_frame->in_flight_fence));
 
-        VkPresentInfoKHR present_info =
-            present_info_create(&vk_context.swapchain_ctx.swapchain, &swapchain_image_index, &current_frame->render_finished_semaphore);
+        VkPresentInfoKHR present =
+            vk_lib::present_info(&vk_context.swapchain_ctx.swapchain, &swapchain_image_index, &current_frame->render_finished_semaphore);
 
-        queue_present(vk_context.present_queue, &present_info);
+        vkQueuePresentKHR(vk_context.present_queue, &present);
 
         vk_context.curr_frame++;
     }

@@ -1,5 +1,6 @@
 #include <vk_lib/core.h>
 
+namespace vk_lib {
 VkApplicationInfo application_info(const char* app_name, const char* engine_name, uint32_t api_version, uint32_t app_version,
                                    uint32_t engine_version) {
     VkApplicationInfo application_info{};
@@ -66,7 +67,7 @@ VkResult enumerate_physical_devices(VkInstance instance, std::vector<VkPhysicalD
     return vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices->data());
 }
 
-std::vector<VkQueueFamilyProperties> physical_device_queue_family_properties(VkPhysicalDevice physical_device) {
+std::vector<VkQueueFamilyProperties> get_physical_device_queue_family_properties(VkPhysicalDevice physical_device) {
     std::vector<VkQueueFamilyProperties> queue_family_properties;
     uint32_t                             family_property_count;
 
@@ -125,3 +126,5 @@ VkResult enumerate_device_extension_properties(VkPhysicalDevice physical_device,
     extension_properties.resize(property_count);
     return vkEnumerateDeviceExtensionProperties(physical_device, layer_name, &property_count, extension_properties.data());
 }
+
+} // namespace vk_lib
