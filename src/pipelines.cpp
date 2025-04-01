@@ -91,10 +91,11 @@ VkPipelineViewportStateCreateInfo pipeline_viewport_state_create_info(const VkVi
     return viewport_state_create_info;
 }
 
-VkPipelineRasterizationStateCreateInfo rasterization_state_create_info(VkPolygonMode polygon_mode, VkCullModeFlags cull_mode, VkFrontFace front_face,
-                                                                       float line_width, bool depth_clamp_enable, bool rasterizer_discard_enable,
-                                                                       float depth_bias_constant_factor, float depth_bias_clamp,
-                                                                       float depth_bias_slope_factor, const void* pNext) {
+VkPipelineRasterizationStateCreateInfo pipeline_rasterization_state_create_info(VkPolygonMode polygon_mode, VkCullModeFlags cull_mode,
+                                                                                VkFrontFace front_face, float line_width, bool depth_clamp_enable,
+                                                                                bool rasterizer_discard_enable, float depth_bias_constant_factor,
+                                                                                float depth_bias_clamp, float depth_bias_slope_factor,
+                                                                                const void* pNext) {
     VkPipelineRasterizationStateCreateInfo rasterization_state_create_info{};
     rasterization_state_create_info.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterization_state_create_info.polygonMode             = polygon_mode;
@@ -159,10 +160,27 @@ VkPipelineDepthStencilStateCreateInfo pipeline_depth_stencil_state_create_info(b
 
     return depth_stencil_state_create_info;
 }
+VkPipelineColorBlendAttachmentState pipeline_color_blend_attachment_state(bool blend_enabled, VkBlendFactor src_color_blend_factor,
+                                                                          VkBlendFactor dst_color_blend_factor, VkBlendOp color_blend_op,
+                                                                          VkBlendFactor src_alpha_blend_factor, VkBlendFactor dst_alpha_blend_factor,
+                                                                          VkBlendOp alpha_blend_op, VkColorComponentFlags color_write_mask) {
+    VkPipelineColorBlendAttachmentState color_blend_attachment_state{};
+    color_blend_attachment_state.blendEnable         = blend_enabled;
+    color_blend_attachment_state.srcColorBlendFactor = src_color_blend_factor;
+    color_blend_attachment_state.dstColorBlendFactor = dst_color_blend_factor;
+    color_blend_attachment_state.colorBlendOp        = color_blend_op;
+    color_blend_attachment_state.srcAlphaBlendFactor = src_alpha_blend_factor;
+    color_blend_attachment_state.dstAlphaBlendFactor = dst_alpha_blend_factor;
+    color_blend_attachment_state.alphaBlendOp        = alpha_blend_op;
+    color_blend_attachment_state.colorWriteMask      = color_write_mask;
 
-VkPipelineColorBlendStateCreateInfo pipeline_color_blend_state_create_info(bool logic_op_enable, VkLogicOp logic_op,
-                                                                           std::array<float, 4>                 blend_constants,
-                                                                           VkPipelineColorBlendStateCreateFlags flags, const void* pNext) {
+    return color_blend_attachment_state;
+}
+
+VkPipelineColorBlendStateCreateInfo
+pipeline_color_blend_state_create_info(std::span<VkPipelineColorBlendAttachmentState> color_blend_attachment_states, bool logic_op_enable,
+                                       VkLogicOp logic_op, std::array<float, 4> blend_constants, VkPipelineColorBlendStateCreateFlags flags,
+                                       const void* pNext) {
     VkPipelineColorBlendStateCreateInfo color_blend_state_create_info{};
     color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     color_blend_state_create_info.logicOpEnable     = logic_op_enable;
@@ -172,6 +190,8 @@ VkPipelineColorBlendStateCreateInfo pipeline_color_blend_state_create_info(bool 
     color_blend_state_create_info.blendConstants[1] = blend_constants[1];
     color_blend_state_create_info.blendConstants[2] = blend_constants[2];
     color_blend_state_create_info.blendConstants[3] = blend_constants[3];
+    color_blend_state_create_info.attachmentCount   = color_blend_attachment_states.size();
+    color_blend_state_create_info.pAttachments      = color_blend_attachment_states.data();
     color_blend_state_create_info.pNext             = pNext;
 
     return color_blend_state_create_info;
@@ -187,8 +207,8 @@ VkPipelineDynamicStateCreateInfo pipeline_dynamic_state_create_info(std::span<Vk
 }
 
 VkPipelineLayoutCreateInfo pipeline_layout_create_info(std::span<VkDescriptorSetLayout> set_layouts,
-                                                       std::span<VkPushConstantRange> push_constant_ranges, VkPipelineLayout* pipeline_layout,
-                                                       VkPipelineLayoutCreateFlags flags, const void* pNext) {
+                                                       std::span<VkPushConstantRange> push_constant_ranges, VkPipelineLayoutCreateFlags flags,
+                                                       const void* pNext) {
     VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
     pipeline_layout_create_info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipeline_layout_create_info.setLayoutCount         = set_layouts.size();

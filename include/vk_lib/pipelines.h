@@ -16,9 +16,9 @@
 [[nodiscard]] VkVertexInputAttributeDescription vertex_input_attribute_description(uint32_t location, uint32_t binding, VkFormat format,
                                                                                    uint32_t offset);
 
-[[nodiscard]] VkPipelineVertexInputStateCreateInfo pipeline_vertex_input_state_create_info(std::span<VkVertexInputBindingDescription>   bindings,
-                                                                                           std::span<VkVertexInputAttributeDescription> attributes,
-                                                                                           const void* pNext = nullptr);
+[[nodiscard]] VkPipelineVertexInputStateCreateInfo
+pipeline_vertex_input_state_create_info(std::span<VkVertexInputBindingDescription>   bindings   = {},
+                                        std::span<VkVertexInputAttributeDescription> attributes = {}, const void* pNext = nullptr);
 
 [[nodiscard]] VkPipelineInputAssemblyStateCreateInfo pipeline_input_assembly_state_create_info(VkPrimitiveTopology topology,
                                                                                                bool                primitive_restart_enabled = false);
@@ -33,9 +33,10 @@
                                                                                     const void* pNext = nullptr);
 
 [[nodiscard]] VkPipelineRasterizationStateCreateInfo
-rasterization_state_create_info(VkPolygonMode polygon_mode, VkCullModeFlags cull_mode, VkFrontFace front_face, float line_width = 1.0f,
-                                bool depth_clamp_enable = false, bool rasterizer_discard_enable = false, float depth_bias_constant_factor = 0.0f,
-                                float depth_bias_clamp = 0.0f, float depth_bias_slope_factor = 0.0f, const void* pNext = nullptr);
+pipeline_rasterization_state_create_info(VkPolygonMode polygon_mode, VkCullModeFlags cull_mode, VkFrontFace front_face, float line_width = 1.0f,
+                                         bool depth_clamp_enable = false, bool rasterizer_discard_enable = false,
+                                         float depth_bias_constant_factor = 0.0f, float depth_bias_clamp = 0.0f, float depth_bias_slope_factor = 0.0f,
+                                         const void* pNext = nullptr);
 
 [[nodiscard]] VkPipelineMultisampleStateCreateInfo
 pipeline_multisample_state_create_info(VkSampleCountFlagBits samples, bool sample_shading_enable = false, float min_sample_shading = 1.0f,
@@ -46,22 +47,29 @@ pipeline_multisample_state_create_info(VkSampleCountFlagBits samples, bool sampl
                                                 uint32_t compare_mask, uint32_t write_mask, uint32_t reference);
 
 [[nodiscard]] VkPipelineDepthStencilStateCreateInfo
-pipeline_depth_stencil_state_create_info(bool depth_test_enable, bool depth_write_enable, VkCompareOp depth_compare_op,
-                                         bool depth_bounds_test_enable = false, bool stencil_test_enable = false,
-                                         const VkStencilOpState* front = nullptr, const VkStencilOpState* back = nullptr,
-                                         float min_depth_bounds = 0.0f, float max_depth_bounds = 1.0f);
+pipeline_depth_stencil_state_create_info(bool depth_test_enable = false, bool depth_write_enable = false,
+                                         VkCompareOp depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL, bool depth_bounds_test_enable = false,
+                                         bool stencil_test_enable = false, const VkStencilOpState* front = nullptr,
+                                         const VkStencilOpState* back = nullptr, float min_depth_bounds = 0.0f, float max_depth_bounds = 1.0f);
 
-[[nodiscard]] VkPipelineColorBlendStateCreateInfo pipeline_color_blend_state_create_info(bool logic_op_enable, VkLogicOp logic_op = VK_LOGIC_OP_COPY,
-                                                                                         std::array<float, 4> blend_constants       = {0, 0, 0, 0},
-                                                                                         VkPipelineColorBlendStateCreateFlags flags = 0,
-                                                                                         const void*                          pNext = nullptr);
+[[nodiscard]] VkPipelineColorBlendAttachmentState
+pipeline_color_blend_attachment_state(bool blend_enabled = false, VkBlendFactor src_color_blend_factor = VK_BLEND_FACTOR_ONE,
+                                      VkBlendFactor dst_color_blend_factor = VK_BLEND_FACTOR_ZERO, VkBlendOp color_blend_op = VK_BLEND_OP_ADD,
+                                      VkBlendFactor src_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
+                                      VkBlendFactor dst_alpha_blend_factor = VK_BLEND_FACTOR_ZERO, VkBlendOp alpha_blend_op = VK_BLEND_OP_ADD,
+                                      VkColorComponentFlags color_write_mask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                                                                               VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
+
+[[nodiscard]] VkPipelineColorBlendStateCreateInfo
+pipeline_color_blend_state_create_info(std::span<VkPipelineColorBlendAttachmentState> color_blend_attachment_states, bool logic_op_enable = false,
+                                       VkLogicOp logic_op = VK_LOGIC_OP_COPY, std::array<float, 4> blend_constants = {0, 0, 0, 0},
+                                       VkPipelineColorBlendStateCreateFlags flags = 0, const void* pNext = nullptr);
 
 [[nodiscard]] VkPipelineDynamicStateCreateInfo pipeline_dynamic_state_create_info(std::span<VkDynamicState> dynamic_states);
 
-[[nodiscard]] VkPipelineLayoutCreateInfo pipeline_layout_create_info(std::span<VkDescriptorSetLayout> set_layouts,
-                                                                     std::span<VkPushConstantRange>   push_constant_ranges,
-                                                                     VkPipelineLayout* pipeline_layout, VkPipelineLayoutCreateFlags flags = 0,
-                                                                     const void* pNext = nullptr);
+[[nodiscard]] VkPipelineLayoutCreateInfo pipeline_layout_create_info(std::span<VkDescriptorSetLayout> set_layouts          = {},
+                                                                     std::span<VkPushConstantRange>   push_constant_ranges = {},
+                                                                     VkPipelineLayoutCreateFlags flags = 0, const void* pNext = nullptr);
 
 [[nodiscard]] VkGraphicsPipelineCreateInfo graphics_pipeline_create_info(
     VkPipelineLayout layout, VkRenderPass render_pass, std::span<VkPipelineShaderStageCreateInfo> shader_stages,

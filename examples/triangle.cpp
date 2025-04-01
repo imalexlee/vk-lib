@@ -234,32 +234,38 @@ VkShaderModule load_shader(VkDevice device, const std::filesystem::path& path) {
 }
 
 GraphicsPipeline create_graphics_pipeline(VkDevice device, VkFormat color_attachment_format, uint32_t width, uint32_t height) {
-    VkShaderModule vert_shader = load_shader(device, "../../examples/shaders/triangle.vert.spv");
-    VkShaderModule frag_shader = load_shader(device, "../../examples/shaders/triangle.frag.spv");
 
     const VkViewport viewport = viewport_create(static_cast<float>(width), static_cast<float>(height));
     const VkRect2D   scissor  = rect_2d_create(width, height);
 
-    VkPipelineLayout pipeline_layout;
-    VK_CHECK(pipeline_layout_create(device, {}, {}, &pipeline_layout));
+    VkPipelineLayoutCreateInfo layout_create_info = pipeline_layout_create_info();
+    VkPipelineLayout           pipeline_layout;
+    vkCreatePipelineLayout(device, &layout_create_info, nullptr, &pipeline_layout);
 
     std::array                             color_attachment_formats = {color_attachment_format};
     const VkPipelineRenderingCreateInfoKHR rendering_create_info    = pipeline_rendering_create_info(color_attachment_formats);
 
-    GraphicsPipelineBuilder builder{};
-    graphics_pipeline_builder_add_shader_stage(&builder, VK_SHADER_STAGE_VERTEX_BIT, vert_shader);
-    graphics_pipeline_builder_add_shader_stage(&builder, VK_SHADER_STAGE_FRAGMENT_BIT, frag_shader);
-    graphics_pipeline_builder_set_input_assembly_state(&builder, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    graphics_pipeline_builder_set_viewport(&builder, &viewport, &scissor);
-    graphics_pipeline_builder_set_rasterization_state(&builder, VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
-    graphics_pipeline_builder_set_multisample_state(&builder, VK_SAMPLE_COUNT_1_BIT);
-    graphics_pipeline_builder_set_layout(&builder, pipeline_layout);
-    graphics_pipeline_builder_add_color_blend_attachment(&builder, false);
-    graphics_pipeline_builder_set_color_blend_state(&builder, false);
-    graphics_pipeline_builder_set_pNext(&builder, &rendering_create_info);
+    VkShaderModule                         vert_shader          = load_shader(device, "../../examples/shaders/triangle.vert.spv");
+    VkShaderModule                         frag_shader          = load_shader(device, "../../examples/shaders/triangle.frag.spv");
+    VkPipelineShaderStageCreateInfo        vert_shader_stage    = pipeline_shader_stage_create_info(VK_SHADER_STAGE_VERTEX_BIT, vert_shader);
+    VkPipelineShaderStageCreateInfo        frag_shader_stage    = pipeline_shader_stage_create_info(VK_SHADER_STAGE_FRAGMENT_BIT, frag_shader);
+    std::array                             shader_stages        = {vert_shader_stage, frag_shader_stage};
+    VkPipelineVertexInputStateCreateInfo   vertex_input_state   = pipeline_vertex_input_state_create_info();
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_state = pipeline_input_assembly_state_create_info(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    VkPipelineViewportStateCreateInfo      viewport_state       = pipeline_viewport_state_create_info(&viewport, &scissor);
+    VkPipelineRasterizationStateCreateInfo rasterization_state =
+        pipeline_rasterization_state_create_info(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
+    VkPipelineMultisampleStateCreateInfo  multisample_state            = pipeline_multisample_state_create_info(VK_SAMPLE_COUNT_1_BIT);
+    VkPipelineDepthStencilStateCreateInfo depth_stencil_state          = pipeline_depth_stencil_state_create_info();
+    VkPipelineColorBlendAttachmentState   color_blend_attachment_state = pipeline_color_blend_attachment_state();
+    std::array                            color_blends                 = {color_blend_attachment_state};
+    VkPipelineColorBlendStateCreateInfo   color_blend_state            = pipeline_color_blend_state_create_info(color_blends);
+    VkGraphicsPipelineCreateInfo          graphics_pipeline_ci         = graphics_pipeline_create_info(
+        pipeline_layout, nullptr, shader_stages, &vertex_input_state, &input_assembly_state, &viewport_state, &rasterization_state,
+        &multisample_state, &depth_stencil_state, &color_blend_state, nullptr, nullptr, 0, 0, nullptr, 0, &rendering_create_info);
 
     VkPipeline pipeline;
-    VK_CHECK(graphics_pipeline_builder_pipeline_create(&builder, device, &pipeline));
+    vkCreateGraphicsPipelines(device, nullptr, 1, &graphics_pipeline_ci, nullptr, &pipeline);
 
     GraphicsPipeline graphics_pipeline{};
     graphics_pipeline.pipeline        = pipeline;
@@ -318,8 +324,8 @@ void destroy_resources(VkContext* vk_context) {
         fence_destroy(vk_context->device, frame.in_flight_fence);
     }
     vkDestroyCommandPool(vk_context->device, vk_context->frame_command_pool, nullptr);
-    pipeline_destroy(vk_context->device, vk_context->graphics_pipeline.pipeline);
-    pipeline_layout_destroy(vk_context->device, vk_context->graphics_pipeline.pipeline_layout);
+    vkDestroyPipeline(vk_context->device, vk_context->graphics_pipeline.pipeline, nullptr);
+    vkDestroyPipelineLayout(vk_context->device, vk_context->graphics_pipeline.pipeline_layout, nullptr);
     shader_module_destroy(vk_context->device, vk_context->graphics_pipeline.vert_shader);
     shader_module_destroy(vk_context->device, vk_context->graphics_pipeline.frag_shader);
     swapchain_destroy(vk_context->device, vk_context->swapchain_ctx.swapchain);
