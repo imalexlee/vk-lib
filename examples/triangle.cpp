@@ -244,7 +244,7 @@ GraphicsPipeline create_graphics_pipeline(VkDevice device, VkFormat color_attach
     VK_CHECK(pipeline_layout_create(device, {}, {}, &pipeline_layout));
 
     std::array                             color_attachment_formats = {color_attachment_format};
-    const VkPipelineRenderingCreateInfoKHR rendering_create_info    = rendering_create_info_create(color_attachment_formats);
+    const VkPipelineRenderingCreateInfoKHR rendering_create_info    = pipeline_rendering_create_info(color_attachment_formats);
 
     GraphicsPipelineBuilder builder{};
     graphics_pipeline_builder_add_shader_stage(&builder, VK_SHADER_STAGE_VERTEX_BIT, vert_shader);
