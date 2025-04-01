@@ -90,8 +90,8 @@ VkInstance create_instance() {
 #ifndef NDEBUG
     layers.push_back("VK_LAYER_KHRONOS_validation");
 #endif
-    VkApplicationInfo    app_info    = application_info("hello triangle", "engine name", VK_API_VERSION_1_3);
-    VkInstanceCreateInfo instance_ci = instance_create_info(&app_info, layers, extensions);
+    VkApplicationInfo    app_info    = vk_lib::application_info("hello triangle", "engine name", VK_API_VERSION_1_3);
+    VkInstanceCreateInfo instance_ci = vk_lib::instance_create_info(&app_info, layers, extensions);
     VkInstance           instance;
     VK_CHECK(vkCreateInstance(&instance_ci, nullptr, &instance));
     return instance;
@@ -100,7 +100,7 @@ VkInstance create_instance() {
 VkPhysicalDevice select_physical_device(VkInstance instance) {
     // Find a device that supports vulkan 1.3. Prefer discrete GPU's
     std::vector<VkPhysicalDevice> physical_devices;
-    VK_CHECK(enumerate_physical_devices(instance, &physical_devices));
+    VK_CHECK(vk_lib::enumerate_physical_devices(instance, &physical_devices));
     VkPhysicalDevice chosen_device = nullptr;
     for (const VkPhysicalDevice& physical_device : physical_devices) {
         VkPhysicalDeviceProperties properties;
@@ -120,7 +120,7 @@ VkPhysicalDevice select_physical_device(VkInstance instance) {
 }
 
 uint32_t select_queue_family(VkPhysicalDevice physical_device, VkSurfaceKHR surface) {
-    const std::vector<VkQueueFamilyProperties> queue_family_properties = get_physical_device_queue_family_properties(physical_device);
+    const std::vector<VkQueueFamilyProperties> queue_family_properties = vk_lib::get_physical_device_queue_family_properties(physical_device);
     // Find a queue family with both graphics and presentation capabilities
     for (uint32_t i = 0; i < queue_family_properties.size(); i++) {
         const VkQueueFamilyProperties* family_properties = &queue_family_properties[i];
@@ -137,7 +137,7 @@ uint32_t select_queue_family(VkPhysicalDevice physical_device, VkSurfaceKHR surf
 
 VkDevice create_logical_device(VkPhysicalDevice physical_device, uint32_t queue_family) {
     std::array              queue_priorities   = {1.f};
-    VkDeviceQueueCreateInfo queue_ci           = device_queue_create_info(queue_family, 1, queue_priorities);
+    VkDeviceQueueCreateInfo queue_ci           = vk_lib::device_queue_create_info(queue_family, 1, queue_priorities);
     std::array              queue_create_infos = {queue_ci};
 
     std::array device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
@@ -159,9 +159,9 @@ VkDevice create_logical_device(VkPhysicalDevice physical_device, uint32_t queue_
     physical_device_features_2       = VkPhysicalDeviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR};
     physical_device_features_2.pNext = &vk_1_3_features;
 
-    VkDeviceCreateInfo device_ci = device_create_info(queue_create_infos, device_extensions, nullptr, &physical_device_features_2);
+    VkDeviceCreateInfo device_ci = vk_lib::device_create_info(queue_create_infos, device_extensions, nullptr, &physical_device_features_2);
     VkDevice           device;
-    create_device_with_entrypoints(physical_device, &device_ci, &device);
+    vk_lib::create_device_with_entrypoints(physical_device, &device_ci, &device);
 
     return device;
 }
@@ -208,7 +208,7 @@ SwapchainContext create_swapchain_context(VkPhysicalDevice physical_device, VkDe
     swapchain_context.image_views.reserve(swapchain_context.images.size());
     for (VkImage image : swapchain_context.images) {
         VkImageView image_view;
-        image_view_create(device, image, VK_IMAGE_VIEW_TYPE_2D, format.format, VK_IMAGE_ASPECT_COLOR_BIT, &image_view);
+        vk_lib::image_view_create(device, image, VK_IMAGE_VIEW_TYPE_2D, format.format, VK_IMAGE_ASPECT_COLOR_BIT, &image_view);
         swapchain_context.image_views.push_back(image_view);
     }
 
@@ -231,32 +231,33 @@ VkShaderModule load_shader(VkDevice device, const std::filesystem::path& path) {
 
 GraphicsPipeline create_graphics_pipeline(VkDevice device, VkFormat color_attachment_format, uint32_t width, uint32_t height) {
 
-    const VkViewport view    = viewport(static_cast<float>(width), static_cast<float>(height));
-    const VkRect2D   scissor = rect_2d(width, height);
+    const VkViewport viewport = vk_lib::viewport(static_cast<float>(width), static_cast<float>(height));
+    const VkRect2D   scissor  = vk_lib::rect_2d(width, height);
 
-    VkPipelineLayoutCreateInfo layout_create_info = pipeline_layout_create_info();
+    VkPipelineLayoutCreateInfo layout_create_info = vk_lib::pipeline_layout_create_info();
     VkPipelineLayout           pipeline_layout;
     vkCreatePipelineLayout(device, &layout_create_info, nullptr, &pipeline_layout);
 
     std::array                             color_attachment_formats = {color_attachment_format};
-    const VkPipelineRenderingCreateInfoKHR rendering_create_info    = pipeline_rendering_create_info(color_attachment_formats);
+    const VkPipelineRenderingCreateInfoKHR rendering_create_info    = vk_lib::pipeline_rendering_create_info(color_attachment_formats);
 
-    VkShaderModule                         vert_shader          = load_shader(device, "../../examples/shaders/triangle.vert.spv");
-    VkShaderModule                         frag_shader          = load_shader(device, "../../examples/shaders/triangle.frag.spv");
-    VkPipelineShaderStageCreateInfo        vert_shader_stage    = pipeline_shader_stage_create_info(VK_SHADER_STAGE_VERTEX_BIT, vert_shader);
-    VkPipelineShaderStageCreateInfo        frag_shader_stage    = pipeline_shader_stage_create_info(VK_SHADER_STAGE_FRAGMENT_BIT, frag_shader);
-    std::array                             shader_stages        = {vert_shader_stage, frag_shader_stage};
-    VkPipelineVertexInputStateCreateInfo   vertex_input_state   = pipeline_vertex_input_state_create_info();
-    VkPipelineInputAssemblyStateCreateInfo input_assembly_state = pipeline_input_assembly_state_create_info(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    VkPipelineViewportStateCreateInfo      viewport_state       = pipeline_viewport_state_create_info(&view, &scissor);
+    VkShaderModule                         vert_shader        = load_shader(device, "../../examples/shaders/triangle.vert.spv");
+    VkShaderModule                         frag_shader        = load_shader(device, "../../examples/shaders/triangle.frag.spv");
+    VkPipelineShaderStageCreateInfo        vert_shader_stage  = vk_lib::pipeline_shader_stage_create_info(VK_SHADER_STAGE_VERTEX_BIT, vert_shader);
+    VkPipelineShaderStageCreateInfo        frag_shader_stage  = vk_lib::pipeline_shader_stage_create_info(VK_SHADER_STAGE_FRAGMENT_BIT, frag_shader);
+    std::array                             shader_stages      = {vert_shader_stage, frag_shader_stage};
+    VkPipelineVertexInputStateCreateInfo   vertex_input_state = vk_lib::pipeline_vertex_input_state_create_info();
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_state =
+        vk_lib::pipeline_input_assembly_state_create_info(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    VkPipelineViewportStateCreateInfo      viewport_state = vk_lib::pipeline_viewport_state_create_info(&viewport, &scissor);
     VkPipelineRasterizationStateCreateInfo rasterization_state =
-        pipeline_rasterization_state_create_info(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
-    VkPipelineMultisampleStateCreateInfo  multisample_state            = pipeline_multisample_state_create_info(VK_SAMPLE_COUNT_1_BIT);
-    VkPipelineDepthStencilStateCreateInfo depth_stencil_state          = pipeline_depth_stencil_state_create_info();
-    VkPipelineColorBlendAttachmentState   color_blend_attachment_state = pipeline_color_blend_attachment_state();
+        vk_lib::pipeline_rasterization_state_create_info(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
+    VkPipelineMultisampleStateCreateInfo  multisample_state            = vk_lib::pipeline_multisample_state_create_info(VK_SAMPLE_COUNT_1_BIT);
+    VkPipelineDepthStencilStateCreateInfo depth_stencil_state          = vk_lib::pipeline_depth_stencil_state_create_info();
+    VkPipelineColorBlendAttachmentState   color_blend_attachment_state = vk_lib::pipeline_color_blend_attachment_state();
     std::array                            color_blends                 = {color_blend_attachment_state};
-    VkPipelineColorBlendStateCreateInfo   color_blend_state            = pipeline_color_blend_state_create_info(color_blends);
-    VkGraphicsPipelineCreateInfo          graphics_pipeline_ci         = graphics_pipeline_create_info(
+    VkPipelineColorBlendStateCreateInfo   color_blend_state            = vk_lib::pipeline_color_blend_state_create_info(color_blends);
+    VkGraphicsPipelineCreateInfo          graphics_pipeline_ci         = vk_lib::graphics_pipeline_create_info(
         pipeline_layout, nullptr, shader_stages, &vertex_input_state, &input_assembly_state, &viewport_state, &rasterization_state,
         &multisample_state, &depth_stencil_state, &color_blend_state, nullptr, nullptr, 0, 0, nullptr, 0, &rendering_create_info);
 
@@ -281,25 +282,25 @@ std::vector<Frame> init_frames(VkDevice device, VkCommandPool command_pool, std:
         Frame* frame = &frames[i];
 
         VkImageView frame_image_view = frame_image_views[i];
-        frame->attachment_info = rendering_attachment_info(frame_image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_LOAD,
-                                                           VK_ATTACHMENT_STORE_OP_STORE);
+        frame->attachment_info       = vk_lib::rendering_attachment_info(frame_image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                                                         VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
 
-        VkCommandBufferAllocateInfo command_buffer_ai = command_buffer_allocate_info(command_pool);
+        VkCommandBufferAllocateInfo command_buffer_ai = vk_lib::command_buffer_allocate_info(command_pool);
         vkAllocateCommandBuffers(device, &command_buffer_ai, &frame->command_buffer);
         VK_CHECK(semaphore_create(device, &frame->image_available_semaphore));
         VK_CHECK(semaphore_create(device, &frame->render_finished_semaphore));
         VK_CHECK(fence_create(device, VK_FENCE_CREATE_SIGNALED_BIT, &frame->in_flight_fence));
 
-        frame->command_buffer_submit_info = command_buffer_submit_info(frame->command_buffer);
+        frame->command_buffer_submit_info = vk_lib::command_buffer_submit_info(frame->command_buffer);
         frame->wait_semaphore_submit_info =
             semaphore_submit_info_create(frame->image_available_semaphore, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR);
         frame->signal_semaphore_submit_info =
             semaphore_submit_info_create(frame->render_finished_semaphore, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR);
 
         frame->submit_info_2 =
-            submit_info_2(&frame->command_buffer_submit_info, &frame->wait_semaphore_submit_info, &frame->signal_semaphore_submit_info);
+            vk_lib::submit_info_2(&frame->command_buffer_submit_info, &frame->wait_semaphore_submit_info, &frame->signal_semaphore_submit_info);
 
-        VkImageSubresourceRange subresource_range = image_subresource_range_create(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1);
+        VkImageSubresourceRange subresource_range = vk_lib::image_subresource_range_create(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1);
 
         VkImage frame_image                    = frame_images[i];
         frame->end_render_image_memory_barrier = image_memory_barrier_2_create(
@@ -328,7 +329,7 @@ void destroy_resources(VkContext* vk_context) {
     vkDestroySwapchainKHR(device, vk_context->swapchain_ctx.swapchain, nullptr);
     vkDestroySurfaceKHR(vk_context->instance, vk_context->surface, nullptr);
     for (VkImageView image_view : vk_context->swapchain_ctx.image_views) {
-        image_view_destroy(device, image_view);
+        vk_lib::image_view_destroy(device, image_view);
     }
     vkDestroyDevice(device, nullptr);
     glfwDestroyWindow(vk_context->window);
@@ -355,13 +356,13 @@ int main() {
     vk_context.graphics_pipeline = create_graphics_pipeline(vk_context.device, vk_context.swapchain_ctx.surface_format.format,
                                                             vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);
     VkCommandPoolCreateInfo command_pool_ci =
-        command_pool_create_info(vk_context.graphics_present_queue_family, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+        vk_lib::command_pool_create_info(vk_context.graphics_present_queue_family, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
     vkCreateCommandPool(vk_context.device, &command_pool_ci, nullptr, &vk_context.frame_command_pool);
 
     vk_context.frames = init_frames(vk_context.device, vk_context.frame_command_pool, vk_context.swapchain_ctx.image_views,
                                     vk_context.swapchain_ctx.images, vk_context.graphics_present_queue_family);
 
-    const VkRect2D render_area = rect_2d(vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);
+    const VkRect2D render_area = vk_lib::rect_2d(vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);
     while (!glfwWindowShouldClose(vk_context.window)) {
         glfwPollEvents();
         int width, height;
@@ -373,7 +374,7 @@ int main() {
         const uint32_t           frame_index            = vk_context.curr_frame % 3;
         const Frame*             current_frame          = &vk_context.frames[frame_index];
         std::array               color_attachment_infos = {current_frame->attachment_info};
-        const VkRenderingInfoKHR rendering              = rendering_info(render_area, color_attachment_infos);
+        const VkRenderingInfoKHR rendering_info         = vk_lib::rendering_info(render_area, color_attachment_infos);
 
         VkCommandBuffer command_buffer = current_frame->command_buffer;
 
@@ -385,10 +386,10 @@ int main() {
                               &swapchain_image_index);
         VK_CHECK(vkResetCommandBuffer(command_buffer, 0));
 
-        VkCommandBufferBeginInfo begin_info = command_buffer_begin_info(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+        VkCommandBufferBeginInfo begin_info = vk_lib::command_buffer_begin_info(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
         VK_CHECK(vkBeginCommandBuffer(command_buffer, &begin_info));
 
-        vkCmdBeginRenderingKHR(command_buffer, &rendering);
+        vkCmdBeginRenderingKHR(command_buffer, &rendering_info);
 
         vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_context.graphics_pipeline.pipeline);
 

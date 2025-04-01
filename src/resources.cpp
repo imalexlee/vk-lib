@@ -1,5 +1,6 @@
 #include <vk_lib/resources.h>
 
+namespace vk_lib {
 void image_builder_set_dimensions(ImageBuilder* builder, VkFormat format, uint32_t width, uint32_t height, uint32_t depth, uint32_t mip_levels,
                                   uint32_t samples, uint32_t array_layers) {
     VkExtent3D extent_3d{};
@@ -94,56 +95,32 @@ VkImageSubresourceRange image_subresource_range_create(VkImageAspectFlags aspect
     return subresource_range;
 }
 
-void sampler_builder_set_filtering(SamplerBuilder* builder, VkFilter min_filter, VkFilter mag_filter, bool unnormalized_coordinates_enabled,
-                                   VkBorderColor border_color) {
-    builder->sampler_create_info.minFilter               = min_filter;
-    builder->sampler_create_info.magFilter               = mag_filter;
-    builder->sampler_create_info.borderColor             = border_color;
-    builder->sampler_create_info.unnormalizedCoordinates = unnormalized_coordinates_enabled;
-}
+VkSamplerCreateInfo sampler_create_info(VkFilter mag_filter, VkFilter min_filter, VkSamplerAddressMode address_mode_u,
+                                        VkSamplerAddressMode address_mode_v, VkSamplerAddressMode address_mode_w, bool anisotropy_enable,
+                                        float max_anisotropy, VkSamplerMipmapMode mipmap_mode, float min_lod, float max_lod, float lod_bias,
+                                        bool compare_enable, VkCompareOp compare_op, VkBorderColor border_color, bool unnormalized_coordinates,
+                                        VkSamplerCreateFlags flags, const void* pNext) {
+    VkSamplerCreateInfo sampler_create_info{};
+    sampler_create_info.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    sampler_create_info.magFilter               = mag_filter;
+    sampler_create_info.minFilter               = min_filter;
+    sampler_create_info.addressModeU            = address_mode_u;
+    sampler_create_info.addressModeV            = address_mode_v;
+    sampler_create_info.addressModeW            = address_mode_w;
+    sampler_create_info.mipmapMode              = mipmap_mode;
+    sampler_create_info.mipLodBias              = lod_bias;
+    sampler_create_info.minLod                  = min_lod;
+    sampler_create_info.maxLod                  = max_lod;
+    sampler_create_info.compareEnable           = compare_enable;
+    sampler_create_info.compareOp               = compare_op;
+    sampler_create_info.anisotropyEnable        = anisotropy_enable;
+    sampler_create_info.maxAnisotropy           = max_anisotropy;
+    sampler_create_info.borderColor             = border_color;
+    sampler_create_info.unnormalizedCoordinates = unnormalized_coordinates;
+    sampler_create_info.flags                   = flags;
+    sampler_create_info.pNext                   = pNext;
 
-void sampler_builder_set_address_modes(SamplerBuilder* builder, VkSamplerAddressMode address_mode_u, VkSamplerAddressMode address_mode_v,
-                                       VkSamplerAddressMode address_mode_w) {
-    builder->sampler_create_info.addressModeU = address_mode_u;
-    builder->sampler_create_info.addressModeV = address_mode_v;
-    builder->sampler_create_info.addressModeW = address_mode_w;
-}
-
-void sampler_builder_set_lod(SamplerBuilder* builder, VkSamplerMipmapMode mipmap_mode, float min_lod, float max_lod, float mip_lod_bias) {
-    builder->sampler_create_info.minLod     = min_lod;
-    builder->sampler_create_info.maxLod     = max_lod;
-    builder->sampler_create_info.mipLodBias = mip_lod_bias;
-    builder->sampler_create_info.mipmapMode = mipmap_mode;
-}
-
-void sampler_builder_set_comparison(SamplerBuilder* builder, bool compare_enabled, VkCompareOp compare_operation) {
-    builder->sampler_create_info.compareEnable = compare_enabled;
-    builder->sampler_create_info.compareOp     = compare_operation;
-}
-
-void sampler_builder_set_anisotropy(SamplerBuilder* builder, bool anisotropy_enabled, float max_anisotropy) {
-    builder->sampler_create_info.anisotropyEnable = anisotropy_enabled;
-    builder->sampler_create_info.maxAnisotropy    = max_anisotropy;
-}
-
-void sampler_builder_set_pNext(SamplerBuilder* builder, const void* pNext) { builder->sampler_create_info.pNext = pNext; }
-
-void sampler_builder_clear(SamplerBuilder* builder) { *builder = SamplerBuilder{}; }
-
-VkResult sampler_builder_sampler_create(const SamplerBuilder* builder, VkDevice device, VkSampler* sampler) {
-    return vkCreateSampler(device, &builder->sampler_create_info, nullptr, sampler);
-}
-
-void sampler_destroy(VkDevice device, VkSampler sampler) { vkDestroySampler(device, sampler, nullptr); }
-
-void image_multi_blit(VkCommandBuffer command_buffer, VkImage src_image, VkImage dst_image, std::span<VkImageBlit> blit_regions, VkFilter filter,
-                      VkImageLayout src_layout, VkImageLayout dst_layout) {
-    vkCmdBlitImage(command_buffer, src_image, src_layout, dst_image, dst_layout, blit_regions.size(), blit_regions.data(), filter);
-}
-
-void image_blit(VkCommandBuffer command_buffer, VkImage src_image, VkImage dst_image, const VkImageBlit* blit_region, VkFilter filter,
-                VkImageLayout src_layout, VkImageLayout dst_layout) {
-    vkCmdBlitImage(command_buffer, src_image, src_layout, dst_image, dst_layout, 1, blit_region, filter);
+    return sampler_create_info;
 }
 
 VkImageBlit image_blit_region_create(VkImageSubresourceLayers src_subresource, VkImageSubresourceLayers dst_subresource,
@@ -232,3 +209,5 @@ VkDeviceAddress buffer_device_address_get(VkDevice device, VkBuffer buffer) {
 
     return vkGetBufferDeviceAddress(device, &buffer_device_address_info);
 }
+
+} // namespace vk_lib

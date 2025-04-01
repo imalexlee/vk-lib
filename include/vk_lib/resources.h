@@ -5,6 +5,7 @@
 #pragma once
 #include <vk_lib/common.h>
 
+namespace vk_lib {
 struct ImageBuilder {
     VkImageCreateInfo     image_create_info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     std::vector<uint32_t> queue_family_indices;
@@ -42,37 +43,13 @@ void image_view_destroy(VkDevice device, VkImageView image_view);
 [[nodiscard]] VkImageSubresourceRange image_subresource_range_create(VkImageAspectFlags aspect_flags, uint32_t base_array_layer,
                                                                      uint32_t array_layer_count, uint32_t base_mip_level, uint32_t mip_level_count);
 
-struct SamplerBuilder {
-    VkSamplerCreateInfo sampler_create_info{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
-};
-
-void sampler_builder_set_filtering(SamplerBuilder* builder, VkFilter min_filter, VkFilter mag_filter, bool unnormalized_coordinates_enabled = false,
-                                   VkBorderColor border_color = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK);
-
-void sampler_builder_set_address_modes(SamplerBuilder* builder, VkSamplerAddressMode address_mode_u, VkSamplerAddressMode address_mode_v,
-                                       VkSamplerAddressMode address_mode_w);
-
-void sampler_builder_set_lod(SamplerBuilder* builder, VkSamplerMipmapMode mipmap_mode, float min_lod, float max_lod, float mip_lod_bias);
-
-void sampler_builder_set_comparison(SamplerBuilder* builder, bool compare_enabled, VkCompareOp compare_operation);
-
-void sampler_builder_set_anisotropy(SamplerBuilder* builder, bool anisotropy_enabled, float max_anisotropy);
-
-void sampler_builder_set_pNext(SamplerBuilder* builder, const void* pNext);
-
-void sampler_builder_clear(SamplerBuilder* builder);
-
-VkResult sampler_builder_sampler_create(const SamplerBuilder* builder, VkDevice device, VkSampler* sampler);
-
-void sampler_destroy(VkDevice device, VkSampler sampler);
-
-void image_multi_blit(VkCommandBuffer command_buffer, VkImage src_image, VkImage dst_image, std::span<VkImageBlit> blit_regions,
-                      VkFilter filter = VK_FILTER_NEAREST, VkImageLayout src_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                      VkImageLayout dst_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-void image_blit(VkCommandBuffer command_buffer, VkImage src_image, VkImage dst_image, const VkImageBlit* blit_region,
-                VkFilter filter = VK_FILTER_NEAREST, VkImageLayout src_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                VkImageLayout dst_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+[[nodiscard]] VkSamplerCreateInfo sampler_create_info(
+    VkFilter mag_filter = VK_FILTER_LINEAR, VkFilter min_filter = VK_FILTER_LINEAR,
+    VkSamplerAddressMode address_mode_u = VK_SAMPLER_ADDRESS_MODE_REPEAT, VkSamplerAddressMode address_mode_v = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+    VkSamplerAddressMode address_mode_w = VK_SAMPLER_ADDRESS_MODE_REPEAT, bool anisotropy_enable = true, float max_anisotropy = 1.f,
+    VkSamplerMipmapMode mipmap_mode = VK_SAMPLER_MIPMAP_MODE_LINEAR, float min_lod = 0.f, float max_lod = VK_LOD_CLAMP_NONE, float lod_bias = 0.f,
+    bool compare_enable = false, VkCompareOp compare_op = VK_COMPARE_OP_ALWAYS, VkBorderColor border_color = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+    bool unnormalized_coordinates = false, VkSamplerCreateFlags flags = 0, const void* pNext = nullptr);
 
 [[nodiscard]] VkImageBlit image_blit_region_create(VkImageSubresourceLayers src_subresource, VkImageSubresourceLayers dst_subresource,
                                                    std::span<VkOffset3D, 2> src_offsets, std::span<VkOffset3D, 2> dst_offsets);
@@ -112,3 +89,5 @@ VkResult buffer_view_create(VkDevice device, VkBuffer buffer, VkFormat format, V
 [[nodiscard]] VkDeviceAddress buffer_device_address_get(VkDevice device, VkBuffer buffer);
 
 void buffer_view_destroy(VkDevice device, VkBufferView buffer_view);
+
+} // namespace vk_lib
