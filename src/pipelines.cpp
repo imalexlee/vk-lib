@@ -202,12 +202,12 @@ VkPipelineLayoutCreateInfo pipeline_layout_create_info(std::span<VkDescriptorSet
 }
 
 VkGraphicsPipelineCreateInfo graphics_pipeline_create_info(
-    VkPipelineLayout layout, VkPipelineCreateFlags flags, std::span<VkPipelineShaderStageCreateInfo> shader_stages,
+    VkPipelineLayout layout, VkRenderPass render_pass, std::span<VkPipelineShaderStageCreateInfo> shader_stages,
     const VkPipelineVertexInputStateCreateInfo* vertex_input_state, const VkPipelineInputAssemblyStateCreateInfo* input_assembly_state,
-    const VkPipelineTessellationStateCreateInfo* tessellation_state, const VkPipelineViewportStateCreateInfo* viewport_state,
-    const VkPipelineRasterizationStateCreateInfo* rasterization_state, const VkPipelineMultisampleStateCreateInfo* multisample_state,
-    const VkPipelineDepthStencilStateCreateInfo* depth_stencil_state, const VkPipelineColorBlendStateCreateInfo* color_blend_state,
-    const VkPipelineDynamicStateCreateInfo* dynamic_state, VkRenderPass render_pass, uint32_t subpass_index, VkPipeline base_pipeline,
+    const VkPipelineViewportStateCreateInfo* viewport_state, const VkPipelineRasterizationStateCreateInfo* rasterization_state,
+    const VkPipelineMultisampleStateCreateInfo* multisample_state, const VkPipelineDepthStencilStateCreateInfo* depth_stencil_state,
+    const VkPipelineColorBlendStateCreateInfo* color_blend_state, const VkPipelineDynamicStateCreateInfo* dynamic_state,
+    const VkPipelineTessellationStateCreateInfo* tessellation_state, VkPipelineCreateFlags flags, uint32_t subpass_index, VkPipeline base_pipeline,
     int32_t base_pipeline_index, const void* pNext) {
 
     VkGraphicsPipelineCreateInfo graphics_pipeline_create_info{};

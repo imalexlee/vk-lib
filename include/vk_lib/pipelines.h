@@ -64,13 +64,13 @@ pipeline_depth_stencil_state_create_info(bool depth_test_enable, bool depth_writ
                                                                      const void* pNext = nullptr);
 
 [[nodiscard]] VkGraphicsPipelineCreateInfo graphics_pipeline_create_info(
-    VkPipelineLayout layout, VkPipelineCreateFlags flags, std::span<VkPipelineShaderStageCreateInfo> shader_stages,
+    VkPipelineLayout layout, VkRenderPass render_pass, std::span<VkPipelineShaderStageCreateInfo> shader_stages,
     const VkPipelineVertexInputStateCreateInfo* vertex_input_state, const VkPipelineInputAssemblyStateCreateInfo* input_assembly_state,
-    const VkPipelineTessellationStateCreateInfo* tessellation_state, const VkPipelineViewportStateCreateInfo* viewport_state,
-    const VkPipelineRasterizationStateCreateInfo* rasterization_state, const VkPipelineMultisampleStateCreateInfo* multisample_state,
-    const VkPipelineDepthStencilStateCreateInfo* depth_stencil_state, const VkPipelineColorBlendStateCreateInfo* color_blend_state,
-    const VkPipelineDynamicStateCreateInfo* dynamic_state, VkRenderPass render_pass, uint32_t subpass_index = 0, VkPipeline base_pipeline = nullptr,
-    int32_t base_pipeline_index = 0, const void* pNext = nullptr);
+    const VkPipelineViewportStateCreateInfo* viewport_state, const VkPipelineRasterizationStateCreateInfo* rasterization_state,
+    const VkPipelineMultisampleStateCreateInfo* multisample_state, const VkPipelineDepthStencilStateCreateInfo* depth_stencil_state,
+    const VkPipelineColorBlendStateCreateInfo* color_blend_state, const VkPipelineDynamicStateCreateInfo* dynamic_state = nullptr,
+    const VkPipelineTessellationStateCreateInfo* tessellation_state = nullptr, VkPipelineCreateFlags flags = 0, uint32_t subpass_index = 0,
+    VkPipeline base_pipeline = nullptr, int32_t base_pipeline_index = 0, const void* pNext = nullptr);
 
 /*
  * CORE EXTENSIONS
