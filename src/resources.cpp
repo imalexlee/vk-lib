@@ -37,9 +37,9 @@ VkImageSubresourceRange image_subresource_range(VkImageAspectFlags aspect_flags,
     return subresource_range;
 }
 
-[[nodiscard]] VkImageViewCreateInfo image_view_create_info(VkFormat format, VkImage image, const VkImageSubresourceRange* subresource_range,
-                                                           VkImageViewType view_type, VkImageCreateFlags flags,
-                                                           const VkComponentMapping* component_mapping, const void* pNext) {
+VkImageViewCreateInfo image_view_create_info(VkFormat format, VkImage image, const VkImageSubresourceRange* subresource_range,
+                                             VkImageViewType view_type, VkImageCreateFlags flags, const VkComponentMapping* component_mapping,
+                                             const void* pNext) {
     VkImageViewCreateInfo image_view_create_info{};
     image_view_create_info.sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     image_view_create_info.format           = format;

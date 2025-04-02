@@ -6,11 +6,29 @@
 #include <vk_lib/common.h>
 
 // size and offset must be multiples of 4
-[[nodiscard]] VkPushConstantRange push_constant_range_create(VkShaderStageFlags shader_stage_flags, uint32_t offset, uint32_t size);
+[[nodiscard]] VkPushConstantRange push_constant_range(VkShaderStageFlags shader_stage_flags, uint32_t size, uint32_t offset = 0);
 
-[[nodiscard]] VkSpecializationMapEntry specialization_map_entry_create(uint32_t constant_id, uint32_t offset, size_t size);
+[[nodiscard]] VkSpecializationMapEntry specialization_map_entry(uint32_t constant_id, size_t size, uint32_t offset = 0);
 
-[[nodiscard]] VkSpecializationInfo specialization_info_create(const void* data, uint32_t data_size, std::span<VkSpecializationMapEntry> map_entries);
+[[nodiscard]] VkSpecializationInfo specialization_info(const void* data, uint32_t data_size, std::span<VkSpecializationMapEntry> map_entries);
+
+[[nodiscard]] VkDescriptorSetLayoutBinding descriptor_set_layout_binding(uint32_t binding, VkDescriptorType type, uint32_t descriptor_count = 1,
+                                                                         VkShaderStageFlags stages            = VK_SHADER_STAGE_ALL,
+                                                                         const VkSampler*   immutable_sampler = nullptr);
+
+[[nodiscard]] VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info(std::span<VkDescriptorSetLayoutBinding> layout_bindings,
+                                                                                VkDescriptorSetLayoutCreateFlags        flags = 0,
+                                                                                const void*                             pNext = nullptr);
+
+[[nodiscard]] VkDescriptorPoolSize descriptor_pool_size(VkDescriptorType type, uint32_t descriptor_count);
+
+[[nodiscard]] VkDescriptorPoolCreateInfo descriptor_pool_create_info(uint32_t max_sets, std::span<VkDescriptorPoolSize> pool_sizes,
+                                                                     VkDescriptorPoolCreateFlags flags = 0, const void* pNext = nullptr);
+
+[[nodiscard]] VkDescriptorSetAllocateInfo descriptor_set_allocate_info(const VkDescriptorSetLayout* set_layout, VkDescriptorPool descriptor_pool,
+                                                                       uint32_t descriptor_set_count = 1, const void* pNext = nullptr);
+
+//--------------------------------------------------------------------------------------------------------------------------------------------//
 
 struct DescriptorLayoutBuilder {
     std::vector<VkDescriptorSetLayoutBinding> bindings;
@@ -26,8 +44,6 @@ VkResult descriptor_layout_builder_layout_create(const DescriptorLayoutBuilder* 
                                                  const void* pNext = nullptr);
 
 void descriptor_set_layout_destroy(VkDevice device, VkDescriptorSetLayout descriptor_set_layout);
-
-[[nodiscard]] VkDescriptorPoolSize descriptor_pool_size_create(VkDescriptorType type, uint32_t descriptor_count);
 
 VkResult descriptor_pool_create(VkDevice device, uint32_t max_descriptor_sets, std::span<VkDescriptorPoolSize> descriptor_pool_sizes,
                                 VkDescriptorPool* descriptor_pool, VkDescriptorPoolCreateFlags flags = 0, const void* pNext = nullptr);

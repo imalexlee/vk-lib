@@ -1,7 +1,7 @@
 
 #include <vk_lib/shader_data.h>
 
-VkPushConstantRange push_constant_range_create(VkShaderStageFlags shader_stage_flags, uint32_t offset, uint32_t size) {
+VkPushConstantRange push_constant_range(VkShaderStageFlags shader_stage_flags, uint32_t size, uint32_t offset) {
     VkPushConstantRange push_constant_range{};
     push_constant_range.stageFlags = shader_stage_flags;
     push_constant_range.offset     = offset;
@@ -10,7 +10,7 @@ VkPushConstantRange push_constant_range_create(VkShaderStageFlags shader_stage_f
     return push_constant_range;
 }
 
-VkSpecializationMapEntry specialization_map_entry_create(uint32_t constant_id, uint32_t offset, size_t size) {
+VkSpecializationMapEntry specialization_map_entry(uint32_t constant_id, size_t size, uint32_t offset) {
     VkSpecializationMapEntry specialization_map_entry{};
     specialization_map_entry.constantID = constant_id;
     specialization_map_entry.offset     = offset;
@@ -19,7 +19,7 @@ VkSpecializationMapEntry specialization_map_entry_create(uint32_t constant_id, u
     return specialization_map_entry;
 }
 
-VkSpecializationInfo specialization_info_create(const void* data, uint32_t data_size, std::span<VkSpecializationMapEntry> map_entries) {
+VkSpecializationInfo specialization_info(const void* data, uint32_t data_size, std::span<VkSpecializationMapEntry> map_entries) {
     VkSpecializationInfo specialization_info{};
     specialization_info.mapEntryCount = map_entries.size();
     specialization_info.pMapEntries   = map_entries.data();
@@ -28,6 +28,65 @@ VkSpecializationInfo specialization_info_create(const void* data, uint32_t data_
 
     return specialization_info;
 }
+
+VkDescriptorSetLayoutBinding descriptor_set_layout_binding(uint32_t binding, VkDescriptorType type, uint32_t descriptor_count,
+                                                           VkShaderStageFlags stages, const VkSampler* immutable_sampler) {
+    VkDescriptorSetLayoutBinding layout_binding{};
+    layout_binding.binding            = binding;
+    layout_binding.descriptorType     = type;
+    layout_binding.stageFlags         = stages;
+    layout_binding.descriptorCount    = descriptor_count;
+    layout_binding.pImmutableSamplers = immutable_sampler;
+
+    return layout_binding;
+}
+
+VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info(std::span<VkDescriptorSetLayoutBinding> layout_bindings,
+                                                                  VkDescriptorSetLayoutCreateFlags flags, const void* pNext) {
+    VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info{};
+    descriptor_set_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    descriptor_set_layout_create_info.bindingCount = layout_bindings.size();
+    descriptor_set_layout_create_info.pBindings    = layout_bindings.data();
+    descriptor_set_layout_create_info.flags        = flags;
+    descriptor_set_layout_create_info.pNext        = pNext;
+
+    return descriptor_set_layout_create_info;
+}
+
+VkDescriptorPoolSize descriptor_pool_size(VkDescriptorType type, uint32_t descriptor_count) {
+    VkDescriptorPoolSize descriptor_pool_size{};
+    descriptor_pool_size.type            = type;
+    descriptor_pool_size.descriptorCount = descriptor_count;
+
+    return descriptor_pool_size;
+}
+
+VkDescriptorPoolCreateInfo descriptor_pool_create_info(uint32_t max_sets, std::span<VkDescriptorPoolSize> pool_sizes,
+                                                       VkDescriptorPoolCreateFlags flags, const void* pNext) {
+    VkDescriptorPoolCreateInfo descriptor_pool_create_info{};
+    descriptor_pool_create_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    descriptor_pool_create_info.maxSets       = max_sets;
+    descriptor_pool_create_info.pPoolSizes    = pool_sizes.data();
+    descriptor_pool_create_info.poolSizeCount = pool_sizes.size();
+    descriptor_pool_create_info.flags         = flags;
+    descriptor_pool_create_info.pNext         = pNext;
+
+    return descriptor_pool_create_info;
+}
+
+VkDescriptorSetAllocateInfo descriptor_set_allocate_info(const VkDescriptorSetLayout* set_layout, VkDescriptorPool descriptor_pool,
+                                                         uint32_t descriptor_set_count, const void* pNext) {
+    VkDescriptorSetAllocateInfo descriptor_set_allocate_info{};
+    descriptor_set_allocate_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    descriptor_set_allocate_info.pSetLayouts        = set_layout;
+    descriptor_set_allocate_info.descriptorSetCount = descriptor_set_count;
+    descriptor_set_allocate_info.descriptorPool     = descriptor_pool;
+    descriptor_set_allocate_info.pNext              = pNext;
+
+    return descriptor_set_allocate_info;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------//
 
 void descriptor_layout_builder_add_binding(DescriptorLayoutBuilder* builder, uint32_t binding, VkDescriptorType type, VkShaderStageFlags stage,
                                            uint32_t descriptor_count, const VkSampler* immutable_sampler) {
@@ -58,14 +117,6 @@ VkResult descriptor_layout_builder_layout_create(const DescriptorLayoutBuilder* 
     set_layout_create_info.pNext        = pNext;
 
     return vkCreateDescriptorSetLayout(device, &set_layout_create_info, nullptr, descriptor_set_layout);
-}
-
-VkDescriptorPoolSize descriptor_pool_size_create(VkDescriptorType type, uint32_t descriptor_count) {
-    VkDescriptorPoolSize descriptor_pool_size{};
-    descriptor_pool_size.type            = type;
-    descriptor_pool_size.descriptorCount = descriptor_count;
-
-    return descriptor_pool_size;
 }
 
 VkResult descriptor_pool_create(VkDevice device, uint32_t max_descriptor_sets, std::span<VkDescriptorPoolSize> descriptor_pool_sizes,
