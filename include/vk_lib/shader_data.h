@@ -5,7 +5,8 @@
 #pragma once
 #include <vk_lib/common.h>
 
-// size and offset must be multiples of 4
+namespace vk_lib {
+
 [[nodiscard]] VkPushConstantRange push_constant_range(VkShaderStageFlags shader_stage_flags, uint32_t size, uint32_t offset = 0);
 
 [[nodiscard]] VkSpecializationMapEntry specialization_map_entry(uint32_t constant_id, size_t size, uint32_t offset = 0);
@@ -28,52 +29,18 @@
 [[nodiscard]] VkDescriptorSetAllocateInfo descriptor_set_allocate_info(const VkDescriptorSetLayout* set_layout, VkDescriptorPool descriptor_pool,
                                                                        uint32_t descriptor_set_count = 1, const void* pNext = nullptr);
 
-//--------------------------------------------------------------------------------------------------------------------------------------------//
-
-struct DescriptorLayoutBuilder {
-    std::vector<VkDescriptorSetLayoutBinding> bindings;
-};
-
-void descriptor_layout_builder_add_binding(DescriptorLayoutBuilder* builder, uint32_t binding, VkDescriptorType type, VkShaderStageFlags stage,
-                                           uint32_t descriptor_count = 1, const VkSampler* immutable_sampler = nullptr);
-
-void descriptor_layout_builder_clear(DescriptorLayoutBuilder* builder);
-
-VkResult descriptor_layout_builder_layout_create(const DescriptorLayoutBuilder* layout_builder, VkDevice device,
-                                                 VkDescriptorSetLayout* descriptor_set_layout, VkDescriptorSetLayoutCreateFlags flags = 0,
-                                                 const void* pNext = nullptr);
-
-void descriptor_set_layout_destroy(VkDevice device, VkDescriptorSetLayout descriptor_set_layout);
-
-VkResult descriptor_pool_create(VkDevice device, uint32_t max_descriptor_sets, std::span<VkDescriptorPoolSize> descriptor_pool_sizes,
-                                VkDescriptorPool* descriptor_pool, VkDescriptorPoolCreateFlags flags = 0, const void* pNext = nullptr);
-
-VkResult descriptor_pool_reset(VkDevice device, VkDescriptorPool descriptor_pool);
-
-void descriptor_pool_destroy(VkDevice device, VkDescriptorPool descriptor_pool);
-
-VkResult descriptor_set_allocate(VkDevice device, VkDescriptorPool descriptor_pool, VkDescriptorSetLayout descriptor_set_layout,
-                                 VkDescriptorSet* descriptor_set, const void* pNext = nullptr);
-
 [[nodiscard]] VkCopyDescriptorSet copy_descriptor_set_create(VkDescriptorSet src_set, VkDescriptorSet dst_set, uint32_t src_binding,
                                                              uint32_t dst_binding, uint32_t src_array_element = 0, uint32_t dst_array_element = 0,
                                                              uint32_t descriptor_count = 1);
 
-void descriptor_set_image_update(VkDevice device, VkDescriptorSet set, uint32_t binding, VkImageView image_view, VkImageLayout image_layout,
-                                 VkDescriptorType type, VkSampler sampler = nullptr, uint32_t array_element = 0);
+[[nodiscard]] VkDescriptorImageInfo descriptor_image_info(VkImageView image_view, VkImageLayout image_layout, VkSampler sampler = nullptr);
 
-void descriptor_set_buffer_update(VkDevice device, VkDescriptorSet set, uint32_t binding, VkBuffer buffer, VkDescriptorType type, uint64_t offset = 0,
-                                  uint64_t size = VK_WHOLE_SIZE, uint32_t array_element = 0);
+[[nodiscard]] VkDescriptorBufferInfo descriptor_buffer_info(VkBuffer buffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE);
 
-void descriptor_set_texel_buffer_update(VkDevice device, VkDescriptorSet set, uint32_t binding, VkBufferView buffer_view, VkDescriptorType type,
-                                        uint32_t array_element = 0);
-
-void descriptor_set_batch_copy(VkDevice device, std::span<VkCopyDescriptorSet> descriptor_copies);
-
-void descriptor_set_copy(VkDevice device, const VkCopyDescriptorSet* descriptor_copy);
-
-void descriptor_set_batch_update(VkDevice device, std::span<VkWriteDescriptorSet> descriptor_writes,
-                                 std::span<VkCopyDescriptorSet> descriptor_copies = {});
+[[nodiscard]] VkWriteDescriptorSet write_descriptor_set(uint32_t binding, VkDescriptorType type, VkDescriptorSet descriptor_set,
+                                                        const VkDescriptorImageInfo* image_info, const VkDescriptorBufferInfo* buffer_info = nullptr,
+                                                        const VkBufferView* texel_buffer_view = nullptr, uint32_t array_element = 0,
+                                                        uint32_t descriptor_count = 1, const void* pNext = nullptr);
 
 /*
  * CORE EXTENSIONS
@@ -81,12 +48,17 @@ void descriptor_set_batch_update(VkDevice device, std::span<VkWriteDescriptorSet
 
 // VULKAN 1.3
 
-void descriptor_set_inline_uniform_block_update(VkDevice device, VkDescriptorSet set, uint32_t binding, uint32_t data_size, const void* data,
-                                                uint32_t array_element = 0);
+[[nodiscard]] VkWriteDescriptorSetInlineUniformBlockEXT write_descriptor_set_inline_uniform_block(uint32_t data_size, const void* data,
+                                                                                                  const void* pNext = nullptr);
 
 /*
  * NON-CORE EXTENSIONS
  */
 
-void descriptor_set_acceleration_structure_khr_update(VkDevice device, VkDescriptorSet set, uint32_t binding,
-                                                      const VkAccelerationStructureKHR* acceleration_structure, uint32_t array_element = 0);
+[[nodiscard]] VkWriteDescriptorSetAccelerationStructureKHR
+write_descriptor_set_acceleration_structure_khr_batch(std::span<VkAccelerationStructureKHR> acceleration_structures, const void* pNext = nullptr);
+
+[[nodiscard]] VkWriteDescriptorSetAccelerationStructureKHR
+write_descriptor_set_acceleration_structure_khr(const VkAccelerationStructureKHR* acceleration_structure, const void* pNext = nullptr);
+
+} // namespace vk_lib
