@@ -229,8 +229,9 @@ VkShaderModule load_shader(VkDevice device, const std::filesystem::path& path) {
     std::vector<char> shader_data(file_size);
     file.seekg(0);
     file.read(shader_data.data(), static_cast<uint32_t>(file_size));
-    VkShaderModule shader_module;
-    VK_CHECK(shader_module_create(device, reinterpret_cast<const uint32_t*>(shader_data.data()), file_size, &shader_module));
+    VkShaderModule           shader_module;
+    VkShaderModuleCreateInfo shader_module_ci = vk_lib::shader_module_create_info(reinterpret_cast<const uint32_t*>(shader_data.data()), file_size);
+    VK_CHECK(vkCreateShaderModule(device, &shader_module_ci, nullptr, &shader_module));
     return shader_module;
 }
 
@@ -328,8 +329,8 @@ void destroy_resources(VkContext* vk_context) {
     vkDestroyCommandPool(device, vk_context->frame_command_pool, nullptr);
     vkDestroyPipeline(device, vk_context->graphics_pipeline.pipeline, nullptr);
     vkDestroyPipelineLayout(device, vk_context->graphics_pipeline.pipeline_layout, nullptr);
-    shader_module_destroy(device, vk_context->graphics_pipeline.vert_shader);
-    shader_module_destroy(device, vk_context->graphics_pipeline.frag_shader);
+    vkDestroyShaderModule(device, vk_context->graphics_pipeline.vert_shader, nullptr);
+    vkDestroyShaderModule(device, vk_context->graphics_pipeline.frag_shader, nullptr);
     vkDestroySwapchainKHR(device, vk_context->swapchain_ctx.swapchain, nullptr);
     vkDestroySurfaceKHR(vk_context->instance, vk_context->surface, nullptr);
     for (VkImageView image_view : vk_context->swapchain_ctx.image_views) {
