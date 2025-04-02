@@ -1,18 +1,18 @@
 #include <vk_lib/synchronization.h>
 
-VkResult semaphore_create(VkDevice device, VkSemaphore* semaphore, const void* pNext) {
+namespace vk_lib {
+
+VkSemaphoreCreateInfo semaphore_create_info(const void* pNext) {
     VkSemaphoreCreateInfo semaphore_create_info{};
     semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     semaphore_create_info.flags = 0;
     semaphore_create_info.pNext = pNext;
 
-    return vkCreateSemaphore(device, &semaphore_create_info, nullptr, semaphore);
+    return semaphore_create_info;
 }
 
-void semaphore_destroy(VkDevice device, VkSemaphore semaphore) { vkDestroySemaphore(device, semaphore, nullptr); }
-
-VkSemaphoreSubmitInfoKHR semaphore_submit_info_create(VkSemaphore semaphore, VkPipelineStageFlags2KHR stage_flags, uint64_t timeline_value,
-                                                      uint32_t device_index) {
+VkSemaphoreSubmitInfoKHR semaphore_submit_info(VkSemaphore semaphore, VkPipelineStageFlags2KHR stage_flags, uint64_t timeline_value,
+                                               uint32_t device_index) {
     VkSemaphoreSubmitInfoKHR semaphore_submit_info{};
     semaphore_submit_info.sType       = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR;
     semaphore_submit_info.semaphore   = semaphore;
@@ -24,26 +24,16 @@ VkSemaphoreSubmitInfoKHR semaphore_submit_info_create(VkSemaphore semaphore, VkP
     return semaphore_submit_info;
 }
 
-VkResult fence_create(VkDevice device, VkFenceCreateFlags flags, VkFence* fence, const void* pNext) {
+VkFenceCreateInfo fence_create_info(VkFenceCreateFlags flags, const void* pNext) {
     VkFenceCreateInfo fence_create_info{};
     fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fence_create_info.flags = flags;
     fence_create_info.pNext = pNext;
 
-    return vkCreateFence(device, &fence_create_info, nullptr, fence);
+    return fence_create_info;
 }
 
-VkResult fence_batch_wait(VkDevice device, std::span<VkFence> fences, bool wait_all, uint64_t timeout) {
-    return vkWaitForFences(device, fences.size(), fences.data(), wait_all, timeout);
-}
-
-VkResult fence_wait(VkDevice device, VkFence fence, bool wait_all, uint64_t timeout) { return vkWaitForFences(device, 1, &fence, wait_all, timeout); }
-
-VkResult fence_batch_reset(VkDevice device, std::span<VkFence> fences) { return vkResetFences(device, fences.size(), fences.data()); }
-
-VkResult fence_reset(VkDevice device, VkFence fence) { return vkResetFences(device, 1, &fence); }
-
-void fence_destroy(VkDevice device, VkFence fence) { vkDestroyFence(device, fence, nullptr); }
+//--------------------------------------------------------------------------------------------------------------------------------//
 
 VkImageMemoryBarrier image_memory_barrier_create(VkImage image, const VkImageSubresourceRange* subresource_range, VkImageLayout old_layout,
                                                  VkImageLayout new_layout, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
@@ -195,3 +185,5 @@ VkDependencyInfoKHR dependency_info_create(const VkImageMemoryBarrier2KHR* image
 void pipeline_barrier_2_insert(VkCommandBuffer command_buffer, const VkDependencyInfoKHR* dependency_info) {
     vkCmdPipelineBarrier2(command_buffer, dependency_info);
 }
+
+} // namespace vk_lib

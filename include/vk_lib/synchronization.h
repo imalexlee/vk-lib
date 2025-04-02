@@ -5,24 +5,22 @@
 #pragma once
 #include <vk_lib/common.h>
 
-VkResult semaphore_create(VkDevice device, VkSemaphore* semaphore, const void* pNext = nullptr);
+namespace vk_lib {
 
-void semaphore_destroy(VkDevice device, VkSemaphore semaphore);
+[[nodiscard]] VkSemaphoreCreateInfo semaphore_create_info(const void* pNext = nullptr);
 
-[[nodiscard]] VkSemaphoreSubmitInfoKHR semaphore_submit_info_create(VkSemaphore semaphore, VkPipelineStageFlags2KHR stage_flags,
-                                                                    uint64_t timeline_value = 0, uint32_t device_index = 0);
+[[nodiscard]] VkFenceCreateInfo fence_create_info(VkFenceCreateFlags flags = 0, const void* pNext = nullptr);
 
-VkResult fence_create(VkDevice device, VkFenceCreateFlags flags, VkFence* fence, const void* pNext = nullptr);
+/*
+ * CORE EXTENSIONS
+ */
 
-VkResult fence_batch_wait(VkDevice device, std::span<VkFence> fences, bool wait_all = true, uint64_t timeout = UINT64_MAX);
+// VULKAN 1.3
 
-VkResult fence_wait(VkDevice device, VkFence fence, bool wait_all = true, uint64_t timeout = UINT64_MAX);
+[[nodiscard]] VkSemaphoreSubmitInfoKHR semaphore_submit_info(VkSemaphore semaphore, VkPipelineStageFlags2KHR stage_flags, uint64_t timeline_value = 0,
+                                                             uint32_t device_index = 0);
 
-VkResult fence_batch_reset(VkDevice device, std::span<VkFence> fences);
-
-VkResult fence_reset(VkDevice device, VkFence fence);
-
-void fence_destroy(VkDevice device, VkFence fence);
+//-----------------------------------------------------------------------------------------------------------------------//
 
 // TODO: add events
 
@@ -81,3 +79,5 @@ buffer_memory_barrier_2_create(VkBuffer buffer, uint32_t src_queue_family_index,
                                                          VkDependencyFlags dependency_flags = 0);
 
 void pipeline_barrier_2_insert(VkCommandBuffer command_buffer, const VkDependencyInfoKHR* dependency_info);
+
+} // namespace vk_lib
