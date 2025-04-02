@@ -154,8 +154,8 @@ VkPipelineDepthStencilStateCreateInfo pipeline_depth_stencil_state_create_info(b
     depth_stencil_state_create_info.depthCompareOp        = depth_compare_op;
     depth_stencil_state_create_info.depthBoundsTestEnable = depth_bounds_test_enable;
     depth_stencil_state_create_info.stencilTestEnable     = stencil_test_enable;
-    depth_stencil_state_create_info.front                 = *front;
-    depth_stencil_state_create_info.back                  = *back;
+    depth_stencil_state_create_info.front                 = front != nullptr ? *front : VkStencilOpState{};
+    depth_stencil_state_create_info.back                  = back != nullptr ? *back : VkStencilOpState{};
     depth_stencil_state_create_info.minDepthBounds        = min_depth_bounds;
     depth_stencil_state_create_info.maxDepthBounds        = max_depth_bounds;
 
@@ -226,8 +226,8 @@ VkGraphicsPipelineCreateInfo graphics_pipeline_create_info(
     VkPipelineLayout layout, VkRenderPass render_pass, std::span<VkPipelineShaderStageCreateInfo> shader_stages,
     const VkPipelineVertexInputStateCreateInfo* vertex_input_state, const VkPipelineInputAssemblyStateCreateInfo* input_assembly_state,
     const VkPipelineViewportStateCreateInfo* viewport_state, const VkPipelineRasterizationStateCreateInfo* rasterization_state,
-    const VkPipelineMultisampleStateCreateInfo* multisample_state, const VkPipelineDepthStencilStateCreateInfo* depth_stencil_state,
-    const VkPipelineColorBlendStateCreateInfo* color_blend_state, const VkPipelineDynamicStateCreateInfo* dynamic_state,
+    const VkPipelineMultisampleStateCreateInfo* multisample_state, const VkPipelineColorBlendStateCreateInfo* color_blend_state,
+    const VkPipelineDepthStencilStateCreateInfo* depth_stencil_state, const VkPipelineDynamicStateCreateInfo* dynamic_state,
     const VkPipelineTessellationStateCreateInfo* tessellation_state, VkPipelineCreateFlags flags, uint32_t subpass_index, VkPipeline base_pipeline,
     int32_t base_pipeline_index, const void* pNext) {
 

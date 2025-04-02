@@ -93,7 +93,8 @@ VkInstance create_instance() {
     VkApplicationInfo    app_info    = vk_lib::application_info("hello triangle", "engine name", VK_API_VERSION_1_3);
     VkInstanceCreateInfo instance_ci = vk_lib::instance_create_info(&app_info, layers, extensions);
     VkInstance           instance;
-    VK_CHECK(vkCreateInstance(&instance_ci, nullptr, &instance));
+    VK_CHECK(vk_lib::create_instance_with_entrypoints(&instance_ci, &instance));
+
     return instance;
 }
 
@@ -147,6 +148,8 @@ VkDevice create_logical_device(VkPhysicalDevice physical_device, uint32_t queue_
     vk_1_3_features.sType                                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
     VkPhysicalDeviceFeatures2 physical_device_features_2 = VkPhysicalDeviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR};
     physical_device_features_2.pNext                     = &vk_1_3_features;
+
+    vkGetPhysicalDeviceFeatures2(physical_device, &physical_device_features_2);
 
     if (vk_1_3_features.dynamicRendering == VK_FALSE || vk_1_3_features.synchronization2 == VK_FALSE) {
         abort_message("Required features are not supported by this device");
@@ -207,8 +210,10 @@ SwapchainContext create_swapchain_context(VkPhysicalDevice physical_device, VkDe
 
     swapchain_context.image_views.reserve(swapchain_context.images.size());
     for (VkImage image : swapchain_context.images) {
-        VkImageView image_view;
-        vk_lib::image_view_create(device, image, VK_IMAGE_VIEW_TYPE_2D, format.format, VK_IMAGE_ASPECT_COLOR_BIT, &image_view);
+        VkImageSubresourceRange subresource_range = vk_lib::image_subresource_range(VK_IMAGE_ASPECT_COLOR_BIT);
+        VkImageViewCreateInfo   image_view_ci     = vk_lib::image_view_create_info(format.format, image, &subresource_range);
+        VkImageView             image_view;
+        VK_CHECK(vkCreateImageView(device, &image_view_ci, nullptr, &image_view));
         swapchain_context.image_views.push_back(image_view);
     }
 
@@ -252,14 +257,13 @@ GraphicsPipeline create_graphics_pipeline(VkDevice device, VkFormat color_attach
     VkPipelineViewportStateCreateInfo      viewport_state = vk_lib::pipeline_viewport_state_create_info(&viewport, &scissor);
     VkPipelineRasterizationStateCreateInfo rasterization_state =
         vk_lib::pipeline_rasterization_state_create_info(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
-    VkPipelineMultisampleStateCreateInfo  multisample_state            = vk_lib::pipeline_multisample_state_create_info(VK_SAMPLE_COUNT_1_BIT);
-    VkPipelineDepthStencilStateCreateInfo depth_stencil_state          = vk_lib::pipeline_depth_stencil_state_create_info();
-    VkPipelineColorBlendAttachmentState   color_blend_attachment_state = vk_lib::pipeline_color_blend_attachment_state();
-    std::array                            color_blends                 = {color_blend_attachment_state};
-    VkPipelineColorBlendStateCreateInfo   color_blend_state            = vk_lib::pipeline_color_blend_state_create_info(color_blends);
-    VkGraphicsPipelineCreateInfo          graphics_pipeline_ci         = vk_lib::graphics_pipeline_create_info(
+    VkPipelineMultisampleStateCreateInfo multisample_state            = vk_lib::pipeline_multisample_state_create_info(VK_SAMPLE_COUNT_1_BIT);
+    VkPipelineColorBlendAttachmentState  color_blend_attachment_state = vk_lib::pipeline_color_blend_attachment_state();
+    std::array                           color_blends                 = {color_blend_attachment_state};
+    VkPipelineColorBlendStateCreateInfo  color_blend_state            = vk_lib::pipeline_color_blend_state_create_info(color_blends);
+    VkGraphicsPipelineCreateInfo         graphics_pipeline_ci         = vk_lib::graphics_pipeline_create_info(
         pipeline_layout, nullptr, shader_stages, &vertex_input_state, &input_assembly_state, &viewport_state, &rasterization_state,
-        &multisample_state, &depth_stencil_state, &color_blend_state, nullptr, nullptr, 0, 0, nullptr, 0, &rendering_create_info);
+        &multisample_state, &color_blend_state, nullptr, nullptr, nullptr, 0, 0, nullptr, 0, &rendering_create_info);
 
     VkPipeline pipeline;
     vkCreateGraphicsPipelines(device, nullptr, 1, &graphics_pipeline_ci, nullptr, &pipeline);
@@ -300,7 +304,7 @@ std::vector<Frame> init_frames(VkDevice device, VkCommandPool command_pool, std:
         frame->submit_info_2 =
             vk_lib::submit_info_2(&frame->command_buffer_submit_info, &frame->wait_semaphore_submit_info, &frame->signal_semaphore_submit_info);
 
-        VkImageSubresourceRange subresource_range = vk_lib::image_subresource_range_create(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1);
+        VkImageSubresourceRange subresource_range = vk_lib::image_subresource_range(VK_IMAGE_ASPECT_COLOR_BIT);
 
         VkImage frame_image                    = frame_images[i];
         frame->end_render_image_memory_barrier = image_memory_barrier_2_create(
@@ -329,7 +333,7 @@ void destroy_resources(VkContext* vk_context) {
     vkDestroySwapchainKHR(device, vk_context->swapchain_ctx.swapchain, nullptr);
     vkDestroySurfaceKHR(vk_context->instance, vk_context->surface, nullptr);
     for (VkImageView image_view : vk_context->swapchain_ctx.image_views) {
-        vk_lib::image_view_destroy(device, image_view);
+        vkDestroyImageView(device, image_view, nullptr);
     }
     vkDestroyDevice(device, nullptr);
     glfwDestroyWindow(vk_context->window);

@@ -6,6 +6,7 @@
 #include <vk_lib/common.h>
 
 namespace vk_lib {
+
 [[nodiscard]] VkPipelineShaderStageCreateInfo pipeline_shader_stage_create_info(VkShaderStageFlagBits stage, VkShaderModule shader_module,
                                                                                 VkPipelineShaderStageCreateFlags flags               = 0,
                                                                                 const char*                      entry_point         = "main",
@@ -76,8 +77,8 @@ pipeline_color_blend_state_create_info(std::span<VkPipelineColorBlendAttachmentS
     VkPipelineLayout layout, VkRenderPass render_pass, std::span<VkPipelineShaderStageCreateInfo> shader_stages,
     const VkPipelineVertexInputStateCreateInfo* vertex_input_state, const VkPipelineInputAssemblyStateCreateInfo* input_assembly_state,
     const VkPipelineViewportStateCreateInfo* viewport_state, const VkPipelineRasterizationStateCreateInfo* rasterization_state,
-    const VkPipelineMultisampleStateCreateInfo* multisample_state, const VkPipelineDepthStencilStateCreateInfo* depth_stencil_state,
-    const VkPipelineColorBlendStateCreateInfo* color_blend_state, const VkPipelineDynamicStateCreateInfo* dynamic_state = nullptr,
+    const VkPipelineMultisampleStateCreateInfo* multisample_state, const VkPipelineColorBlendStateCreateInfo* color_blend_state,
+    const VkPipelineDepthStencilStateCreateInfo* depth_stencil_state = nullptr, const VkPipelineDynamicStateCreateInfo* dynamic_state = nullptr,
     const VkPipelineTessellationStateCreateInfo* tessellation_state = nullptr, VkPipelineCreateFlags flags = 0, uint32_t subpass_index = 0,
     VkPipeline base_pipeline = nullptr, int32_t base_pipeline_index = 0, const void* pNext = nullptr);
 

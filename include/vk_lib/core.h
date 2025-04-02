@@ -6,6 +6,7 @@
 #include <vk_lib/common.h>
 
 namespace vk_lib {
+
 [[nodiscard]] VkApplicationInfo application_info(const char* app_name, const char* engine_name, uint32_t api_version,
                                                  uint32_t app_version    = VK_MAKE_API_VERSION(0, 1, 0, 0),
                                                  uint32_t engine_version = VK_MAKE_API_VERSION(0, 1, 0, 0));
@@ -34,4 +35,5 @@ VkResult create_device_with_entrypoints(VkPhysicalDevice physical_device, const 
 
 VkResult enumerate_device_extension_properties(VkPhysicalDevice physical_device, std::vector<VkExtensionProperties> extension_properties,
                                                const char* layer_name = nullptr);
+
 } // namespace vk_lib
