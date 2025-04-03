@@ -9,5 +9,4 @@
 #include <set>
 #include <span>
 #include <vector>
-#include <vk_mem_alloc.h>
 #include <volk.h>
