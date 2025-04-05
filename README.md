@@ -1,14 +1,14 @@
-## Vulkan Library
+# Vulkan Library
 
 A lightweight C++ abstraction layer for Vulkan that simplifies initialization while providing sensible defaults.
 
-## Features
+### Features
 
 - Simplified creation of Vulkan parameter and state structures
 - Automatic handling of two-call pattern for enumeration functions
 - Direct mapping to Vulkan structures
 
-## Benefits
+### Benefits
 
 - Reduces boilerplate code
 - Prevents common initialization mistakes
@@ -16,9 +16,9 @@ A lightweight C++ abstraction layer for Vulkan that simplifies initialization wh
 - Maintains full control and visibility of Vulkan objects
 - Balances common sense modern C++ features like `std::span` with C-like simplicity
 
-## Usage Examples
+### Usage Examples
 
-### Instance Creation
+#### Instance Creation
 
 ```cpp
 // Create application info
@@ -43,7 +43,7 @@ if (vk_lib::create_instance_with_entrypoints(&instance_info, &instance) != VK_SU
 }
 ```
 
-### Device Creation
+#### Device Creation
 
 ```cpp
 std::array queue_priorities = { 1.0f };
@@ -71,13 +71,13 @@ if (vk_lib::create_device_with_entrypoints(physical_device, &device_info, &devic
 }
 ```
 
-## Requirements
+### Requirements
 
 - C++20 compatible compiler
 - Vulkan SDK
 - [volk](https://github.com/zeux/volk) (Which is pulled in automatically through CMake's `FetchContent`)
 
-## Notes
+### Notes
 
 This library is designed to be a thin wrapper around Vulkan, focusing on making the API more ergonomic while maintaining
 full performance and control. It does not hide Vulkan concepts or create high-level abstractions, allowing developers to
