@@ -6,6 +6,7 @@
 #include <vk_lib/common.h>
 
 namespace vk_lib {
+
 [[nodiscard]] VkCommandPoolCreateInfo command_pool_create_info(uint32_t queue_family_index, VkCommandPoolCreateFlags flags = 0);
 
 [[nodiscard]] VkCommandBufferAllocateInfo command_buffer_allocate_info(VkCommandPool        command_pool,

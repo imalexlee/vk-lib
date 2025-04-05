@@ -1,6 +1,7 @@
 #include <vk_lib/core.h>
 
 namespace vk_lib {
+
 VkApplicationInfo application_info(const char* app_name, const char* engine_name, uint32_t api_version, uint32_t app_version,
                                    uint32_t engine_version) {
     VkApplicationInfo application_info{};

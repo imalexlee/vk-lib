@@ -6,15 +6,10 @@
 #include <vk_lib/common.h>
 
 namespace vk_lib {
+
 [[nodiscard]] VkSemaphoreCreateInfo semaphore_create_info(const void* pNext = nullptr);
 
 [[nodiscard]] VkFenceCreateInfo fence_create_info(VkFenceCreateFlags flags = 0, const void* pNext = nullptr);
-
-/*
- * CORE EXTENSIONS
- */
-
-// VULKAN 1.3
 
 [[nodiscard]] VkSemaphoreSubmitInfoKHR semaphore_submit_info(VkSemaphore semaphore, VkPipelineStageFlags2KHR stage_mask, uint64_t timeline_value = 0,
                                                              uint32_t device_index = 0);
@@ -35,6 +30,7 @@ namespace vk_lib {
                                              VkAccessFlags dst_access_mask = VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT);
 
 [[nodiscard]] VkEventCreateInfo event_create_info(VkEventCreateFlags flags = 0, const void* pNext = nullptr);
+
 /*
  * CORE EXTENSIONS
  */

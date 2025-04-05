@@ -13,6 +13,14 @@ namespace vk_lib {
                                                                                 const VkSpecializationInfo*      specialization_info = nullptr,
                                                                                 const void*                      pNext               = nullptr);
 
+[[nodiscard]] VkPipelineLayoutCreateInfo pipeline_layout_create_info(std::span<VkDescriptorSetLayout> set_layouts          = {},
+                                                                     std::span<VkPushConstantRange>   push_constant_ranges = {},
+                                                                     VkPipelineLayoutCreateFlags flags = 0, const void* pNext = nullptr);
+
+[[nodiscard]] VkComputePipelineCreateInfo compute_pipeline_create_info(VkPipelineLayout layout, VkPipelineShaderStageCreateInfo stage,
+                                                                       VkPipelineCreateFlags flags = 0, VkPipeline base_pipeline = nullptr,
+                                                                       int32_t base_pipeline_index = 0, const void* pNext = nullptr);
+
 [[nodiscard]] VkVertexInputBindingDescription vertex_input_binding_description(uint32_t binding, uint32_t stride, VkVertexInputRate input_rate);
 
 [[nodiscard]] VkVertexInputAttributeDescription vertex_input_attribute_description(uint32_t location, uint32_t binding, VkFormat format,
@@ -68,10 +76,6 @@ pipeline_color_blend_state_create_info(std::span<VkPipelineColorBlendAttachmentS
                                        VkPipelineColorBlendStateCreateFlags flags = 0, const void* pNext = nullptr);
 
 [[nodiscard]] VkPipelineDynamicStateCreateInfo pipeline_dynamic_state_create_info(std::span<VkDynamicState> dynamic_states);
-
-[[nodiscard]] VkPipelineLayoutCreateInfo pipeline_layout_create_info(std::span<VkDescriptorSetLayout> set_layouts          = {},
-                                                                     std::span<VkPushConstantRange>   push_constant_ranges = {},
-                                                                     VkPipelineLayoutCreateFlags flags = 0, const void* pNext = nullptr);
 
 [[nodiscard]] VkGraphicsPipelineCreateInfo graphics_pipeline_create_info(
     VkPipelineLayout layout, VkRenderPass render_pass, std::span<VkPipelineShaderStageCreateInfo> shader_stages,
