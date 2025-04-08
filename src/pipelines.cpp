@@ -17,8 +17,8 @@ VkPipelineShaderStageCreateInfo pipeline_shader_stage_create_info(VkShaderStageF
     return shader_stage_create_info;
 }
 
-VkPipelineLayoutCreateInfo pipeline_layout_create_info(std::span<VkDescriptorSetLayout> set_layouts,
-                                                       std::span<VkPushConstantRange> push_constant_ranges, VkPipelineLayoutCreateFlags flags,
+VkPipelineLayoutCreateInfo pipeline_layout_create_info(std::span<const VkDescriptorSetLayout> set_layouts,
+                                                       std::span<const VkPushConstantRange> push_constant_ranges, VkPipelineLayoutCreateFlags flags,
                                                        const void* pNext) {
     VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
     pipeline_layout_create_info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -64,9 +64,9 @@ VkVertexInputAttributeDescription vertex_input_attribute_description(uint32_t lo
     return input_attribute_description;
 }
 
-VkPipelineVertexInputStateCreateInfo pipeline_vertex_input_state_create_info(std::span<VkVertexInputBindingDescription>   bindings,
-                                                                             std::span<VkVertexInputAttributeDescription> attributes,
-                                                                             const void*                                  pNext) {
+VkPipelineVertexInputStateCreateInfo pipeline_vertex_input_state_create_info(std::span<const VkVertexInputBindingDescription>   bindings,
+                                                                             std::span<const VkVertexInputAttributeDescription> attributes,
+                                                                             const void*                                        pNext) {
     VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info{};
     vertex_input_state_create_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertex_input_state_create_info.vertexBindingDescriptionCount   = bindings.size();
@@ -96,7 +96,7 @@ VkPipelineTessellationStateCreateInfo pipeline_tessellation_state_create_info(ui
     return tessellation_state_create_info;
 }
 
-VkPipelineViewportStateCreateInfo pipeline_multi_viewport_state_create_info(std::span<VkViewport> viewports, std::span<VkRect2D> scissors,
+VkPipelineViewportStateCreateInfo pipeline_multi_viewport_state_create_info(std::span<const VkViewport> viewports, std::span<const VkRect2D> scissors,
                                                                             const void* pNext) {
     VkPipelineViewportStateCreateInfo viewport_state_create_info{};
     viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -208,7 +208,7 @@ VkPipelineColorBlendAttachmentState pipeline_color_blend_attachment_state(bool b
 }
 
 VkPipelineColorBlendStateCreateInfo
-pipeline_color_blend_state_create_info(std::span<VkPipelineColorBlendAttachmentState> color_blend_attachment_states, bool logic_op_enable,
+pipeline_color_blend_state_create_info(std::span<const VkPipelineColorBlendAttachmentState> color_blend_attachment_states, bool logic_op_enable,
                                        VkLogicOp logic_op, std::array<float, 4> blend_constants, VkPipelineColorBlendStateCreateFlags flags,
                                        const void* pNext) {
     VkPipelineColorBlendStateCreateInfo color_blend_state_create_info{};
@@ -227,7 +227,7 @@ pipeline_color_blend_state_create_info(std::span<VkPipelineColorBlendAttachmentS
     return color_blend_state_create_info;
 }
 
-VkPipelineDynamicStateCreateInfo pipeline_dynamic_state_create_info(std::span<VkDynamicState> dynamic_states) {
+VkPipelineDynamicStateCreateInfo pipeline_dynamic_state_create_info(std::span<const VkDynamicState> dynamic_states) {
     VkPipelineDynamicStateCreateInfo dynamic_state_create_info{};
     dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamic_state_create_info.dynamicStateCount = dynamic_states.size();
@@ -237,7 +237,7 @@ VkPipelineDynamicStateCreateInfo pipeline_dynamic_state_create_info(std::span<Vk
 }
 
 VkGraphicsPipelineCreateInfo graphics_pipeline_create_info(
-    VkPipelineLayout layout, VkRenderPass render_pass, std::span<VkPipelineShaderStageCreateInfo> shader_stages,
+    VkPipelineLayout layout, VkRenderPass render_pass, std::span<const VkPipelineShaderStageCreateInfo> shader_stages,
     const VkPipelineVertexInputStateCreateInfo* vertex_input_state, const VkPipelineInputAssemblyStateCreateInfo* input_assembly_state,
     const VkPipelineViewportStateCreateInfo* viewport_state, const VkPipelineRasterizationStateCreateInfo* rasterization_state,
     const VkPipelineMultisampleStateCreateInfo* multisample_state, const VkPipelineColorBlendStateCreateInfo* color_blend_state,
@@ -269,7 +269,7 @@ VkGraphicsPipelineCreateInfo graphics_pipeline_create_info(
     return graphics_pipeline_create_info;
 }
 
-VkPipelineRenderingCreateInfoKHR pipeline_rendering_create_info(std::span<VkFormat> color_attachment_formats, VkFormat depth_attachment_format,
+VkPipelineRenderingCreateInfoKHR pipeline_rendering_create_info(std::span<const VkFormat> color_attachment_formats, VkFormat depth_attachment_format,
                                                                 VkFormat stencil_attachment_format, uint32_t view_mask, const void* pNext) {
     VkPipelineRenderingCreateInfoKHR rendering_create_info{};
     rendering_create_info.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;

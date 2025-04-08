@@ -79,7 +79,7 @@ std::vector<VkQueueFamilyProperties> get_physical_device_queue_family_properties
     return queue_family_properties;
 }
 
-VkDeviceQueueCreateInfo device_queue_create_info(uint32_t family_index, uint32_t queue_count, std::span<float> queue_priorities,
+VkDeviceQueueCreateInfo device_queue_create_info(uint32_t family_index, uint32_t queue_count, std::span<const float> queue_priorities,
                                                  VkDeviceQueueCreateFlags flags, const void* pNext) {
     VkDeviceQueueCreateInfo queue_create_info{};
     queue_create_info.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -92,7 +92,7 @@ VkDeviceQueueCreateInfo device_queue_create_info(uint32_t family_index, uint32_t
     return queue_create_info;
 }
 
-VkDeviceCreateInfo device_create_info(std::span<VkDeviceQueueCreateInfo> queue_create_infos, std::span<const char*> device_extensions,
+VkDeviceCreateInfo device_create_info(std::span<const VkDeviceQueueCreateInfo> queue_create_infos, std::span<const char*> device_extensions,
                                       const VkPhysicalDeviceFeatures* features, const void* pNext) {
     VkDeviceCreateInfo device_create_info{};
     device_create_info.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

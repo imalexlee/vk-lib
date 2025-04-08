@@ -21,7 +21,7 @@ VkSpecializationMapEntry specialization_map_entry(uint32_t constant_id, size_t s
     return specialization_map_entry;
 }
 
-VkSpecializationInfo specialization_info(const void* data, uint32_t data_size, std::span<VkSpecializationMapEntry> map_entries) {
+VkSpecializationInfo specialization_info(const void* data, uint32_t data_size, std::span<const VkSpecializationMapEntry> map_entries) {
     VkSpecializationInfo specialization_info{};
     specialization_info.mapEntryCount = map_entries.size();
     specialization_info.pMapEntries   = map_entries.data();
@@ -43,7 +43,7 @@ VkDescriptorSetLayoutBinding descriptor_set_layout_binding(uint32_t binding, VkD
     return layout_binding;
 }
 
-VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info(std::span<VkDescriptorSetLayoutBinding> layout_bindings,
+VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info(std::span<const VkDescriptorSetLayoutBinding> layout_bindings,
                                                                   VkDescriptorSetLayoutCreateFlags flags, const void* pNext) {
     VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info{};
     descriptor_set_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -63,7 +63,7 @@ VkDescriptorPoolSize descriptor_pool_size(VkDescriptorType type, uint32_t descri
     return descriptor_pool_size;
 }
 
-VkDescriptorPoolCreateInfo descriptor_pool_create_info(uint32_t max_sets, std::span<VkDescriptorPoolSize> pool_sizes,
+VkDescriptorPoolCreateInfo descriptor_pool_create_info(uint32_t max_sets, std::span<const VkDescriptorPoolSize> pool_sizes,
                                                        VkDescriptorPoolCreateFlags flags, const void* pNext) {
     VkDescriptorPoolCreateInfo descriptor_pool_create_info{};
     descriptor_pool_create_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -151,7 +151,7 @@ VkWriteDescriptorSetInlineUniformBlockEXT write_descriptor_set_inline_uniform_bl
 }
 
 VkWriteDescriptorSetAccelerationStructureKHR
-write_descriptor_set_acceleration_structure_khr_batch(std::span<VkAccelerationStructureKHR> acceleration_structures, const void* pNext) {
+write_descriptor_set_acceleration_structure_khr_batch(std::span<const VkAccelerationStructureKHR> acceleration_structures, const void* pNext) {
     VkWriteDescriptorSetAccelerationStructureKHR accel_struct_write{};
     accel_struct_write.sType                      = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
     accel_struct_write.accelerationStructureCount = acceleration_structures.size();

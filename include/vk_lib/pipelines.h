@@ -13,8 +13,8 @@ namespace vk_lib {
                                                                                 const VkSpecializationInfo*      specialization_info = nullptr,
                                                                                 const void*                      pNext               = nullptr);
 
-[[nodiscard]] VkPipelineLayoutCreateInfo pipeline_layout_create_info(std::span<VkDescriptorSetLayout> set_layouts          = {},
-                                                                     std::span<VkPushConstantRange>   push_constant_ranges = {},
+[[nodiscard]] VkPipelineLayoutCreateInfo pipeline_layout_create_info(std::span<const VkDescriptorSetLayout> set_layouts          = {},
+                                                                     std::span<const VkPushConstantRange>   push_constant_ranges = {},
                                                                      VkPipelineLayoutCreateFlags flags = 0, const void* pNext = nullptr);
 
 [[nodiscard]] VkComputePipelineCreateInfo compute_pipeline_create_info(VkPipelineLayout layout, VkPipelineShaderStageCreateInfo stage,
@@ -27,8 +27,8 @@ namespace vk_lib {
                                                                                    uint32_t offset);
 
 [[nodiscard]] VkPipelineVertexInputStateCreateInfo
-pipeline_vertex_input_state_create_info(std::span<VkVertexInputBindingDescription>   bindings   = {},
-                                        std::span<VkVertexInputAttributeDescription> attributes = {}, const void* pNext = nullptr);
+pipeline_vertex_input_state_create_info(std::span<const VkVertexInputBindingDescription>   bindings   = {},
+                                        std::span<const VkVertexInputAttributeDescription> attributes = {}, const void* pNext = nullptr);
 
 [[nodiscard]] VkPipelineInputAssemblyStateCreateInfo pipeline_input_assembly_state_create_info(VkPrimitiveTopology topology,
                                                                                                bool                primitive_restart_enabled = false);
@@ -36,8 +36,8 @@ pipeline_vertex_input_state_create_info(std::span<VkVertexInputBindingDescriptio
 [[nodiscard]] VkPipelineTessellationStateCreateInfo pipeline_tessellation_state_create_info(uint32_t    patch_control_points,
                                                                                             const void* pNext = nullptr);
 
-[[nodiscard]] VkPipelineViewportStateCreateInfo pipeline_multi_viewport_state_create_info(std::span<VkViewport> viewports,
-                                                                                          std::span<VkRect2D> scissors, const void* pNext = nullptr);
+[[nodiscard]] VkPipelineViewportStateCreateInfo
+pipeline_multi_viewport_state_create_info(std::span<const VkViewport> viewports, std::span<const VkRect2D> scissors, const void* pNext = nullptr);
 
 [[nodiscard]] VkPipelineViewportStateCreateInfo pipeline_viewport_state_create_info(const VkViewport* viewport, const VkRect2D* scissor,
                                                                                     const void* pNext = nullptr);
@@ -71,14 +71,15 @@ pipeline_color_blend_attachment_state(bool blend_enabled = false, VkBlendFactor 
                                                                                VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
 
 [[nodiscard]] VkPipelineColorBlendStateCreateInfo
-pipeline_color_blend_state_create_info(std::span<VkPipelineColorBlendAttachmentState> color_blend_attachment_states, bool logic_op_enable = false,
-                                       VkLogicOp logic_op = VK_LOGIC_OP_COPY, std::array<float, 4> blend_constants = {0, 0, 0, 0},
-                                       VkPipelineColorBlendStateCreateFlags flags = 0, const void* pNext = nullptr);
+pipeline_color_blend_state_create_info(std::span<const VkPipelineColorBlendAttachmentState> color_blend_attachment_states,
+                                       bool logic_op_enable = false, VkLogicOp logic_op = VK_LOGIC_OP_COPY,
+                                       std::array<float, 4> blend_constants = {0, 0, 0, 0}, VkPipelineColorBlendStateCreateFlags flags = 0,
+                                       const void* pNext = nullptr);
 
-[[nodiscard]] VkPipelineDynamicStateCreateInfo pipeline_dynamic_state_create_info(std::span<VkDynamicState> dynamic_states);
+[[nodiscard]] VkPipelineDynamicStateCreateInfo pipeline_dynamic_state_create_info(std::span<const VkDynamicState> dynamic_states);
 
 [[nodiscard]] VkGraphicsPipelineCreateInfo graphics_pipeline_create_info(
-    VkPipelineLayout layout, VkRenderPass render_pass, std::span<VkPipelineShaderStageCreateInfo> shader_stages,
+    VkPipelineLayout layout, VkRenderPass render_pass, std::span<const VkPipelineShaderStageCreateInfo> shader_stages,
     const VkPipelineVertexInputStateCreateInfo* vertex_input_state, const VkPipelineInputAssemblyStateCreateInfo* input_assembly_state,
     const VkPipelineViewportStateCreateInfo* viewport_state, const VkPipelineRasterizationStateCreateInfo* rasterization_state,
     const VkPipelineMultisampleStateCreateInfo* multisample_state, const VkPipelineColorBlendStateCreateInfo* color_blend_state,
@@ -92,9 +93,9 @@ pipeline_color_blend_state_create_info(std::span<VkPipelineColorBlendAttachmentS
 
 // VULKAN 1.3
 
-[[nodiscard]] VkPipelineRenderingCreateInfoKHR pipeline_rendering_create_info(std::span<VkFormat> color_attachment_formats,
-                                                                              VkFormat            depth_attachment_format   = VK_FORMAT_UNDEFINED,
-                                                                              VkFormat            stencil_attachment_format = VK_FORMAT_UNDEFINED,
+[[nodiscard]] VkPipelineRenderingCreateInfoKHR pipeline_rendering_create_info(std::span<const VkFormat> color_attachment_formats,
+                                                                              VkFormat                  depth_attachment_format = VK_FORMAT_UNDEFINED,
+                                                                              VkFormat stencil_attachment_format                = VK_FORMAT_UNDEFINED,
                                                                               uint32_t view_mask = 0, const void* pNext = nullptr);
 
 } // namespace vk_lib

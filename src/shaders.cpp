@@ -14,8 +14,9 @@ VkShaderModuleCreateInfo shader_module_create_info(const uint32_t* code, uint32_
 }
 
 VkShaderCreateInfoEXT shader_create_info(const void* code, uint32_t code_size, VkShaderCodeTypeEXT code_type, VkShaderStageFlagBits stage,
-                                         VkShaderStageFlags next_stage, VkShaderCreateFlagsEXT flags, std::span<VkDescriptorSetLayout> set_layouts,
-                                         std::span<VkPushConstantRange> push_constant_ranges, const VkSpecializationInfo* specialization_info,
+                                         VkShaderStageFlags next_stage, VkShaderCreateFlagsEXT flags,
+                                         std::span<const VkDescriptorSetLayout> set_layouts,
+                                         std::span<const VkPushConstantRange> push_constant_ranges, const VkSpecializationInfo* specialization_info,
                                          const char* entry_point, const void* pNext) {
     VkShaderCreateInfoEXT shader_create_info{};
     shader_create_info.sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;

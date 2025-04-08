@@ -4,7 +4,8 @@ namespace vk_lib {
 
 VkImageCreateInfo image_create_info(VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, VkImageLayout initial_layout, uint32_t mip_levels,
                                     uint32_t array_layers, VkSampleCountFlagBits samples, VkImageType type, VkImageCreateFlags flags,
-                                    VkSharingMode sharing_mode, std::span<uint32_t> queue_family_indices, VkImageTiling tiling, const void* pNext) {
+                                    VkSharingMode sharing_mode, std::span<const uint32_t> queue_family_indices, VkImageTiling tiling,
+                                    const void* pNext) {
     VkImageCreateInfo image_create_info{};
     image_create_info.sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     image_create_info.format                = format;
@@ -70,8 +71,8 @@ VkImageSubresourceLayers image_subresource_layers(VkImageAspectFlags aspect_flag
     return subresource_layers;
 }
 
-VkImageBlit image_blit(VkImageSubresourceLayers src_subresource, VkImageSubresourceLayers dst_subresource, std::span<VkOffset3D, 2> src_offsets,
-                       std::span<VkOffset3D, 2> dst_offsets) {
+VkImageBlit image_blit(VkImageSubresourceLayers src_subresource, VkImageSubresourceLayers dst_subresource, std::span<const VkOffset3D, 2> src_offsets,
+                       std::span<const VkOffset3D, 2> dst_offsets) {
     VkImageBlit image_blit_region{};
     image_blit_region.srcSubresource = src_subresource;
     image_blit_region.srcOffsets[0]  = src_offsets[0];
@@ -112,7 +113,7 @@ VkSamplerCreateInfo sampler_create_info(VkFilter mag_filter, VkFilter min_filter
 }
 
 VkBufferCreateInfo buffer_create_info(VkBufferUsageFlags usage, uint64_t size, VkBufferUsageFlags flags, VkSharingMode sharing_mode,
-                                      std::span<uint32_t> queue_family_indices, const void* pNext) {
+                                      std::span<const uint32_t> queue_family_indices, const void* pNext) {
     VkBufferCreateInfo buffer_create_info{};
     buffer_create_info.sType                 = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     buffer_create_info.usage                 = usage;

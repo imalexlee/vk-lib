@@ -11,19 +11,19 @@ namespace vk_lib {
 
 [[nodiscard]] VkSpecializationMapEntry specialization_map_entry(uint32_t constant_id, size_t size, uint32_t offset = 0);
 
-[[nodiscard]] VkSpecializationInfo specialization_info(const void* data, uint32_t data_size, std::span<VkSpecializationMapEntry> map_entries);
+[[nodiscard]] VkSpecializationInfo specialization_info(const void* data, uint32_t data_size, std::span<const VkSpecializationMapEntry> map_entries);
 
 [[nodiscard]] VkDescriptorSetLayoutBinding descriptor_set_layout_binding(uint32_t binding, VkDescriptorType type, uint32_t descriptor_count = 1,
                                                                          VkShaderStageFlags stages            = VK_SHADER_STAGE_ALL,
                                                                          const VkSampler*   immutable_sampler = nullptr);
 
-[[nodiscard]] VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info(std::span<VkDescriptorSetLayoutBinding> layout_bindings,
-                                                                                VkDescriptorSetLayoutCreateFlags        flags = 0,
-                                                                                const void*                             pNext = nullptr);
+[[nodiscard]] VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info(std::span<const VkDescriptorSetLayoutBinding> layout_bindings,
+                                                                                VkDescriptorSetLayoutCreateFlags              flags = 0,
+                                                                                const void*                                   pNext = nullptr);
 
 [[nodiscard]] VkDescriptorPoolSize descriptor_pool_size(VkDescriptorType type, uint32_t descriptor_count);
 
-[[nodiscard]] VkDescriptorPoolCreateInfo descriptor_pool_create_info(uint32_t max_sets, std::span<VkDescriptorPoolSize> pool_sizes,
+[[nodiscard]] VkDescriptorPoolCreateInfo descriptor_pool_create_info(uint32_t max_sets, std::span<const VkDescriptorPoolSize> pool_sizes,
                                                                      VkDescriptorPoolCreateFlags flags = 0, const void* pNext = nullptr);
 
 [[nodiscard]] VkDescriptorSetAllocateInfo descriptor_set_allocate_info(const VkDescriptorSetLayout* set_layout, VkDescriptorPool descriptor_pool,
@@ -56,7 +56,8 @@ namespace vk_lib {
  */
 
 [[nodiscard]] VkWriteDescriptorSetAccelerationStructureKHR
-write_descriptor_set_acceleration_structure_khr_batch(std::span<VkAccelerationStructureKHR> acceleration_structures, const void* pNext = nullptr);
+write_descriptor_set_acceleration_structure_khr_batch(std::span<const VkAccelerationStructureKHR> acceleration_structures,
+                                                      const void*                                 pNext = nullptr);
 
 [[nodiscard]] VkWriteDescriptorSetAccelerationStructureKHR
 write_descriptor_set_acceleration_structure_khr(const VkAccelerationStructureKHR* acceleration_structure, const void* pNext = nullptr);

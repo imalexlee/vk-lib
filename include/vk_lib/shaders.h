@@ -15,8 +15,8 @@ namespace vk_lib {
 
 [[nodiscard]] VkShaderCreateInfoEXT shader_create_info(const void* code, uint32_t code_size, VkShaderCodeTypeEXT code_type,
                                                        VkShaderStageFlagBits stage, VkShaderStageFlags next_stage, VkShaderCreateFlagsEXT flags = 0,
-                                                       std::span<VkDescriptorSetLayout> set_layouts          = {},
-                                                       std::span<VkPushConstantRange>   push_constant_ranges = {},
+                                                       std::span<const VkDescriptorSetLayout> set_layouts          = {},
+                                                       std::span<const VkPushConstantRange>   push_constant_ranges = {},
                                                        const VkSpecializationInfo* specialization_info = nullptr, const char* entry_point = "main",
                                                        const void* pNext = nullptr);
 

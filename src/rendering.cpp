@@ -45,10 +45,11 @@ VkAttachmentReference attachment_reference(uint32_t attachment, VkImageLayout la
     return attachment_reference;
 }
 
-VkSubpassDescription subpass_description(std::span<VkAttachmentReference> color_attachments, const VkAttachmentReference* depth_stencil_attachment,
-                                         std::span<VkAttachmentReference> input_attachments, VkPipelineBindPoint pipeline_bind_point,
-                                         VkSubpassDescriptionFlags flags, std::span<VkAttachmentReference> resolve_attachments,
-                                         std::span<uint32_t> preserve_attachments) {
+VkSubpassDescription subpass_description(std::span<const VkAttachmentReference> color_attachments,
+                                         const VkAttachmentReference*           depth_stencil_attachment,
+                                         std::span<const VkAttachmentReference> input_attachments, VkPipelineBindPoint pipeline_bind_point,
+                                         VkSubpassDescriptionFlags flags, std::span<const VkAttachmentReference> resolve_attachments,
+                                         std::span<const uint32_t> preserve_attachments) {
     VkSubpassDescription subpass_description{};
     subpass_description.colorAttachmentCount    = color_attachments.size();
     subpass_description.pColorAttachments       = color_attachments.data();
@@ -79,8 +80,8 @@ VkSubpassDependency subpass_dependency(uint32_t src_subpass, uint32_t dst_subpas
     return subpass_dependency;
 }
 
-VkRenderPassCreateInfo render_pass_create_info(std::span<VkAttachmentDescription> attachments, std::span<VkSubpassDescription> subpasses,
-                                               std::span<VkSubpassDependency> dependencies, VkRenderPassCreateFlags flags) {
+VkRenderPassCreateInfo render_pass_create_info(std::span<const VkAttachmentDescription> attachments, std::span<const VkSubpassDescription> subpasses,
+                                               std::span<const VkSubpassDependency> dependencies, VkRenderPassCreateFlags flags) {
     VkRenderPassCreateInfo render_pass_create_info{};
     render_pass_create_info.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     render_pass_create_info.attachmentCount = attachments.size();
@@ -114,7 +115,7 @@ VkRenderingAttachmentInfoKHR rendering_attachment_info(VkImageView image_view, V
     return rendering_attachment_info;
 }
 
-VkRenderingInfoKHR rendering_info(VkRect2D render_area, std::span<VkRenderingAttachmentInfoKHR> color_attachments,
+VkRenderingInfoKHR rendering_info(VkRect2D render_area, std::span<const VkRenderingAttachmentInfoKHR> color_attachments,
                                   const VkRenderingAttachmentInfoKHR* depth_attachment, const VkRenderingAttachmentInfoKHR* stencil_attachment,
                                   VkRenderingFlagsKHR flags, uint32_t view_mask, uint32_t layer_count, const void* pNext) {
     VkRenderingInfoKHR rendering_info{};

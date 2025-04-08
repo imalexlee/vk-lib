@@ -35,8 +35,8 @@ VkResult get_swapchain_images(VkDevice device, VkSwapchainKHR swapchain, std::ve
     return vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, images->data());
 }
 
-VkPresentInfoKHR present_info_batch(std::span<VkSwapchainKHR> swapchains, std::span<uint32_t> image_indices, std::span<VkSemaphore> wait_semaphores,
-                                    std::vector<VkResult>* results, const void* pNext) {
+VkPresentInfoKHR present_info_batch(std::span<const VkSwapchainKHR> swapchains, std::span<const uint32_t> image_indices,
+                                    std::span<const VkSemaphore> wait_semaphores, std::vector<VkResult>* results, const void* pNext) {
     VkPresentInfoKHR present_info{};
     present_info.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     present_info.swapchainCount     = swapchains.size();
@@ -69,8 +69,8 @@ VkPresentInfoKHR present_info(const VkSwapchainKHR* swapchain, const uint32_t* i
 VkSwapchainCreateInfoKHR swapchain_create_info(VkSurfaceKHR surface, uint32_t min_image_count, VkFormat format, VkColorSpaceKHR color_space,
                                                VkExtent2D extent, VkSurfaceTransformFlagBitsKHR pre_transform, VkPresentModeKHR present_mode,
                                                VkImageUsageFlags usage, uint32_t array_layers, VkSharingMode sharing_mode,
-                                               std::span<uint32_t> queue_family_indices, VkCompositeAlphaFlagBitsKHR composite_alpha, bool clipped,
-                                               VkSwapchainKHR old_swapchain) {
+                                               std::span<const uint32_t> queue_family_indices, VkCompositeAlphaFlagBitsKHR composite_alpha,
+                                               bool clipped, VkSwapchainKHR old_swapchain) {
     VkSwapchainCreateInfoKHR swapchain_create_info{};
     swapchain_create_info.sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapchain_create_info.surface               = surface;

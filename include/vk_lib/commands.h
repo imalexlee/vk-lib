@@ -17,9 +17,9 @@ namespace vk_lib {
                                                                  const VkCommandBufferInheritanceInfo* inheritance_info = nullptr,
                                                                  const void*                           pNext            = nullptr);
 
-[[nodiscard]] VkSubmitInfo submit_info_batch(std::span<VkCommandBuffer> command_buffers, std::span<VkSemaphore> wait_semaphores = {},
-                                             std::span<VkPipelineStageFlags> wait_semaphore_stage_flags = {},
-                                             std::span<VkSemaphore> signal_semaphores = {}, const void* pNext = nullptr);
+[[nodiscard]] VkSubmitInfo submit_info_batch(std::span<const VkCommandBuffer> command_buffers, std::span<const VkSemaphore> wait_semaphores = {},
+                                             std::span<const VkPipelineStageFlags> wait_semaphore_stage_flags = {},
+                                             std::span<const VkSemaphore> signal_semaphores = {}, const void* pNext = nullptr);
 
 [[nodiscard]] VkSubmitInfo submit_info(const VkCommandBuffer* command_buffer, const VkSemaphore* wait_semaphore = nullptr,
                                        const VkPipelineStageFlags* wait_semaphore_stage_flags = nullptr,
@@ -33,9 +33,9 @@ namespace vk_lib {
 [[nodiscard]] VkCommandBufferSubmitInfoKHR command_buffer_submit_info(VkCommandBuffer command_buffer, uint32_t device_mask = 0,
                                                                       const void* pNext = nullptr);
 
-[[nodiscard]] VkSubmitInfo2KHR submit_info_2_batch(std::span<VkCommandBufferSubmitInfoKHR> command_buffer_submit_infos,
-                                                   std::span<VkSemaphoreSubmitInfoKHR>     wait_semaphores_submit_infos   = {},
-                                                   std::span<VkSemaphoreSubmitInfoKHR>     signal_semaphores_submit_infos = {},
+[[nodiscard]] VkSubmitInfo2KHR submit_info_2_batch(std::span<const VkCommandBufferSubmitInfoKHR> command_buffer_submit_infos,
+                                                   std::span<const VkSemaphoreSubmitInfoKHR>     wait_semaphores_submit_infos   = {},
+                                                   std::span<const VkSemaphoreSubmitInfoKHR>     signal_semaphores_submit_infos = {},
                                                    VkSubmitFlagsKHR submit_flags = 0, const void* pNext = nullptr);
 
 [[nodiscard]] VkSubmitInfo2KHR submit_info_2(const VkCommandBufferSubmitInfoKHR* command_buffer_submit_info,

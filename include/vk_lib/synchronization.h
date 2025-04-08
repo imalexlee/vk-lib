@@ -62,9 +62,9 @@ namespace vk_lib {
                                                           VkAccessFlags2KHR     dst_access_mask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR |
                                                                                               VK_ACCESS_2_SHADER_READ_BIT_KHR);
 
-[[nodiscard]] VkDependencyInfoKHR dependency_info_batch(std::span<VkImageMemoryBarrier2KHR>  image_barriers,
-                                                        std::span<VkBufferMemoryBarrier2KHR> buffer_barriers,
-                                                        std::span<VkMemoryBarrier2KHR> memory_barriers, VkDependencyFlags dependency_flags = 0);
+[[nodiscard]] VkDependencyInfoKHR dependency_info_batch(std::span<const VkImageMemoryBarrier2KHR>  image_barriers,
+                                                        std::span<const VkBufferMemoryBarrier2KHR> buffer_barriers,
+                                                        std::span<const VkMemoryBarrier2KHR> memory_barriers, VkDependencyFlags dependency_flags = 0);
 
 [[nodiscard]] VkDependencyInfoKHR dependency_info(const VkImageMemoryBarrier2KHR* image_barrier, const VkBufferMemoryBarrier2KHR* buffer_barrier,
                                                   const VkMemoryBarrier2KHR* memory_barrier, VkDependencyFlags dependency_flags = 0);

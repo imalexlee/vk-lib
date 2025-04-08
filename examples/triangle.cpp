@@ -387,7 +387,7 @@ int main() {
 
         VkCommandBuffer command_buffer = current_frame->command_buffer;
 
-        VK_CHECK(vkWaitForFences(vk_context.device, 1, &current_frame->in_flight_fence, true, INT64_MAX));
+        VK_CHECK(vkWaitForFences(vk_context.device, 1, &current_frame->in_flight_fence, true, UINT64_MAX));
         VK_CHECK(vkResetFences(vk_context.device, 1, &current_frame->in_flight_fence));
 
         uint32_t swapchain_image_index;

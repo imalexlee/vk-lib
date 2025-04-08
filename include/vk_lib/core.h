@@ -24,10 +24,10 @@ VkResult enumerate_physical_devices(VkInstance instance, std::vector<VkPhysicalD
 // index in vector represents the queue family index
 [[nodiscard]] std::vector<VkQueueFamilyProperties> get_physical_device_queue_family_properties(VkPhysicalDevice physical_device);
 
-[[nodiscard]] VkDeviceQueueCreateInfo device_queue_create_info(uint32_t family_index, uint32_t queue_count, std::span<float> queue_priorities,
+[[nodiscard]] VkDeviceQueueCreateInfo device_queue_create_info(uint32_t family_index, uint32_t queue_count, std::span<const float> queue_priorities,
                                                                VkDeviceQueueCreateFlags flags = 0, const void* pNext = nullptr);
 
-[[nodiscard]] VkDeviceCreateInfo device_create_info(std::span<VkDeviceQueueCreateInfo> queue_create_infos,
+[[nodiscard]] VkDeviceCreateInfo device_create_info(std::span<const VkDeviceQueueCreateInfo> queue_create_infos,
                                                     std::span<const char*> device_extensions = {}, const VkPhysicalDeviceFeatures* features = nullptr,
                                                     const void* pNext = nullptr);
 

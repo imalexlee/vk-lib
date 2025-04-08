@@ -42,8 +42,8 @@ VkCommandBufferSubmitInfoKHR command_buffer_submit_info(VkCommandBuffer command_
     return command_buffer_submit_info;
 }
 
-VkSubmitInfo submit_info_batch(std::span<VkCommandBuffer> command_buffers, std::span<VkSemaphore> wait_semaphores,
-                               std::span<VkPipelineStageFlags> wait_semaphore_stage_flags, std::span<VkSemaphore> signal_semaphores,
+VkSubmitInfo submit_info_batch(std::span<const VkCommandBuffer> command_buffers, std::span<const VkSemaphore> wait_semaphores,
+                               std::span<const VkPipelineStageFlags> wait_semaphore_stage_flags, std::span<const VkSemaphore> signal_semaphores,
                                const void* pNext) {
     VkSubmitInfo submit_info{};
     submit_info.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -75,9 +75,9 @@ VkSubmitInfo submit_info(const VkCommandBuffer* command_buffer, const VkSemaphor
     return submit_info;
 }
 
-VkSubmitInfo2KHR submit_info_2_batch(std::span<VkCommandBufferSubmitInfoKHR> command_buffer_submit_infos,
-                                     std::span<VkSemaphoreSubmitInfoKHR>     wait_semaphores_submit_infos,
-                                     std::span<VkSemaphoreSubmitInfoKHR> signal_semaphores_submit_infos, VkSubmitFlagsKHR submit_flags,
+VkSubmitInfo2KHR submit_info_2_batch(std::span<const VkCommandBufferSubmitInfoKHR> command_buffer_submit_infos,
+                                     std::span<const VkSemaphoreSubmitInfoKHR>     wait_semaphores_submit_infos,
+                                     std::span<const VkSemaphoreSubmitInfoKHR> signal_semaphores_submit_infos, VkSubmitFlagsKHR submit_flags,
                                      const void* pNext) {
     VkSubmitInfo2KHR submit_info_2{};
     submit_info_2.sType                    = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;

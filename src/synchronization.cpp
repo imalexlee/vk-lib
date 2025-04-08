@@ -149,8 +149,9 @@ VkMemoryBarrier2KHR global_memory_barrier_2(VkPipelineStageFlags2KHR src_stage_m
     return memory_barrier;
 }
 
-VkDependencyInfoKHR dependency_info_batch(std::span<VkImageMemoryBarrier2KHR> image_barriers, std::span<VkBufferMemoryBarrier2KHR> buffer_barriers,
-                                          std::span<VkMemoryBarrier2KHR> memory_barriers, VkDependencyFlags dependency_flags) {
+VkDependencyInfoKHR dependency_info_batch(std::span<const VkImageMemoryBarrier2KHR>  image_barriers,
+                                          std::span<const VkBufferMemoryBarrier2KHR> buffer_barriers,
+                                          std::span<const VkMemoryBarrier2KHR> memory_barriers, VkDependencyFlags dependency_flags) {
     VkDependencyInfoKHR dependency_info{};
     dependency_info.sType                    = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
     dependency_info.pNext                    = nullptr;

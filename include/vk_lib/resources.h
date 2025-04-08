@@ -11,7 +11,7 @@ namespace vk_lib {
 image_create_info(VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, VkImageLayout initial_layout = VK_IMAGE_LAYOUT_UNDEFINED,
                   uint32_t mip_levels = 1, uint32_t array_layers = 1, VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT,
                   VkImageType type = VK_IMAGE_TYPE_2D, VkImageCreateFlags flags = 0, VkSharingMode sharing_mode = VK_SHARING_MODE_EXCLUSIVE,
-                  std::span<uint32_t> queue_family_indices = {}, VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL, const void* pNext = nullptr);
+                  std::span<const uint32_t> queue_family_indices = {}, VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL, const void* pNext = nullptr);
 
 [[nodiscard]] VkImageSubresourceRange image_subresource_range(VkImageAspectFlags aspect_flags, uint32_t mip_level_count = 1,
                                                               uint32_t base_mip_level = 0, uint32_t array_layer_count = 1,
@@ -26,7 +26,7 @@ image_create_info(VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, V
                                                                 uint32_t layer_count = 1);
 
 [[nodiscard]] VkImageBlit image_blit(VkImageSubresourceLayers src_subresource, VkImageSubresourceLayers dst_subresource,
-                                     std::span<VkOffset3D, 2> src_offsets, std::span<VkOffset3D, 2> dst_offsets);
+                                     std::span<const VkOffset3D, 2> src_offsets, std::span<const VkOffset3D, 2> dst_offsets);
 
 [[nodiscard]] VkSamplerCreateInfo sampler_create_info(
     VkFilter mag_filter = VK_FILTER_LINEAR, VkFilter min_filter = VK_FILTER_LINEAR,
@@ -37,8 +37,8 @@ image_create_info(VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, V
     bool unnormalized_coordinates = false, VkSamplerCreateFlags flags = 0, const void* pNext = nullptr);
 
 [[nodiscard]] VkBufferCreateInfo buffer_create_info(VkBufferUsageFlags usage, uint64_t size, VkBufferUsageFlags flags = 0,
-                                                    VkSharingMode       sharing_mode         = VK_SHARING_MODE_EXCLUSIVE,
-                                                    std::span<uint32_t> queue_family_indices = {}, const void* pNext = nullptr);
+                                                    VkSharingMode             sharing_mode         = VK_SHARING_MODE_EXCLUSIVE,
+                                                    std::span<const uint32_t> queue_family_indices = {}, const void* pNext = nullptr);
 
 [[nodiscard]] VkBufferViewCreateInfo buffer_view_create_info(VkFormat format, VkBuffer buffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE,
                                                              const void* pNext = nullptr);
