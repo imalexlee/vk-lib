@@ -41,7 +41,7 @@ image_create_info(VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, V
 [[nodiscard]] VkSamplerCreateInfo sampler_create_info(
     VkFilter mag_filter = VK_FILTER_LINEAR, VkFilter min_filter = VK_FILTER_LINEAR,
     VkSamplerAddressMode address_mode_u = VK_SAMPLER_ADDRESS_MODE_REPEAT, VkSamplerAddressMode address_mode_v = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-    VkSamplerAddressMode address_mode_w = VK_SAMPLER_ADDRESS_MODE_REPEAT, bool anisotropy_enable = true, float max_anisotropy = 1.f,
+    VkSamplerAddressMode address_mode_w = VK_SAMPLER_ADDRESS_MODE_REPEAT, bool anisotropy_enable = true, float max_anisotropy = 16.f,
     VkSamplerMipmapMode mipmap_mode = VK_SAMPLER_MIPMAP_MODE_LINEAR, float min_lod = 0.f, float max_lod = VK_LOD_CLAMP_NONE, float lod_bias = 0.f,
     bool compare_enable = false, VkCompareOp compare_op = VK_COMPARE_OP_ALWAYS, VkBorderColor border_color = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
     bool unnormalized_coordinates = false, VkSamplerCreateFlags flags = 0, const void* pNext = nullptr);
