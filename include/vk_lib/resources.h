@@ -7,6 +7,16 @@
 
 namespace vk_lib {
 
+[[nodiscard]] VkOffset2D offset_2d(int32_t x = 0, int32_t y = 0);
+
+[[nodiscard]] VkOffset3D offset_3d(int32_t x = 0, int32_t y = 0, int32_t z = 0);
+
+[[nodiscard]] VkExtent2D extent_2d(uint32_t width, uint32_t height);
+
+[[nodiscard]] VkExtent3D extent_3d(uint32_t width, uint32_t height, uint32_t depth = 1);
+
+[[nodiscard]] VkRect2D rect_2d(VkExtent2D extent, VkOffset2D offset = {0, 0});
+
 [[nodiscard]] VkImageCreateInfo
 image_create_info(VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, VkImageLayout initial_layout = VK_IMAGE_LAYOUT_UNDEFINED,
                   uint32_t mip_levels = 1, uint32_t array_layers = 1, VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT,
@@ -36,11 +46,14 @@ image_create_info(VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, V
     bool compare_enable = false, VkCompareOp compare_op = VK_COMPARE_OP_ALWAYS, VkBorderColor border_color = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
     bool unnormalized_coordinates = false, VkSamplerCreateFlags flags = 0, const void* pNext = nullptr);
 
-[[nodiscard]] VkBufferCreateInfo buffer_create_info(VkBufferUsageFlags usage, uint64_t size, VkBufferUsageFlags flags = 0,
+[[nodiscard]] VkBufferCreateInfo buffer_create_info(VkBufferUsageFlags usage, uint64_t size, VkBufferCreateFlags flags = 0,
                                                     VkSharingMode             sharing_mode         = VK_SHARING_MODE_EXCLUSIVE,
                                                     std::span<const uint32_t> queue_family_indices = {}, const void* pNext = nullptr);
 
 [[nodiscard]] VkBufferViewCreateInfo buffer_view_create_info(VkFormat format, VkBuffer buffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE,
                                                              const void* pNext = nullptr);
 
+[[nodiscard]] VkBufferImageCopy buffer_image_copy(VkImageSubresourceLayers image_subresource, VkExtent3D image_extent, uint64_t buffer_offset = 0,
+                                                  VkOffset3D image_offset = {0, 0, 0}, uint32_t buffer_row_length = 0,
+                                                  uint32_t buffer_image_height = 0);
 } // namespace vk_lib

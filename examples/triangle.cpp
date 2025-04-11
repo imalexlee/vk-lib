@@ -238,7 +238,8 @@ VkShaderModule load_shader(VkDevice device, const std::filesystem::path& path) {
 GraphicsPipeline create_graphics_pipeline(VkDevice device, VkFormat color_attachment_format, uint32_t width, uint32_t height) {
 
     const VkViewport viewport = vk_lib::viewport(static_cast<float>(width), static_cast<float>(height));
-    const VkRect2D   scissor  = vk_lib::rect_2d(width, height);
+    const VkExtent2D extent   = vk_lib::extent_2d(width, height);
+    const VkRect2D   scissor  = vk_lib::rect_2d(extent);
 
     VkPipelineLayoutCreateInfo layout_create_info = vk_lib::pipeline_layout_create_info();
     VkPipelineLayout           pipeline_layout;
@@ -371,7 +372,7 @@ int main() {
     vk_context.frames = init_frames(vk_context.device, vk_context.frame_command_pool, vk_context.swapchain_ctx.image_views,
                                     vk_context.swapchain_ctx.images, vk_context.graphics_present_queue_family);
 
-    const VkRect2D render_area = vk_lib::rect_2d(vk_context.swapchain_ctx.extent.width, vk_context.swapchain_ctx.extent.height);
+    const VkRect2D render_area = vk_lib::rect_2d(vk_context.swapchain_ctx.extent);
     while (!glfwWindowShouldClose(vk_context.window)) {
         glfwPollEvents();
         int width, height;

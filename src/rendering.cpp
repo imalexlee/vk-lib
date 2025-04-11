@@ -2,13 +2,6 @@
 
 namespace vk_lib {
 
-VkRect2D rect_2d(uint32_t width, uint32_t height, int32_t x_offset, int32_t y_offset) {
-    const VkOffset2D offset = {.x = x_offset, .y = y_offset};
-    const VkExtent2D extent = {.width = width, .height = height};
-
-    return VkRect2D{.offset = offset, .extent = extent};
-}
-
 VkViewport viewport(float width, float height, float x_offset, float y_offset, float min_depth, float max_depth) {
     VkViewport viewport{};
     viewport.width    = width;

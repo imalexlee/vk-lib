@@ -2,6 +2,48 @@
 
 namespace vk_lib {
 
+VkOffset2D offset_2d(int32_t x, int32_t y) {
+    VkOffset2D offset_2d{};
+    offset_2d.x = x;
+    offset_2d.y = y;
+
+    return offset_2d;
+}
+
+VkOffset3D offset_3d(int32_t x, int32_t y, int32_t z) {
+    VkOffset3D offset_3d{};
+    offset_3d.x = x;
+    offset_3d.y = y;
+    offset_3d.z = z;
+
+    return offset_3d;
+}
+
+VkExtent2D extent_2d(uint32_t width, uint32_t height) {
+    VkExtent2D extent_2d{};
+    extent_2d.width  = width;
+    extent_2d.height = height;
+
+    return extent_2d;
+}
+
+VkExtent3D extent_3d(uint32_t width, uint32_t height, uint32_t depth) {
+    VkExtent3D extent_3d{};
+    extent_3d.width  = width;
+    extent_3d.height = height;
+    extent_3d.depth  = depth;
+
+    return extent_3d;
+}
+
+VkRect2D rect_2d(VkExtent2D extent, VkOffset2D offset) {
+    VkRect2D rect_2d{};
+    rect_2d.extent = extent;
+    rect_2d.offset = offset;
+
+    return rect_2d;
+}
+
 VkImageCreateInfo image_create_info(VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, VkImageLayout initial_layout, uint32_t mip_levels,
                                     uint32_t array_layers, VkSampleCountFlagBits samples, VkImageType type, VkImageCreateFlags flags,
                                     VkSharingMode sharing_mode, std::span<const uint32_t> queue_family_indices, VkImageTiling tiling,
@@ -112,7 +154,7 @@ VkSamplerCreateInfo sampler_create_info(VkFilter mag_filter, VkFilter min_filter
     return sampler_create_info;
 }
 
-VkBufferCreateInfo buffer_create_info(VkBufferUsageFlags usage, uint64_t size, VkBufferUsageFlags flags, VkSharingMode sharing_mode,
+VkBufferCreateInfo buffer_create_info(VkBufferUsageFlags usage, uint64_t size, VkBufferCreateFlags flags, VkSharingMode sharing_mode,
                                       std::span<const uint32_t> queue_family_indices, const void* pNext) {
     VkBufferCreateInfo buffer_create_info{};
     buffer_create_info.sType                 = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -137,6 +179,19 @@ VkBufferViewCreateInfo buffer_view_create_info(VkFormat format, VkBuffer buffer,
     buffer_view_create_info.pNext  = pNext;
 
     return buffer_view_create_info;
+}
+
+VkBufferImageCopy buffer_image_copy(VkImageSubresourceLayers image_subresource, VkExtent3D image_extent, uint64_t buffer_offset,
+                                    VkOffset3D image_offset, uint32_t buffer_row_length, uint32_t buffer_image_height) {
+    VkBufferImageCopy buffer_image_copy{};
+    buffer_image_copy.imageSubresource  = image_subresource;
+    buffer_image_copy.imageExtent       = image_extent;
+    buffer_image_copy.bufferOffset      = buffer_offset;
+    buffer_image_copy.imageOffset       = image_offset;
+    buffer_image_copy.bufferRowLength   = buffer_row_length;
+    buffer_image_copy.bufferImageHeight = buffer_image_height;
+
+    return buffer_image_copy;
 }
 
 } // namespace vk_lib
