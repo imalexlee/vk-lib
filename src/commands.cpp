@@ -63,12 +63,12 @@ VkSubmitInfo submit_info(const VkCommandBuffer* command_buffer, const VkSemaphor
                          const VkPipelineStageFlags* wait_semaphore_stage_flags, const VkSemaphore* signal_semaphore, const void* pNext) {
     VkSubmitInfo submit_info{};
     submit_info.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submit_info.commandBufferCount   = 1;
+    submit_info.commandBufferCount   = command_buffer == nullptr ? 0 : 1;
     submit_info.pCommandBuffers      = command_buffer;
-    submit_info.waitSemaphoreCount   = 1;
+    submit_info.waitSemaphoreCount   = wait_semaphore == nullptr ? 0 : 1;
     submit_info.pWaitSemaphores      = wait_semaphore;
     submit_info.pWaitDstStageMask    = wait_semaphore_stage_flags;
-    submit_info.signalSemaphoreCount = 1;
+    submit_info.signalSemaphoreCount = signal_semaphore == nullptr ? 0 : 1;
     submit_info.pSignalSemaphores    = signal_semaphore;
     submit_info.pNext                = pNext;
 
@@ -99,11 +99,11 @@ VkSubmitInfo2KHR submit_info_2_batch(std::span<const VkCommandBufferSubmitInfoKH
                                              const void* pNext) {
     VkSubmitInfo2KHR submit_info_2{};
     submit_info_2.sType                    = VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR;
-    submit_info_2.commandBufferInfoCount   = 1;
+    submit_info_2.commandBufferInfoCount   = command_buffer_submit_info == nullptr ? 0 : 1;
     submit_info_2.pCommandBufferInfos      = command_buffer_submit_info;
-    submit_info_2.waitSemaphoreInfoCount   = 1;
+    submit_info_2.waitSemaphoreInfoCount   = wait_semaphores_submit_info == nullptr ? 0 : 1;
     submit_info_2.pWaitSemaphoreInfos      = wait_semaphores_submit_info;
-    submit_info_2.signalSemaphoreInfoCount = 1;
+    submit_info_2.signalSemaphoreInfoCount = signal_semaphores_submit_info == nullptr ? 0 : 1;
     submit_info_2.pSignalSemaphoreInfos    = signal_semaphores_submit_info;
     submit_info_2.flags                    = submit_flags;
     submit_info_2.pNext                    = pNext;
