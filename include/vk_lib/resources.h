@@ -56,4 +56,9 @@ image_create_info(VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, V
 [[nodiscard]] VkBufferImageCopy buffer_image_copy(VkImageSubresourceLayers image_subresource, VkExtent3D image_extent, uint64_t buffer_offset = 0,
                                                   VkOffset3D image_offset = {0, 0, 0}, uint32_t buffer_row_length = 0,
                                                   uint32_t buffer_image_height = 0);
+
+[[nodiscard]] VkBufferCopy buffer_copy(uint64_t size, uint64_t src_offset = 0, uint64_t dst_offset = 0);
+
+[[nodiscard]] VkImageCopy image_copy(VkImageSubresourceLayers src_subresource, VkImageSubresourceLayers dst_subresource, VkExtent3D extent,
+                                     VkOffset3D src_offset = {0, 0, 0}, VkOffset3D dst_offset = {0, 0, 0});
 } // namespace vk_lib

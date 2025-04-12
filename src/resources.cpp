@@ -194,4 +194,25 @@ VkBufferImageCopy buffer_image_copy(VkImageSubresourceLayers image_subresource, 
     return buffer_image_copy;
 }
 
+VkBufferCopy buffer_copy(uint64_t size, uint64_t src_offset, uint64_t dst_offset) {
+    VkBufferCopy buffer_copy{};
+    buffer_copy.srcOffset = src_offset;
+    buffer_copy.dstOffset = dst_offset;
+    buffer_copy.size      = size;
+
+    return buffer_copy;
+}
+
+VkImageCopy image_copy(VkImageSubresourceLayers src_subresource, VkImageSubresourceLayers dst_subresource, VkExtent3D extent, VkOffset3D src_offset,
+                       VkOffset3D dst_offset) {
+    VkImageCopy image_copy{};
+    image_copy.srcSubresource = src_subresource;
+    image_copy.dstSubresource = dst_subresource;
+    image_copy.extent         = extent;
+    image_copy.srcOffset      = src_offset;
+    image_copy.dstOffset      = dst_offset;
+
+    return image_copy;
+}
+
 } // namespace vk_lib
