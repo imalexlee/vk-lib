@@ -61,4 +61,13 @@ image_create_info(VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, V
 
 [[nodiscard]] VkImageCopy image_copy(VkImageSubresourceLayers src_subresource, VkImageSubresourceLayers dst_subresource, VkExtent3D extent,
                                      VkOffset3D src_offset = {0, 0, 0}, VkOffset3D dst_offset = {0, 0, 0});
+
+/*
+ * CORE EXTENSIONS
+ */
+
+// VULKAN 1.2
+
+[[nodiscard]] VkBufferDeviceAddressInfoKHR buffer_device_address_info(VkBuffer buffer, const void* pNext = nullptr);
+
 } // namespace vk_lib

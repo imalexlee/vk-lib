@@ -215,4 +215,13 @@ VkImageCopy image_copy(VkImageSubresourceLayers src_subresource, VkImageSubresou
     return image_copy;
 }
 
+VkBufferDeviceAddressInfoKHR buffer_device_address_info(VkBuffer buffer, const void* pNext) {
+    VkBufferDeviceAddressInfoKHR device_address_info{};
+    device_address_info.sType  = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    device_address_info.buffer = buffer;
+    device_address_info.pNext  = pNext;
+
+    return device_address_info;
+}
+
 } // namespace vk_lib
