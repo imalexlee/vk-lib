@@ -44,9 +44,9 @@ VkRect2D rect_2d(VkExtent2D extent, VkOffset2D offset) {
     return rect_2d;
 }
 
-VkImageCreateInfo image_create_info(VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, VkImageLayout initial_layout, uint32_t mip_levels,
-                                    uint32_t array_layers, VkSampleCountFlagBits samples, VkImageType type, VkImageCreateFlags flags,
-                                    VkSharingMode sharing_mode, std::span<const uint32_t> queue_family_indices, VkImageTiling tiling,
+VkImageCreateInfo image_create_info(VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, uint32_t mip_levels, uint32_t array_layers,
+                                    VkSampleCountFlagBits samples, VkImageType type, VkImageCreateFlags flags, VkSharingMode sharing_mode,
+                                    std::span<const uint32_t> queue_family_indices, VkImageTiling tiling, VkImageLayout initial_layout,
                                     const void* pNext) {
     VkImageCreateInfo image_create_info{};
     image_create_info.sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
