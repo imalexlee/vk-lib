@@ -121,11 +121,11 @@ VkPipelineViewportStateCreateInfo pipeline_viewport_state_create_info(const VkVi
     return viewport_state_create_info;
 }
 
-VkPipelineRasterizationStateCreateInfo pipeline_rasterization_state_create_info(VkPolygonMode polygon_mode, VkCullModeFlags cull_mode,
-                                                                                VkFrontFace front_face, float line_width, bool depth_clamp_enable,
-                                                                                bool rasterizer_discard_enable, float depth_bias_constant_factor,
-                                                                                float depth_bias_clamp, float depth_bias_slope_factor,
-                                                                                const void* pNext) {
+VkPipelineRasterizationStateCreateInfo pipeline_rasterization_state_create_info(VkPolygonMode polygon_mode, VkFrontFace front_face,
+                                                                                VkCullModeFlags cull_mode, bool depth_bias_enable,
+                                                                                float depth_bias_constant_factor, float depth_bias_slope_factor,
+                                                                                bool depth_clamp_enable, float depth_bias_clamp, float line_width,
+                                                                                bool rasterizer_discard_enable, const void* pNext) {
     VkPipelineRasterizationStateCreateInfo rasterization_state_create_info{};
     rasterization_state_create_info.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterization_state_create_info.polygonMode             = polygon_mode;
@@ -133,6 +133,7 @@ VkPipelineRasterizationStateCreateInfo pipeline_rasterization_state_create_info(
     rasterization_state_create_info.frontFace               = front_face;
     rasterization_state_create_info.lineWidth               = line_width;
     rasterization_state_create_info.depthClampEnable        = depth_clamp_enable;
+    rasterization_state_create_info.depthBiasEnable         = depth_bias_enable;
     rasterization_state_create_info.rasterizerDiscardEnable = rasterizer_discard_enable;
     rasterization_state_create_info.depthBiasConstantFactor = depth_bias_constant_factor;
     rasterization_state_create_info.depthBiasClamp          = depth_bias_clamp;
@@ -142,12 +143,12 @@ VkPipelineRasterizationStateCreateInfo pipeline_rasterization_state_create_info(
     return rasterization_state_create_info;
 }
 
-VkPipelineMultisampleStateCreateInfo pipeline_multisample_state_create_info(VkSampleCountFlagBits samples, bool sample_shading_enable,
+VkPipelineMultisampleStateCreateInfo pipeline_multisample_state_create_info(VkSampleCountFlagBits rasterization_samples, bool sample_shading_enable,
                                                                             float min_sample_shading, const VkSampleMask* sample_mask,
                                                                             bool alpha_to_coverage_enable, bool alpha_to_one_enable) {
     VkPipelineMultisampleStateCreateInfo multisample_state_create_info{};
     multisample_state_create_info.sType                 = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisample_state_create_info.rasterizationSamples  = samples;
+    multisample_state_create_info.rasterizationSamples  = rasterization_samples;
     multisample_state_create_info.sampleShadingEnable   = sample_shading_enable;
     multisample_state_create_info.minSampleShading      = min_sample_shading;
     multisample_state_create_info.pSampleMask           = sample_mask;

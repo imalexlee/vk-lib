@@ -43,15 +43,15 @@ pipeline_multi_viewport_state_create_info(std::span<const VkViewport> viewports,
                                                                                     const void* pNext = nullptr);
 
 [[nodiscard]] VkPipelineRasterizationStateCreateInfo
-pipeline_rasterization_state_create_info(VkPolygonMode polygon_mode, VkCullModeFlags cull_mode, VkFrontFace front_face, float line_width = 1.0f,
-                                         bool depth_clamp_enable = false, bool rasterizer_discard_enable = false,
-                                         float depth_bias_constant_factor = 0.0f, float depth_bias_clamp = 0.0f, float depth_bias_slope_factor = 0.0f,
-                                         const void* pNext = nullptr);
+pipeline_rasterization_state_create_info(VkPolygonMode polygon_mode, VkFrontFace front_face, VkCullModeFlags cull_mode = VK_CULL_MODE_NONE,
+                                         bool depth_bias_enable = false, float depth_bias_constant_factor = 0, float depth_bias_slope_factor = 0,
+                                         bool depth_clamp_enable = false, float depth_bias_clamp = 0, float line_width = 1,
+                                         bool rasterizer_discard_enable = false, const void* pNext = nullptr);
 
 [[nodiscard]] VkPipelineMultisampleStateCreateInfo
-pipeline_multisample_state_create_info(VkSampleCountFlagBits samples, bool sample_shading_enable = false, float min_sample_shading = 1.0f,
-                                       const VkSampleMask* sample_mask = nullptr, bool alpha_to_coverage_enable = false,
-                                       bool alpha_to_one_enable = false);
+pipeline_multisample_state_create_info(VkSampleCountFlagBits rasterization_samples, bool sample_shading_enable = false,
+                                       float min_sample_shading = 1.0f, const VkSampleMask* sample_mask = nullptr,
+                                       bool alpha_to_coverage_enable = false, bool alpha_to_one_enable = false);
 
 [[nodiscard]] VkStencilOpState stencil_op_state(VkStencilOp fail_op, VkStencilOp pass_op, VkStencilOp depth_fail_op, VkCompareOp compare_op,
                                                 uint32_t compare_mask, uint32_t write_mask, uint32_t reference);
@@ -63,9 +63,9 @@ pipeline_depth_stencil_state_create_info(bool depth_test_enable = false, bool de
                                          const VkStencilOpState* back = nullptr, float min_depth_bounds = 0.0f, float max_depth_bounds = 1.0f);
 
 [[nodiscard]] VkPipelineColorBlendAttachmentState
-pipeline_color_blend_attachment_state(bool blend_enabled = false, VkBlendFactor src_color_blend_factor = VK_BLEND_FACTOR_ONE,
-                                      VkBlendFactor dst_color_blend_factor = VK_BLEND_FACTOR_ZERO, VkBlendOp color_blend_op = VK_BLEND_OP_ADD,
-                                      VkBlendFactor src_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
+pipeline_color_blend_attachment_state(bool blend_enabled = false, VkBlendFactor src_color_blend_factor = VK_BLEND_FACTOR_SRC_ALPHA,
+                                      VkBlendFactor dst_color_blend_factor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                                      VkBlendOp color_blend_op = VK_BLEND_OP_ADD, VkBlendFactor src_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
                                       VkBlendFactor dst_alpha_blend_factor = VK_BLEND_FACTOR_ZERO, VkBlendOp alpha_blend_op = VK_BLEND_OP_ADD,
                                       VkColorComponentFlags color_write_mask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                                                                VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
