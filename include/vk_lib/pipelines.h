@@ -23,7 +23,7 @@ namespace vk_lib {
 
 [[nodiscard]] VkVertexInputBindingDescription vertex_input_binding_description(uint32_t binding, uint32_t stride, VkVertexInputRate input_rate);
 
-[[nodiscard]] VkVertexInputAttributeDescription vertex_input_attribute_description(uint32_t location, uint32_t binding, VkFormat format,
+[[nodiscard]] VkVertexInputAttributeDescription vertex_input_attribute_description(uint32_t binding, uint32_t location, VkFormat format,
                                                                                    uint32_t offset);
 
 [[nodiscard]] VkPipelineVertexInputStateCreateInfo

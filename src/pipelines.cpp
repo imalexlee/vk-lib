@@ -54,10 +54,10 @@ VkVertexInputBindingDescription vertex_input_binding_description(uint32_t bindin
     return input_binding_description;
 }
 
-VkVertexInputAttributeDescription vertex_input_attribute_description(uint32_t location, uint32_t binding, VkFormat format, uint32_t offset) {
+VkVertexInputAttributeDescription vertex_input_attribute_description(uint32_t binding, uint32_t location, VkFormat format, uint32_t offset) {
     VkVertexInputAttributeDescription input_attribute_description{};
-    input_attribute_description.location = location;
     input_attribute_description.binding  = binding;
+    input_attribute_description.location = location;
     input_attribute_description.format   = format;
     input_attribute_description.offset   = offset;
 
