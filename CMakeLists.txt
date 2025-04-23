@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(VK_LIB)
+project(vk_lib)
 set(CMAKE_CXX_STANDARD 20)
 
 # Used for my own subdirectories to pull dependencies
