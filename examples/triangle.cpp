@@ -258,7 +258,7 @@ GraphicsPipeline create_graphics_pipeline(VkDevice device, VkFormat color_attach
         vk_lib::pipeline_input_assembly_state_create_info(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     VkPipelineViewportStateCreateInfo      viewport_state = vk_lib::pipeline_viewport_state_create_info(&viewport, &scissor);
     VkPipelineRasterizationStateCreateInfo rasterization_state =
-        vk_lib::pipeline_rasterization_state_create_info(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
+        vk_lib::pipeline_rasterization_state_create_info(VK_POLYGON_MODE_FILL, VK_FRONT_FACE_CLOCKWISE, VK_CULL_MODE_BACK_BIT);
     VkPipelineMultisampleStateCreateInfo multisample_state            = vk_lib::pipeline_multisample_state_create_info(VK_SAMPLE_COUNT_1_BIT);
     VkPipelineColorBlendAttachmentState  color_blend_attachment_state = vk_lib::pipeline_color_blend_attachment_state();
     std::array                           color_blends                 = {color_blend_attachment_state};

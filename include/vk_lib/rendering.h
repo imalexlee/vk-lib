@@ -45,9 +45,9 @@ subpass_description(std::span<const VkAttachmentReference> color_attachments, co
 
 [[nodiscard]] VkRenderingAttachmentInfoKHR rendering_attachment_info(VkImageView image_view, VkImageLayout image_layout, VkAttachmentLoadOp load_op,
                                                                      VkAttachmentStoreOp store_op, const VkClearValue* clear_value = nullptr,
-                                                                     VkResolveModeFlagBitsKHR resolve_mode         = VK_RESOLVE_MODE_NONE_KHR,
-                                                                     VkImageView              resolve_image_view   = nullptr,
-                                                                     VkImageLayout            resolve_image_layout = VK_IMAGE_LAYOUT_UNDEFINED);
+                                                                     VkResolveModeFlagBitsKHR resolve_mode       = VK_RESOLVE_MODE_NONE_KHR,
+                                                                     VkImageView              resolve_image_view = nullptr,
+                                                                     VkImageLayout resolve_image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 [[nodiscard]] VkRenderingInfoKHR rendering_info(VkRect2D render_area, std::span<const VkRenderingAttachmentInfoKHR> color_attachments,
                                                 const VkRenderingAttachmentInfoKHR* depth_attachment   = nullptr,
