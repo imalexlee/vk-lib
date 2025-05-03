@@ -1,18 +1,14 @@
-#include "vk_lib/core.h"
 
-#include <vulkan/vk_enum_string_helper.h>
+#define VK_NO_PROTOTYPES
+#include <volk.h>
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
-#include <vk_lib/commands.h>
-#include <vk_lib/pipelines.h>
-#include <vk_lib/presentation.h>
-#include <vk_lib/rendering.h>
-#include <vk_lib/resources.h>
-#include <vk_lib/shaders.h>
-#include <vk_lib/synchronization.h>
+
+#include <vk_lib.h>
+#include <vulkan/vk_enum_string_helper.h>
 
 #define VK_CHECK(x)                                                                                                                                  \
     do {                                                                                                                                             \
@@ -93,7 +89,12 @@ VkInstance create_instance() {
     VkApplicationInfo    app_info    = vk_lib::application_info("hello triangle", "engine name", VK_API_VERSION_1_3);
     VkInstanceCreateInfo instance_ci = vk_lib::instance_create_info(&app_info, layers, extensions);
     VkInstance           instance;
-    VK_CHECK(vk_lib::create_instance_with_entrypoints(&instance_ci, &instance));
+
+    VK_CHECK(volkInitialize());
+
+    VK_CHECK(vkCreateInstance(&instance_ci, nullptr, &instance));
+
+    volkLoadInstanceOnly(instance);
 
     return instance;
 }
@@ -101,7 +102,12 @@ VkInstance create_instance() {
 VkPhysicalDevice select_physical_device(VkInstance instance) {
     // Find a device that supports vulkan 1.3. Prefer discrete GPU's
     std::vector<VkPhysicalDevice> physical_devices;
-    VK_CHECK(vk_lib::enumerate_physical_devices(instance, &physical_devices));
+    uint32_t                      physical_device_count = 0;
+    VK_CHECK(vkEnumeratePhysicalDevices(instance, &physical_device_count, nullptr));
+
+    physical_devices.resize(physical_device_count);
+    VK_CHECK(vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices.data()));
+
     VkPhysicalDevice chosen_device = nullptr;
     for (const VkPhysicalDevice& physical_device : physical_devices) {
         VkPhysicalDeviceProperties properties;
@@ -121,7 +127,12 @@ VkPhysicalDevice select_physical_device(VkInstance instance) {
 }
 
 uint32_t select_queue_family(VkPhysicalDevice physical_device, VkSurfaceKHR surface) {
-    const std::vector<VkQueueFamilyProperties> queue_family_properties = vk_lib::get_physical_device_queue_family_properties(physical_device);
+    uint32_t                             family_property_count;
+    std::vector<VkQueueFamilyProperties> queue_family_properties;
+    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_property_count, nullptr);
+    queue_family_properties.resize(family_property_count);
+    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_property_count, queue_family_properties.data());
+
     // Find a queue family with both graphics and presentation capabilities
     for (uint32_t i = 0; i < queue_family_properties.size(); i++) {
         const VkQueueFamilyProperties* family_properties = &queue_family_properties[i];
@@ -138,7 +149,7 @@ uint32_t select_queue_family(VkPhysicalDevice physical_device, VkSurfaceKHR surf
 
 VkDevice create_logical_device(VkPhysicalDevice physical_device, uint32_t queue_family) {
     std::array              queue_priorities   = {1.f};
-    VkDeviceQueueCreateInfo queue_ci           = vk_lib::device_queue_create_info(queue_family, 1, queue_priorities);
+    VkDeviceQueueCreateInfo queue_ci           = vk_lib::device_queue_create_info(queue_family, queue_priorities);
     std::array              queue_create_infos = {queue_ci};
 
     std::array device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
@@ -164,14 +175,21 @@ VkDevice create_logical_device(VkPhysicalDevice physical_device, uint32_t queue_
 
     VkDeviceCreateInfo device_ci = vk_lib::device_create_info(queue_create_infos, device_extensions, nullptr, &physical_device_features_2);
     VkDevice           device;
-    vk_lib::create_device_with_entrypoints(physical_device, &device_ci, &device);
+    VK_CHECK(vkCreateDevice(physical_device, &device_ci, nullptr, &device));
+
+    volkLoadDevice(device);
 
     return device;
 }
 
 SwapchainContext create_swapchain_context(VkPhysicalDevice physical_device, VkDevice device, VkSurfaceKHR surface, GLFWwindow* window) {
+    uint32_t                        format_count = 0;
     std::vector<VkSurfaceFormatKHR> surface_formats;
-    VK_CHECK(vk_lib::get_physical_device_surface_formats(physical_device, surface, &surface_formats));
+    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, nullptr));
+
+    surface_formats.resize(format_count);
+    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, surface_formats.data()));
+
     VkSurfaceFormatKHR format = surface_formats[0];
     for (const VkSurfaceFormatKHR& available_format : surface_formats) {
         if (available_format.format == VK_FORMAT_B8G8R8A8_SRGB && available_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -206,7 +224,10 @@ SwapchainContext create_swapchain_context(VkPhysicalDevice physical_device, VkDe
     swapchain_context.surface_format = format;
     swapchain_context.swapchain      = swapchain;
 
-    VK_CHECK(vk_lib::get_swapchain_images(device, swapchain, &swapchain_context.images));
+    uint32_t swapchain_image_count = 0;
+    VK_CHECK(vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, nullptr));
+    swapchain_context.images.resize(swapchain_image_count);
+    vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, swapchain_context.images.data());
 
     swapchain_context.image_views.reserve(swapchain_context.images.size());
     for (VkImage image : swapchain_context.images) {
@@ -312,11 +333,11 @@ std::vector<Frame> init_frames(VkDevice device, VkCommandPool command_pool, std:
 
         VkImageSubresourceRange subresource_range = vk_lib::image_subresource_range(VK_IMAGE_ASPECT_COLOR_BIT);
 
-        VkImage frame_image                    = frame_images[i];
-        frame->end_render_image_memory_barrier = vk_lib::image_memory_barrier_2(
-            frame_image, subresource_range, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, queue_family_index, queue_family_index,
-            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
-            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_2_NONE);
+        VkImage frame_image = frame_images[i];
+        frame->end_render_image_memory_barrier =
+            vk_lib::image_memory_barrier_2(frame_image, subresource_range, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                           VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+                                           VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_2_NONE);
         frame->dependency_info = vk_lib::dependency_info(&frame->end_render_image_memory_barrier, nullptr, nullptr);
     }
 

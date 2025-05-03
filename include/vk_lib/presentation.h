@@ -7,12 +7,6 @@
 
 namespace vk_lib {
 
-VkResult get_physical_device_surface_formats(VkPhysicalDevice physical_device, VkSurfaceKHR surface, std::vector<VkSurfaceFormatKHR>* formats);
-
-VkResult get_physical_device_present_modes(VkPhysicalDevice physical_device, VkSurfaceKHR surface, std::vector<VkPresentModeKHR>* present_modes);
-
-VkResult get_swapchain_images(VkDevice device, VkSwapchainKHR swapchain, std::vector<VkImage>* images);
-
 [[nodiscard]] VkPresentInfoKHR present_info_batch(std::span<const VkSwapchainKHR> swapchains, std::span<const uint32_t> image_indices,
                                                   std::span<const VkSemaphore> wait_semaphores = {}, std::vector<VkResult>* results = nullptr,
                                                   const void* pNext = nullptr);

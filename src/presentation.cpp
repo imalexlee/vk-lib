@@ -3,38 +3,6 @@
 
 namespace vk_lib {
 
-VkResult get_physical_device_surface_formats(VkPhysicalDevice physical_device, VkSurfaceKHR surface, std::vector<VkSurfaceFormatKHR>* formats) {
-    uint32_t       format_count = 0;
-    const VkResult result       = vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, nullptr);
-    if (result != VK_SUCCESS) {
-        return result;
-    }
-
-    formats->resize(format_count);
-    return vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, formats->data());
-}
-
-VkResult get_physical_device_present_modes(VkPhysicalDevice physical_device, VkSurfaceKHR surface, std::vector<VkPresentModeKHR>* present_modes) {
-    uint32_t       present_mode_count = 0;
-    const VkResult result             = vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, nullptr);
-    if (result != VK_SUCCESS) {
-        return result;
-    }
-
-    present_modes->resize(present_mode_count);
-    return vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, present_modes->data());
-}
-
-VkResult get_swapchain_images(VkDevice device, VkSwapchainKHR swapchain, std::vector<VkImage>* images) {
-    uint32_t       swapchain_image_count = 0;
-    const VkResult result                = vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, nullptr);
-    if (result != VK_SUCCESS) {
-        return result;
-    }
-    images->resize(swapchain_image_count);
-    return vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, images->data());
-}
-
 VkPresentInfoKHR present_info_batch(std::span<const VkSwapchainKHR> swapchains, std::span<const uint32_t> image_indices,
                                     std::span<const VkSemaphore> wait_semaphores, std::vector<VkResult>* results, const void* pNext) {
     VkPresentInfoKHR present_info{};

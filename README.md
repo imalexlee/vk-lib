@@ -1,11 +1,11 @@
 # Vulkan Library
 
-A lightweight C++ abstraction layer for Vulkan that simplifies initialization while providing sensible defaults.
+A lightweight C++ abstraction layer for Vulkan that simplifies initialization by providing sensible defaults and filling
+in typo-prone structure fields.
 
 ### Features
 
 - Simplified creation of Vulkan parameter and state structures
-- Automatic handling of two-call pattern for enumeration functions
 - Direct mapping to Vulkan structures
 
 ### Benefits
@@ -38,9 +38,7 @@ std::array layers = { "VK_LAYER_KHRONOS_validation" };
 auto instance_info = vk_lib::instance_create_info(&app_info, layers, extensions);
 
 VkInstance instance;
-if (vk_lib::create_instance_with_entrypoints(&instance_info, &instance) != VK_SUCCESS) {
-// Handle error
-}
+vkCreateInstance(&instance_ci, nullptr, &instance);
 ```
 
 #### Device Creation
@@ -66,22 +64,27 @@ auto device_info = vk_lib::device_create_info(queue_create_infos, device_extensi
 
 // Create logical device
 VkDevice device;
-if (vk_lib::create_device_with_entrypoints(physical_device, &device_info, &device) != VK_SUCCESS) {
-// Handle error
-}
+vkCreateDevice(physical_device, &device_ci, nullptr, &device);
+```
+
+#### Building the example application
+
+```cmake
+set(VK_LIB_BUILD_EXAMPLES ON)
 ```
 
 ### Requirements
 
 - C++20 compatible compiler
 - Vulkan SDK
-- [volk](https://github.com/zeux/volk) (Which is pulled in automatically through CMake's `FetchContent`)
 
 ### Notes
 
-This library is designed to be a thin wrapper around Vulkan, focusing on making the API more ergonomic while maintaining
+This library is designed to be a thin wrapper around Vulkan structure initialization, focusing on making the API more
+ergonomic while maintaining
 full performance and control. It does not hide Vulkan concepts or create high-level abstractions, allowing developers to
 maintain direct access to Vulkan objects and functions.
 
-The helper functions follow a consistent naming convention that matches the Vulkan structure names they create, making
-it easy to understand their purpose and mapping to Vulkan concepts.
+The helper functions follow a mostly consistent naming convention that matches the Vulkan structure names they create.
+
+This library does not call any Vulkan functions.

@@ -1,6 +1,5 @@
 #pragma once
 
-#define VK_NO_PROTOTYPES
 #include <array>
 #include <deque>
 #include <iostream>
@@ -9,4 +8,4 @@
 #include <set>
 #include <span>
 #include <vector>
-#include <volk.h>
+#include <vulkan/vulkan.h>

@@ -8,8 +8,8 @@ include(FetchContent)
 
 find_package(Vulkan REQUIRED)
 
-set(VK_LIB_BUILD_EXAMPLES TRUE)
-set(VK_LIB_BUILD_TESTS TRUE)
+option(VK_LIB_BUILD_EXAMPLES "Build example application" OFF)
+option(VK_LIB_BUILD_TESTS "Build tests" OFF)
 
 add_subdirectory(src)
 

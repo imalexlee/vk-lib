@@ -34,8 +34,8 @@ VkSemaphoreSubmitInfoKHR semaphore_submit_info(VkSemaphore semaphore, VkPipeline
 }
 
 VkImageMemoryBarrier image_memory_barrier(VkImage image, const VkImageSubresourceRange* subresource_range, VkImageLayout old_layout,
-                                          VkImageLayout new_layout, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
-                                          VkAccessFlags src_access_mask, VkAccessFlags dst_access_mask, const void* pNext) {
+                                          VkImageLayout new_layout, VkAccessFlags src_access_mask, VkAccessFlags dst_access_mask,
+                                          uint32_t src_queue_family_index, uint32_t dst_queue_family_index, const void* pNext) {
     VkImageMemoryBarrier image_mem_barrier{};
     image_mem_barrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     image_mem_barrier.srcAccessMask       = src_access_mask;
@@ -51,9 +51,8 @@ VkImageMemoryBarrier image_memory_barrier(VkImage image, const VkImageSubresourc
     return image_mem_barrier;
 }
 
-VkBufferMemoryBarrier buffer_memory_barrier(VkBuffer buffer, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
-                                            VkAccessFlags src_access_mask, VkAccessFlags dst_access_mask, uint64_t offset, uint64_t size,
-                                            const void* pNext) {
+VkBufferMemoryBarrier buffer_memory_barrier(VkBuffer buffer, VkAccessFlags src_access_mask, VkAccessFlags dst_access_mask, uint64_t offset,
+                                            uint64_t size, uint32_t src_queue_family_index, uint32_t dst_queue_family_index, const void* pNext) {
     VkBufferMemoryBarrier buffer_mem_barrier{};
     buffer_mem_barrier.sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
     buffer_mem_barrier.srcAccessMask       = src_access_mask;
@@ -97,9 +96,9 @@ VkSemaphoreTypeCreateInfoKHR semaphore_type_create_info(VkSemaphoreType type, ui
 }
 
 VkImageMemoryBarrier2KHR image_memory_barrier_2(VkImage image, VkImageSubresourceRange subresource_range, VkImageLayout old_layout,
-                                                VkImageLayout new_layout, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
-                                                VkPipelineStageFlags2 src_stage_mask, VkPipelineStageFlags2 dst_stage_mask,
-                                                VkAccessFlags2 src_access_mask, VkAccessFlags2 dst_access_mask, const void* pNext) {
+                                                VkImageLayout new_layout, VkPipelineStageFlags2 src_stage_mask, VkPipelineStageFlags2 dst_stage_mask,
+                                                VkAccessFlags2 src_access_mask, VkAccessFlags2 dst_access_mask, uint32_t src_queue_family_index,
+                                                uint32_t dst_queue_family_index, const void* pNext) {
     VkImageMemoryBarrier2KHR image_mem_barrier_2{};
     image_mem_barrier_2.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2_KHR;
     image_mem_barrier_2.srcStageMask        = src_stage_mask;
@@ -117,10 +116,10 @@ VkImageMemoryBarrier2KHR image_memory_barrier_2(VkImage image, VkImageSubresourc
     return image_mem_barrier_2;
 }
 
-VkBufferMemoryBarrier2KHR buffer_memory_barrier_2(VkBuffer buffer, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
-                                                  VkPipelineStageFlags2 src_stage_mask, VkPipelineStageFlags2 dst_stage_mask,
+VkBufferMemoryBarrier2KHR buffer_memory_barrier_2(VkBuffer buffer, VkPipelineStageFlags2 src_stage_mask, VkPipelineStageFlags2 dst_stage_mask,
                                                   VkAccessFlags2KHR src_access_mask, VkAccessFlags2KHR dst_access_mask, uint64_t offset,
-                                                  uint64_t size, const void* pNext) {
+                                                  uint64_t size, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
+                                                  const void* pNext) {
     VkBufferMemoryBarrier2KHR buffer_memory_barrier_2{};
     buffer_memory_barrier_2.sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2_KHR;
     buffer_memory_barrier_2.srcStageMask        = src_stage_mask;

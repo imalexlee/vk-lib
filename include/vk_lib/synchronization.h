@@ -16,15 +16,16 @@ namespace vk_lib {
 
 // subresource_range MUST NOT be null
 [[nodiscard]] VkImageMemoryBarrier image_memory_barrier(VkImage image, const VkImageSubresourceRange* subresource_range, VkImageLayout old_layout,
-                                                        VkImageLayout new_layout, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
-                                                        VkAccessFlags src_access_mask = VK_ACCESS_MEMORY_WRITE_BIT,
-                                                        VkAccessFlags dst_access_mask = VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT,
-                                                        const void*   pNext           = nullptr);
+                                                        VkImageLayout new_layout, VkAccessFlags src_access_mask = VK_ACCESS_MEMORY_WRITE_BIT,
+                                                        VkAccessFlags dst_access_mask        = VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT,
+                                                        uint32_t      src_queue_family_index = VK_QUEUE_FAMILY_IGNORED,
+                                                        uint32_t dst_queue_family_index = VK_QUEUE_FAMILY_IGNORED, const void* pNext = nullptr);
 
-[[nodiscard]] VkBufferMemoryBarrier buffer_memory_barrier(VkBuffer buffer, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
-                                                          VkAccessFlags src_access_mask = VK_ACCESS_MEMORY_WRITE_BIT,
+[[nodiscard]] VkBufferMemoryBarrier buffer_memory_barrier(VkBuffer buffer, VkAccessFlags src_access_mask = VK_ACCESS_MEMORY_WRITE_BIT,
                                                           VkAccessFlags dst_access_mask = VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT,
-                                                          uint64_t offset = 0, uint64_t size = VK_WHOLE_SIZE, const void* pNext = nullptr);
+                                                          uint64_t offset = 0, uint64_t size = VK_WHOLE_SIZE,
+                                                          uint32_t src_queue_family_index = VK_QUEUE_FAMILY_IGNORED,
+                                                          uint32_t dst_queue_family_index = VK_QUEUE_FAMILY_IGNORED, const void* pNext = nullptr);
 
 [[nodiscard]] VkMemoryBarrier memory_barrier(VkAccessFlags src_access_mask = VK_ACCESS_MEMORY_WRITE_BIT,
                                              VkAccessFlags dst_access_mask = VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT);
@@ -42,19 +43,23 @@ namespace vk_lib {
 
 // VULKAN 1.3
 
-[[nodiscard]] VkImageMemoryBarrier2KHR image_memory_barrier_2(
-    VkImage image, VkImageSubresourceRange subresource_range, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t src_queue_family_index,
-    uint32_t dst_queue_family_index, VkPipelineStageFlags2 src_stage_mask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
-    VkPipelineStageFlags2 dst_stage_mask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, VkAccessFlags2 src_access_mask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR,
-    VkAccessFlags2 dst_access_mask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR | VK_ACCESS_2_SHADER_READ_BIT_KHR, const void* pNext = nullptr);
+[[nodiscard]] VkImageMemoryBarrier2KHR
+image_memory_barrier_2(VkImage image, VkImageSubresourceRange subresource_range, VkImageLayout old_layout, VkImageLayout new_layout,
+                       VkPipelineStageFlags2 src_stage_mask  = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+                       VkPipelineStageFlags2 dst_stage_mask  = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+                       VkAccessFlags2        src_access_mask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR,
+                       VkAccessFlags2        dst_access_mask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR | VK_ACCESS_2_SHADER_READ_BIT_KHR,
+                       uint32_t src_queue_family_index = VK_QUEUE_FAMILY_IGNORED, uint32_t dst_queue_family_index = VK_QUEUE_FAMILY_IGNORED,
+                       const void* pNext = nullptr);
 
-[[nodiscard]] VkBufferMemoryBarrier2KHR buffer_memory_barrier_2(VkBuffer buffer, uint32_t src_queue_family_index, uint32_t dst_queue_family_index,
-                                                                VkPipelineStageFlags2 src_stage_mask  = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
-                                                                VkPipelineStageFlags2 dst_stage_mask  = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
-                                                                VkAccessFlags2KHR     src_access_mask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR,
-                                                                VkAccessFlags2KHR     dst_access_mask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR |
-                                                                                                    VK_ACCESS_2_SHADER_READ_BIT_KHR,
-                                                                uint64_t offset = 0, uint64_t size = VK_WHOLE_SIZE, const void* pNext = nullptr);
+[[nodiscard]] VkBufferMemoryBarrier2KHR
+buffer_memory_barrier_2(VkBuffer buffer, VkPipelineStageFlags2 src_stage_mask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+                        VkPipelineStageFlags2 dst_stage_mask  = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+                        VkAccessFlags2KHR     src_access_mask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR,
+                        VkAccessFlags2KHR     dst_access_mask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR | VK_ACCESS_2_SHADER_READ_BIT_KHR,
+
+                        uint64_t offset = 0, uint64_t size = VK_WHOLE_SIZE, uint32_t src_queue_family_index = VK_QUEUE_FAMILY_IGNORED,
+                        uint32_t dst_queue_family_index = VK_QUEUE_FAMILY_IGNORED, const void* pNext = nullptr);
 
 [[nodiscard]] VkMemoryBarrier2KHR global_memory_barrier_2(VkPipelineStageFlags2 src_stage_mask  = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
                                                           VkPipelineStageFlags2 dst_stage_mask  = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
